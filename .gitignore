@@ -1,0 +1,19 @@
+# macOS / editor junk
+.DS_Store
+*.swp
+.idea/
+
+# Python byproducts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Conda environments that `make setup` creates inside each part (never commit these:
+# they are ~1 GB of machine-specific binaries; each partner builds their own)
+ee271-conda-env/
+
+# Submission zips (rebuild any time with `make submit`)
+assignment*.zip
+
+# Personal scratch space: put throwaway experiments here, git ignores it
+scratch/
