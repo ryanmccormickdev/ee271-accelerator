@@ -1,0 +1,35 @@
+{
+  // Run & Debug panel (Cmd+Shift+D): pick one of these, set a breakpoint, press F5.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Test: processing element",
+      "type": "debugpy", "request": "launch", "console": "integratedTerminal", "justMyCode": true,
+      "python": "${workspaceFolder}/part1/ee271-conda-env/bin/python",
+      "program": "${workspaceFolder}/part1/test/test_processing_element.py",
+      "cwd": "${workspaceFolder}/part1/test"
+    },
+    {
+      "name": "Test: main buffer",
+      "type": "debugpy", "request": "launch", "console": "integratedTerminal", "justMyCode": true,
+      "python": "${workspaceFolder}/part1/ee271-conda-env/bin/python",
+      "program": "${workspaceFolder}/part1/test/test_main_buffer.py",
+      "cwd": "${workspaceFolder}/part1/test"
+    },
+    {
+      "name": "Test: full accelerator",
+      "type": "debugpy", "request": "launch", "console": "integratedTerminal", "justMyCode": true,
+      "python": "${workspaceFolder}/part1/ee271-conda-env/bin/python",
+      "program": "${workspaceFolder}/part1/test/test_accelerator.py",
+      "cwd": "${workspaceFolder}/part1/test"
+    },
+    {
+      "name": "Tour: tiny problem with --trace",
+      "type": "debugpy", "request": "launch", "console": "integratedTerminal", "justMyCode": true,
+      "python": "${workspaceFolder}/part1/ee271-conda-env/bin/python",
+      "program": "${workspaceFolder}/playground/tour.py",
+      "args": ["--trace"],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

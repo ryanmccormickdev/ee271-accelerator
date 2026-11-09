@@ -1,0 +1,9 @@
+{
+  // Use the course's conda environment (built by `make setup`) for running, linting and debugging.
+  "python.defaultInterpreterPath": "${workspaceFolder}/part1/ee271-conda-env/bin/python",
+  // Lets the editor resolve `from src.xxx import ...` the same way the tests do.
+  "python.analysis.extraPaths": ["${workspaceFolder}/part1"],
+  // Hide the ~150 MB environment and Python byproducts from the file tree and search.
+  "files.exclude": { "**/__pycache__": true, "**/ee271-conda-env": true },
+  "search.exclude": { "**/ee271-conda-env": true }
+}

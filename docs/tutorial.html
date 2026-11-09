@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 1 Orientation</title>
+<style>
+:root {
+  --bg: #faf9f6; --fg: #1d1d1b; --muted: #66645e; --card: #ffffff; --border: #e4e1d8;
+  --accent: #3451c7; --code-bg: #f2f0ea; --code-fg: #26251f;
+  --do: #eaf6ee; --do-b: #2f8f46; --see: #edf1ff; --see-b: #3d5fd9; --watch: #fff3e3; --watch-b: #d0640b;
+  --lane0: #dbe7ff; --lane1: #e3f3df; --lane2: #fbe8d6; --lane3: #efe2f7;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15161a; --fg: #e7e5df; --muted: #a09d94; --card: #1d1f24; --border: #30333a;
+    --accent: #8fa6ff; --code-bg: #23262c; --code-fg: #e6e4dc;
+    --do: #16271c; --do-b: #4cbf6a; --see: #1a2036; --see-b: #7f9bff; --watch: #2c2214; --watch-b: #f0913d;
+    --lane0: #24324d; --lane1: #233823; --lane2: #3d2c1c; --lane3: #33263d;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15161a; --fg: #e7e5df; --muted: #a09d94; --card: #1d1f24; --border: #30333a;
+  --accent: #8fa6ff; --code-bg: #23262c; --code-fg: #e6e4dc;
+  --do: #16271c; --do-b: #4cbf6a; --see: #1a2036; --see-b: #7f9bff; --watch: #2c2214; --watch-b: #f0913d;
+  --lane0: #24324d; --lane1: #233823; --lane2: #3d2c1c; --lane3: #33263d;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; }
+.wrap { display: grid; grid-template-columns: 1fr; max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 1100px) { .wrap { grid-template-columns: 240px minmax(0, 780px); gap: 48px; } }
+nav.toc { display: none; }
+@media (min-width: 1100px) {
+  nav.toc { display: block; position: sticky; top: 24px; align-self: start; padding-top: 56px; font-size: 14.5px; }
+  nav.toc a { display: flex; gap: 8px; color: var(--muted); text-decoration: none; padding: 4px 0; }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc a.done::after { content: "✓"; color: var(--do-b); margin-left: auto; }
+}
+main { min-width: 0; padding: 40px 0 80px; }
+header .kicker { color: var(--muted); font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
+h1 { font-size: 34px; line-height: 1.2; margin: 6px 0 12px; }
+h2 { font-size: 24px; margin: 56px 0 8px; padding-top: 8px; border-top: 1px solid var(--border);
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h2 .num { color: var(--accent); }
+h2 .time { font-size: 14px; color: var(--muted); font-weight: 500; }
+h2 label.mark { margin-left: auto; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer;
+  display: inline-flex; gap: 6px; align-items: center; }
+h3 { font-size: 18.5px; margin: 28px 0 6px; }
+p, li { max-width: 72ch; }
+a { color: var(--accent); }
+.lede { font-size: 18.5px; color: var(--fg); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; padding: 0; list-style: none; }
+.facts li { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: 14.5px; }
+.path { counter-reset: s; list-style: none; padding: 0; margin: 20px 0; }
+.path li { counter-increment: s; display: flex; gap: 12px; align-items: baseline; padding: 8px 12px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--card); margin-bottom: 6px; }
+.path li::before { content: counter(s); font-weight: 700; color: var(--accent); min-width: 1ch; }
+.path li a { text-decoration: none; color: var(--fg); font-weight: 600; }
+.path li .t { color: var(--muted); font-size: 14px; margin-left: auto; white-space: nowrap; }
+.path li.done { opacity: .6; } .path li.done a::after { content: "  ✓"; color: var(--do-b); }
+code { font: 14.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  color: var(--code-fg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+pre { position: relative; background: var(--code-bg); color: var(--code-fg); border-radius: 8px; padding: 12px 14px;
+  overflow-x: auto; margin: 10px 0; border: 1px solid var(--border); }
+pre code { background: none; padding: 0; overflow-wrap: normal; }
+pre .out { color: var(--muted); }
+button.copy { position: absolute; top: 6px; right: 6px; font: 12px/1 -apple-system, sans-serif; padding: 5px 8px;
+  border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; }
+.callout { border-left: 4px solid; border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.callout > :first-child { margin-top: 0; } .callout > :last-child { margin-bottom: 0; }
+.callout .tag { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 2px; }
+.do { background: var(--do); border-color: var(--do-b); } .do .tag { color: var(--do-b); }
+.see { background: var(--see); border-color: var(--see-b); } .see .tag { color: var(--see-b); }
+.watch { background: var(--watch); border-color: var(--watch-b); } .watch .tag { color: var(--watch-b); }
+details { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin: 10px 0; }
+details > summary { cursor: pointer; font-weight: 600; }
+details[open] > summary { margin-bottom: 6px; }
+dl.terms dt { font-weight: 700; margin-top: 10px; } dl.terms dd { margin: 2px 0 0 0; max-width: 72ch; }
+dfn { font-style: normal; font-weight: 650; }
+figure { margin: 16px 0; } figure img { max-width: 100%; height: auto; background: #fff; border-radius: 8px; border: 1px solid var(--border); }
+figcaption { font-size: 14.5px; color: var(--muted); margin-top: 4px; }
+.figrow { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 700px) { .figrow { grid-template-columns: 1fr 1fr; align-items: end; } }
+.fig-main img { max-width: 340px; width: 100%; }
+table { border-collapse: collapse; margin: 10px 0; font-size: 15.5px; display: block; overflow-x: auto; max-width: 100%; }
+th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); }
+.fields { display: flex; flex-wrap: wrap; gap: 0; margin: 8px 0 4px; font-size: 14px; }
+.fields span { border: 1px solid var(--border); background: var(--card); padding: 6px 8px; margin-right: -1px; text-align: center; }
+.fields span b { display: block; font-size: 12px; color: var(--muted); font-weight: 500; }
+.fields .pe { background: var(--lane1); } .fields .mem { background: var(--lane0); } .fields .ctl { background: var(--lane2); }
+.lanes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); text-align: center; font-size: 13.5px; margin: 12px 0; max-width: 560px; }
+.lanes .top, .lanes .bot { color: var(--muted); padding: 2px 0; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; }
+.lanes .box { border: 1px solid var(--border); padding: 8px 4px; margin-right: -1px; }
+.lanes .l3 { background: var(--lane3); } .lanes .l2 { background: var(--lane2); } .lanes .l1 { background: var(--lane1); } .lanes .l0 { background: var(--lane0); }
+.q { list-style: none; padding: 0; }
+.q li { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; }
+.q input { margin-top: 6px; }
+.small { font-size: 14.5px; color: var(--muted); }
+footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); padding-top: 16px; }
+.theme { position: fixed; top: 10px; right: 12px; font-size: 13px; padding: 4px 9px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; }
+</style>
+</head>
+<body>
+<button class="theme" id="theme" type="button" aria-label="Toggle light or dark theme">◐</button>
+<div class="wrap">
+<nav class="toc" aria-label="Steps">
+  <a href="#s1" data-step="s1">1 · The machine</a>
+  <a href="#s2" data-step="s2">2 · Your toolbox</a>
+  <a href="#s3" data-step="s3">3 · Read the code</a>
+  <a href="#s4" data-step="s4">4 · Bits &amp; numbers</a>
+  <a href="#s5" data-step="s5">5 · Change, test, debug</a>
+  <a href="#s6" data-step="s6">6 · Team &amp; submit</a>
+  <a href="#cheat">Cheat sheet</a>
+</nav>
+<main>
+<header>
+  <div class="kicker">EE271 · Project Part 1 · Orientation</div>
+  <h1>Getting oriented in Part 1</h1>
+  <p class="lede">By the end you'll have run the tests, read the starter code with a map, practiced the
+  bit tricks the spec takes for granted, and know how you and your partner will work and submit.
+  It takes about 90 minutes and splits well into sittings. Every step ends with something you run.</p>
+  <ul class="facts">
+    <li>Due <b>Fri Nov 13, 11:59 PM</b> · no extensions</li>
+    <li>Spec: <a href="../handouts/Project_Part_1.pdf">handouts/Project_Part_1.pdf</a></li>
+    <li>Checklist: <code>docs/spec-notes.md</code></li>
+  </ul>
+  <ol class="path" id="path">
+    <li data-step="s1"><a href="#s1">The machine in one picture</a><span class="t">10 min</span></li>
+    <li data-step="s2"><a href="#s2">Your toolbox: terminal, conda, make, git, editor</a><span class="t">15 min</span></li>
+    <li data-step="s3"><a href="#s3">Read the starter code with a map</a><span class="t">20 min</span></li>
+    <li data-step="s4"><a href="#s4">Bits and numbers the spec assumes</a><span class="t">25 min</span></li>
+    <li data-step="s5"><a href="#s5">Change, test, debug</a><span class="t">10 min</span></li>
+    <li data-step="s6"><a href="#s6">Team, AI log, submit</a><span class="t">10 min</span></li>
+  </ol>
+</header>
+
+<!-- ============================================================ 1 -->
+<h2 id="s1"><span class="num">1</span> The machine in one picture <span class="time">10 min</span>
+  <label class="mark"><input type="checkbox" data-done="s1"> done</label></h2>
+
+<p>Part 1 is a <dfn>simulator</dfn>: a Python program that behaves exactly like the chip you'll build in
+Part 2. You are <em>not</em> writing a matrix multiply. You're writing the pieces of a machine, and the
+provided compiler programs that machine to do the multiply. In Part 2 your SystemVerilog has to match this
+Python bit for bit, so whatever you build now becomes your reference.</p>
+
+<div class="figrow">
+  <figure class="fig-main"><img src="img/fig3-accelerator.png" alt="Accelerator block diagram: controller and instruction memory driving memory banks 0, 1, 2 and a column of PEs">
+    <figcaption>The whole accelerator (handout Fig. 3).</figcaption></figure>
+  <div>
+    <figure><img src="img/fig1-processing-element.png" alt="A PE with inputs Data 0, Data 1, Instruction, an accumulation register, and an output">
+      <figcaption>One processing element (Fig. 1).</figcaption></figure>
+    <figure><img src="img/fig2-memory-banks.png" alt="MEM0 feeds each PE its own word, MEM1 feeds the same word to every PE, PEs write to MEM2">
+      <figcaption>The memory banks (Fig. 2). MEM1's single line fans out to every PE.</figcaption></figure>
+  </div>
+</div>
+
+<dl class="terms">
+  <dt>Processing element (PE)</dt>
+  <dd>One small calculator. It takes two 32-bit inputs and an instruction. It keeps a running total in its
+  <dfn>accumulation register</dfn> (the "accumulator") and has an <dfn>output register</dfn> holding whatever
+  it last chose to output. File: <code>processing_element.py</code>.</dd>
+  <dt>MEM0, MEM1, MEM2 (the "main buffer")</dt>
+  <dd>MEM0 holds the matrix, with one 32-bit word per PE in every entry. MEM1 holds the vector: each read
+  produces one word that goes to <em>every</em> PE (a <dfn>broadcast</dfn>). MEM2 stores the results.
+  The code calls the three together the main buffer. File: <code>main_buffer.py</code>.</dd>
+  <dt>Controller</dt>
+  <dd>Takes each instruction and runs it Count + 1 times, adding fixed increments to the memory addresses
+  each time. It's a loop built into the hardware. File: <code>accelerator.py</code>.</dd>
+  <dt>SIMD (Single Instruction, Multiple Data)</dt>
+  <dd>On every step all PEs get the <em>same</em> instruction, but each works on <em>different</em> data from MEM0.</dd>
+  <dt>Mode and lanes</dt>
+  <dd>A 32-bit word can be read as one 32-bit number, two 16-bit numbers, or four 8-bit numbers.
+  Each sub-number is a <dfn>lane</dfn>. The <dfn>mode</dfn> (INT8, INT16 or INT32) says which reading to use.
+  In INT8 mode one PE does four multiplies at once.</dd>
+</dl>
+
+<h3>How it computes y = M·v</h3>
+<p>Each lane of each PE owns one <strong>row</strong> of M. On step <i>c</i>, every lane multiplies its row's entry
+M[row][c] by the <em>same</em> v[c] and adds the product to its accumulator. That's why the MEM1 value is broadcast
+to every PE and repeated into every lane: all rows need v[c] at the same moment. After the last column,
+each accumulator lane holds one entry of y. <code>OUT</code> copies those into the output register, and
+<code>WRITE</code> stores every PE's output into MEM2. When M has more rows than there are lanes, the
+compiler repeats the whole sequence for the next block of rows.</p>
+
+<!-- ============================================================ 2 -->
+<h2 id="s2"><span class="num">2</span> Your toolbox <span class="time">15 min</span>
+  <label class="mark"><input type="checkbox" data-done="s2"> done</label></h2>
+
+<p>There are five tools. Everything is already installed and built on this Mac. Open a card when something
+confuses you.</p>
+
+<details><summary>Terminal and paths</summary>
+<p><code>~</code> means your home folder. Every command in this tutorial runs from the project root unless it says
+otherwise, so start each session with:</p>
+<pre class="cmd"><code>cd ~/ee271-project</code></pre>
+<p><code>pwd</code> prints where you are and <code>ls</code> lists what's here. A path like <code>part1/src</code>
+(no leading <code>/</code> or <code>~</code>) is relative to wherever you currently are.</p>
+</details>
+
+<details><summary>conda environment: a private Python for this project</summary>
+<p>A <dfn>conda environment</dfn> is a folder with its own copy of Python and libraries, kept apart from the
+rest of your computer. This one has Python 3.13.5, <code>bitstring</code> and <code>numpy</code>, at the
+versions the staff pinned in <code>part1/requirements.yml</code>. It lives at
+<code>part1/ee271-conda-env/</code>. Git ignores that folder, and each partner builds their own with
+<code>make setup</code>.</p>
+<p>The <code>make</code> commands use it automatically. To use it by hand (for example to follow the
+handout or an Ed post):</p>
+<pre class="cmd"><code>conda activate ./part1/ee271-conda-env
+which python        # should end in part1/ee271-conda-env/bin/python
+conda deactivate    # when done</code></pre>
+</details>
+
+<details><summary>make: named shortcuts</summary>
+<p>A <dfn>Makefile</dfn> is a list of named commands. Plain <code>make</code> lists ours, and <code>make test</code>
+runs one of them. Each test script exits with its number of failures, and make reports that as
+<code>Error 3</code>. That means "3 tests failed", not that make itself broke.</p>
+</details>
+
+<details><summary>git: snapshots and sharing</summary>
+<p>Git keeps <dfn>commits</dfn>: snapshots of the whole folder, each with a message. This folder is already a
+repo. Its history is the empty start, then the staff starter code imported into <code>part1/</code>, then
+this setup. Day to day you'll use:</p>
+<pre class="cmd"><code>git status                         # what changed, which branch
+git diff                           # the exact lines you changed
+git add -A &amp;&amp; git commit -m "PE: MAC for INT32"   # save a snapshot
+git log --oneline -10              # recent history</code></pre>
+<p><code>part1/</code> is a copy of the staff's repo, and <code>make update-starter</code> pulls in any fixes they push.
+Working with your partner is covered in <a href="#s6">step 6</a>.</p>
+</details>
+
+<details><summary>Editor: VS Code or Cursor</summary>
+<pre class="cmd"><code>code ~/ee271-project      # or: cursor ~/ee271-project</code></pre>
+<p>The repo ships settings, so the editor uses the conda Python and can find <code>src</code>. If the status bar shows
+a different Python, press <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>, choose "Python: Select Interpreter" and pick the one
+inside <code>part1/ee271-conda-env</code>. Debugging is in <a href="#s5">step 5</a>.</p>
+</details>
+
+<div class="callout do"><span class="tag">Do</span>
+<pre class="cmd"><code>cd ~/ee271-project
+make
+make test</code></pre></div>
+<div class="callout see"><span class="tag">You should see</span>
+<p>A list of shortcuts, then 3 test files' results: 16 failures and 3 "passed" lines, all of them the CLR tests.
+They pass only because an empty PE outputs zeros, and zero is what CLR should produce. So a passing test is
+evidence, not proof. Staff also grade with <strong>private tests</strong> using other values and sequences.</p></div>
+
+<details><summary>The official way (what the handout and Ed posts assume)</summary>
+<p>These still work, because <code>part1/</code> keeps the staff layout exactly:</p>
+<pre class="cmd"><code>cd ~/ee271-project/part1
+conda activate ./ee271-conda-env
+cd test &amp;&amp; make run_tests
+cd .. &amp;&amp; make generate_submission</code></pre>
+<p>Skip the handout's <code>kinit</code>, <code>aklog</code>, <code>tcsh</code> and <code>load_modules.sh</code> lines. They're
+for the caddy cluster, which is down anyway, and staff said to do Part 1 locally (Ed #219).</p>
+</details>
+
+<!-- ============================================================ 3 -->
+<h2 id="s3"><span class="num">3</span> Read the starter code with a map <span class="time">20 min</span>
+  <label class="mark"><input type="checkbox" data-done="s3"> done</label></h2>
+
+<pre><code>matrix M, vector v ──► compiler.py ──► memory images (MEM0, MEM1) + assembly text
+assembly text ───────► assembler.py ─► Instruction objects (instruction.py)
+Instruction objects ─► <b>accelerator.py</b> ─► <b>main_buffer.py</b> + <b>processing_element.py</b> × PE_COUNT
+the tests: build a config → compile → assemble → run <em>your</em> code → compare with numpy</code></pre>
+
+<p>Bold files are yours. Read the others in this order.</p>
+
+<h3>1. <code>instruction.py</code> (skim, 5 min)</h3>
+<p>An instruction is a fixed-width string of bits split into <dfn>fields</dfn>. Each class stores the bits and
+has <code>get_…()</code> methods that return one field as a <code>Bits</code> slice. Add <code>.uint</code> to get a Python int.
+Fields are listed left to right, most significant first.</p>
+<div class="small">PE instruction (9 bits)</div>
+<div class="fields"><span class="pe">opcode<b>2</b></span><span class="pe">mode<b>2</b></span><span class="pe">value<b>5</b></span></div>
+<div class="small">Memory instruction (N = counter width: 16 in the accelerator test, 10 in the buffer test)</div>
+<div class="fields"><span class="mem">opcode<b>2</b></span><span class="mem">mode<b>2</b></span><span class="mem">MemAOffset<b>N</b></span><span class="mem">MemBOffset<b>N</b></span></div>
+<div class="small">Full instruction, what the controller receives</div>
+<div class="fields"><span class="mem">memory instr</span><span class="pe">PE instr</span><span class="ctl">Count<b>N</b></span><span class="ctl">MemAIncrement<b>1</b></span><span class="ctl">MemBIncrement<b>1</b></span></div>
+
+<div class="callout watch"><span class="tag">Two things that trip people</span>
+<ul>
+<li><strong>PE opcodes come in two levels.</strong> An opcode field of <code>0</code> (named <code>NO_VALUE</code>) means
+"look in the Value field": MAC=0, NOP=1, OUT=2, PASS=3, CLR=4. An opcode field of <code>1</code> is RND, and then
+Value is the shift amount <i>s</i>. That's why <code>PEI.MAC</code> and <code>PEI.NO_VALUE</code> are both 0, and
+<code>PEI.NOP</code> and <code>PEI.RND</code> are both 1.</li>
+<li><strong>Mode is stored as a code:</strong> 0 = INT8, 1 = INT16, 2 = INT32. <code>Mode.bitwidth(code)</code> converts it,
+and <code>get_mode_bitwidth()</code> on a PE instruction does that for you.</li>
+</ul></div>
+
+<h3>2. <code>assembler.py</code> (skim, 3 min)</h3>
+<p>Turns text like <code>READ INT16 0 0 | MAC INT16 | 3 1 1</code> into an <code>Instruction</code>. The three parts
+separated by <code>|</code> are the memory op, the PE op, and "count incA incB". It stores <em>count − 1</em>,
+which is why the controller runs the instruction Count + 1 times.</p>
+
+<h3>3. <code>compiler.py</code>: run it, don't read it</h3>
+<p><code>make tour</code> shows its output on a problem small enough to read.</p>
+
+<h3>4. One test (3 min)</h3>
+<p>Open <code>part1/test/test_processing_element.py</code> and read <code>test_mac_int32</code>. Every test follows the same
+pattern: build a configuration, construct your class, feed it inputs, run a few assembled instructions, and
+compare the result with an answer worked out by hand. Predict the expected output before you read it.</p>
+
+<h3>5. Your three files</h3>
+<p>Look for <code># START IMPLEMENTATION … # Your Code Here … # END IMPLEMENTATION</code>. Everything else in those
+files is given (constructors, getters, setters). Read those parts, because they name the state you'll work with:
+<code>self._acc_value</code>, <code>self._output_value</code>, <code>self._mem0_output_port</code>,
+<code>self._pe_array</code>, and so on.</p>
+
+<div class="callout do"><span class="tag">Do</span>
+<pre class="cmd"><code>make tour</code></pre></div>
+<div class="callout see"><span class="tag">You should see</span>
+<p>Six sections: the math problem, the machine's sizes, what's in MEM0 and MEM1, the decoded program,
+what MEM2 should hold at the end, and your accelerator's result (all zeros for now).</p></div>
+<p>Answer these from the output, and tick each one when you can explain it to your partner:</p>
+<ul class="q">
+  <li><input type="checkbox" data-done="q1"><span>In INT16 mode with 2 PEs, how many rows of M does one pass handle? Why that number?</span></li>
+  <li><input type="checkbox" data-done="q2"><span>Find v[2] in MEM1: which address, which lane? MAC step <i>c</i> uses MemBOffset = <i>c</i>.
+    What does that tell you about which offset bits choose the address and which choose the lane?</span></li>
+  <li><input type="checkbox" data-done="q3"><span>Instruction [1] says count 3. What Count is stored, and which (A, B) offsets does each repetition use?</span></li>
+  <li><input type="checkbox" data-done="q4"><span>Run <code>make tour ARGS="--mode INT8 --pes 1 --cols 6"</code> and answer the v[c] question again for INT8.</span></li>
+  <li><input type="checkbox" data-done="q5"><span>In MEM0, row 0 of each block sits in the leftmost lane of word 0. In MEM2, y[0] is also leftmost.
+    What does that suggest about which PE should read which 32-bit slice of the MEM0 word?</span></li>
+</ul>
+
+<!-- ============================================================ 4 -->
+<h2 id="s4"><span class="num">4</span> Bits and numbers the spec assumes <span class="time">25 min</span>
+  <label class="mark"><input type="checkbox" data-done="s4"> done</label></h2>
+
+<p>Python integers have no fixed size, but hardware registers do. Most of Part 1 is careful pretending that
+Python numbers are exactly 8, 16, 32 or 64 wires wide. The starter does this with the <code>bitstring</code>
+library's <code>Bits</code> type. Start a prompt with everything loaded, then type the lines after
+<code>&gt;&gt;&gt;</code>:</p>
+<pre class="cmd"><code>make repl</code></pre>
+
+<h3>4.1 One bit pattern, two readings</h3>
+<pre class="repl"><code>&gt;&gt;&gt; x = Bits(int=-3, length=8)
+&gt;&gt;&gt; x.bin, x.hex
+<span class="out">('11111101', 'fd')</span>
+&gt;&gt;&gt; x.int, x.uint
+<span class="out">(-3, 253)</span></code></pre>
+<p><code>Bits</code> stores only the 8 bits. <code>.int</code> reads them as signed (two's complement) and <code>.uint</code>
+as unsigned. The spec says every lane is <strong>signed</strong>.</p>
+
+<h3>4.2 Two's complement in one rule</h3>
+<p>In <i>w</i> bits, the top bit is worth −2<sup>w−1</sup> instead of +2<sup>w−1</sup>. That gives a range of
+−2<sup>w−1</sup> to 2<sup>w−1</sup>−1, which is exactly the limits OUT clamps to.</p>
+<table><tr><th>width</th><th>min</th><th>max</th></tr>
+<tr><td>8</td><td>−128</td><td>127</td></tr>
+<tr><td>16</td><td>−32,768</td><td>32,767</td></tr>
+<tr><td>32</td><td>−2,147,483,648</td><td>2,147,483,647</td></tr></table>
+
+<h3>4.3 Sign extension: making a number wider</h3>
+<p>To widen a signed number without changing its value, copy its sign bit into all the new top bits.
+Filling them with zeros instead (<dfn>zero extension</dfn>) only works for unsigned numbers.</p>
+<pre class="repl"><code>&gt;&gt;&gt; Bits(int=x.int, length=16).hex     # sign-extended: still -3
+<span class="out">'fffd'</span>
+&gt;&gt;&gt; Bits(uint=x.uint, length=16).int   # zero-extended: now 253, wrong for signed
+<span class="out">253</span></code></pre>
+<p>The spec has PASS sign-extend each input lane into its wider accumulator lane.</p>
+
+<h3>4.4 Lanes, packing, and which end is lane 0</h3>
+<pre class="repl"><code>&gt;&gt;&gt; w = Bits().join([Bits(int=v, length=8) for v in [1, 2, 3, -4]])
+&gt;&gt;&gt; w.hex
+<span class="out">'010203fc'</span>
+&gt;&gt;&gt; [p.int for p in w.cut(8)]
+<span class="out">[1, 2, 3, -4]</span>
+&gt;&gt;&gt; w[-8:].int      # the last 8 bits = the least significant lane
+<span class="out">-4</span></code></pre>
+<div class="lanes" role="img" aria-label="32-bit word 0x010203fc split into four 8-bit lanes">
+  <div class="top">bits 31–24</div><div class="top">23–16</div><div class="top">15–8</div><div class="top">7–0</div>
+  <div class="box l3">lane 3<br><b>0x01 = 1</b></div><div class="box l2">lane 2<br><b>0x02 = 2</b></div>
+  <div class="box l1">lane 1<br><b>0x03 = 3</b></div><div class="box l0">lane 0<br><b>0xfc = −4</b></div>
+  <div class="bot">w[0:8]</div><div class="bot">w[8:16]</div><div class="bot">w[16:24]</div><div class="bot">w[24:32]</div>
+</div>
+<p><code>join</code> puts its <em>first</em> item in the most significant position, and <code>cut</code> hands pieces
+back most significant first. The spec counts lanes from the <em>least</em> significant end (lane 0 here and in the
+tour), so lane 0 is the <em>last</em> piece <code>cut</code> gives you.</p>
+<div class="callout watch"><span class="tag">Watch out</span>
+<p>Getting lane order backwards is the classic bug, and in some modes the public tests may not catch it.
+Other operations you'll want: <code>a + b</code> concatenates (with <code>a</code> on the left), <code>b * 4</code> repeats a
+pattern 4 times, and <code>len(b)</code> is the width.</p></div>
+
+<h3>4.5 Bit-slice notation vs bitstring indexes</h3>
+<p>The handout writes <code>MemBOffset[MSB:1]</code> and <code>MemBOffset[1:0]</code>. That's hardware (Verilog) notation:
+bit 0 is the <strong>least</strong> significant bit, and <code>[hi:lo]</code> includes both ends. For x = 13 = <code>0b1101</code>:</p>
+<table><tr><th>notation</th><th>bits</th><th>value</th><th>in words</th></tr>
+<tr><td><code>x[0]</code></td><td>1</td><td>1</td><td>lowest bit</td></tr>
+<tr><td><code>x[1:0]</code></td><td>01</td><td>1</td><td>lowest two bits</td></tr>
+<tr><td><code>x[MSB:1]</code></td><td>110</td><td>6</td><td>everything except the lowest bit</td></tr>
+<tr><td><code>x[MSB:2]</code></td><td>11</td><td>3</td><td>everything except the lowest two</td></tr></table>
+<p>bitstring indexes run the <em>other</em> way: index 0 is the most significant (leftmost) bit.</p>
+<pre class="repl"><code>&gt;&gt;&gt; o = Bits(uint=13, length=4)
+&gt;&gt;&gt; o.bin
+<span class="out">'1101'</span>
+&gt;&gt;&gt; o[0], o[-1]       # o[0] is the MSB here, not "bit 0"
+<span class="out">(True, True)</span></code></pre>
+<p>Both happen to be 1 here, which is exactly how this bug hides. It's often clearer to take <code>.uint</code> and use
+integer math: dropping the lowest <i>k</i> bits is <code>x &gt;&gt; k</code>, and keeping only the lowest <i>k</i> bits is
+<code>x &amp; (2**k - 1)</code>.</p>
+
+<h3>4.6 Too big for the box: clamp or wrap</h3>
+<pre class="repl"><code>&gt;&gt;&gt; Bits(int=200, length=8)
+<span class="out">ValueError: Value 200 does not fit in 8 signed bits.</span></code></pre>
+<p><code>Bits</code> refuses values that don't fit, so whenever a result might be too wide, you have to decide what
+happens <em>before</em> building the <code>Bits</code>:</p>
+<ul>
+<li><dfn>Clamp</dfn> (also called <dfn>saturate</dfn>): stick at the nearest limit. In 8 bits, 200 → 127 and −300 → −128. This is what <strong>OUT</strong> does.</li>
+<li><dfn>Wrap</dfn>: keep only the low <i>w</i> bits, like a real adder does. In 8 bits, 127 + 1 → −128.</li>
+</ul>
+<p>The spec says MAC "does not saturate". Agree with your partner on what that means for an accumulator lane that
+overflows, and write a test for it. If you do math on a whole packed word as one big integer, a carry out of one lane
+leaks into the next. That's why the spec says to do the arithmetic independently in each lane.</p>
+
+<h3>4.7 Dividing by 2<sup>s</sup>, rounding ties to even</h3>
+<p>RND divides each accumulator lane by 2<sup>s</sup> and rounds to the nearest integer. When the result is exactly
+halfway, it goes to the <em>even</em> neighbor ("banker's rounding"). With s = 2:</p>
+<table><tr><th>lane</th><th>÷ 4</th><th>result</th></tr>
+<tr><td>9</td><td>2.25</td><td>2</td></tr><tr><td>11</td><td>2.75</td><td>3</td></tr>
+<tr><td>10</td><td>2.5 (tie)</td><td>2 (even)</td></tr><tr><td>14</td><td>3.5 (tie)</td><td>4 (even)</td></tr>
+<tr><td>−10</td><td>−2.5 (tie)</td><td>−2 (even)</td></tr></table>
+<div class="callout watch"><span class="tag">Python facts that matter here</span>
+<ul>
+<li><code>round()</code> on floats already rounds ties to even: <code>round(2.5) == 2</code> and <code>round(-2.5) == -2</code>.</li>
+<li>But a float holds only 53 bits exactly, and the accumulator is 64: <code>float(2**53 + 1) == 2**53</code> is <code>True</code>. Integer-only math avoids this.</li>
+<li><code>//</code> and <code>&gt;&gt;</code> round toward minus infinity, not toward zero: <code>-7 // 2 == -4</code> and <code>-7 &gt;&gt; 1 == -4</code>.</li>
+</ul></div>
+
+<h3>4.8 Bits can't be edited in place</h3>
+<pre class="repl"><code>&gt;&gt;&gt; x[0] = 1
+<span class="out">TypeError: 'Bits' object does not support item assignment</span></code></pre>
+<p>Build a new <code>Bits</code> and assign it back to the attribute (for example <code>self._acc_value = …</code>).
+<code>==</code> compares two <code>Bits</code> bit pattern by bit pattern, which is how the tests check you.</p>
+
+<!-- ============================================================ 5 -->
+<h2 id="s5"><span class="num">5</span> Change, test, debug <span class="time">10 min</span>
+  <label class="mark"><input type="checkbox" data-done="s5"> done</label></h2>
+
+<p><strong>Suggested order:</strong> the PE (<code>make test-pe</code>) and the main buffer (<code>make test-buffer</code>) don't
+depend on each other, so partners can split them. Then do the accelerator together (<code>make test-accel</code>, <code>make tour</code>).
+Inside the PE, <code>execute_instruction</code> decodes the instruction and calls the right <code>_handle_…</code> method.</p>
+
+<h3>Three ways to see what your code is doing</h3>
+<ol>
+<li><strong>print:</strong> <code>print(f"{self._acc_value=}")</code>. The <code>=</code> prints the name along with the value.
+Remove these before you submit.</li>
+<li><strong>The tour on tiny problems:</strong> <code>make tour ARGS="--rows 4 --cols 2 --trace"</code> prints every PE's
+accumulator and output lanes after each instruction.</li>
+<li><strong>Breakpoints:</strong> in VS Code or Cursor, open <code>part1/src/processing_element.py</code> and click just left of a
+line number inside <code>execute_instruction</code> to place a red dot. Open Run and Debug (<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>),
+choose <b>Test: processing element</b>, and press <kbd>F5</kbd>. When it stops, the Variables pane shows <code>self</code>
+and <code>instruction</code>, and the Debug Console evaluates expressions like <code>instruction.get_value().uint</code>.
+<kbd>F10</kbd> runs the next line, <kbd>F11</kbd> steps into a call, <kbd>F5</kbd> continues, and <kbd>Shift</kbd>+<kbd>F5</kbd> stops.</li>
+</ol>
+
+<h3>Your own tests</h3>
+<p><code>part1/test/test_ours.py</code> has small helpers (<code>pack</code>, <code>run_pe</code>, <code>check</code>) and one example built
+straight from the spec. Run it with <code>make test-ours</code>, and grow it from the edge-case list in
+<code>docs/spec-notes.md</code>. It isn't submitted, because the zip contains only <code>src/</code>.</p>
+
+<div class="callout do"><span class="tag">Do</span>
+<p>Open the repo in your editor, set a breakpoint in <code>execute_instruction</code>, and run
+<b>Test: processing element</b> under the debugger. Look at <code>instruction.get_opcode().uint</code> and
+<code>instruction.get_value().uint</code> in the Debug Console for a couple of the test's instructions.</p>
+<pre class="cmd"><code>code ~/ee271-project</code></pre></div>
+
+<!-- ============================================================ 6 -->
+<h2 id="s6"><span class="num">6</span> Team, AI log, submit <span class="time">10 min</span>
+  <label class="mark"><input type="checkbox" data-done="s6"> done</label></h2>
+
+<h3>Share the repo (once)</h3>
+<p>When your partner has a GitHub account:</p>
+<pre class="cmd"><code>scripts/share-on-github.sh &lt;partner-github-username&gt;</code></pre>
+<p>This creates a <strong>private</strong> GitHub repo, pushes everything, and invites them. They then run
+<code>git clone …</code>, <code>make setup</code> and <code>make test</code> (see <code>README.md</code>). Keep it private: the honor code
+forbids letting other students see your code.</p>
+
+<h3>Work so you both understand everything</h3>
+<p>One of you takes the PE and the other the main buffer, then you write the accelerator together. Use a short branch
+and a pull request for each piece so the other person reads every change. The oral quiz can ask either of you
+about any line. The commands and how to handle conflicts are in <code>docs/WORKFLOW.md</code>.</p>
+
+<h3>Keep the AI log</h3>
+<p>AI is allowed on any part (Ed #207), but the final report needs a one-page reflection on how it went. Add a few lines
+to <code>docs/ai-log.md</code> whenever an AI tool does something real.</p>
+
+<h3>Submit</h3>
+<pre class="cmd"><code>make test        # everything passes
+make test-ours   # and your own edge cases
+make submit      # builds part1/assignment1.zip and lists what's in it</code></pre>
+<p>Upload <code>part1/assignment1.zip</code> to Gradescope and add your partner to the submission. The deadline is
+<b>Fri Nov 13, 11:59 PM PST</b>, with no extensions because Part 2 builds on Part 1 (Ed #204). Late days still exist: per the
+syllabus, a pair spends one from <em>each</em> partner per 24 hours.</p>
+<div class="callout watch"><span class="tag">Before you submit</span>
+<p>Check Ed #212 for a staff answer to two open questions. (1) In one instruction with both WRITE and OUT, does WRITE
+store the old output or the new one? (2) Can a READ's MEM1 offset go out of range in INT32 mode?</p></div>
+
+<!-- ============================================================ cheat -->
+<h2 id="cheat">Cheat sheet</h2>
+<table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>make setup</code></td><td>build the conda environment (once per machine)</td></tr>
+<tr><td><code>make test</code></td><td>all public tests. Single files: <code>make test-pe</code>, <code>make test-buffer</code>, <code>make test-accel</code></td></tr>
+<tr><td><code>make test-ours</code></td><td>your extra tests in <code>part1/test/test_ours.py</code></td></tr>
+<tr><td><code>make tour ARGS="--mode INT8 --trace"</code></td><td>tiny worked problem with PE state after each step. Also <code>--rows --cols --pes --seed</code></td></tr>
+<tr><td><code>make repl</code></td><td>Python prompt with <code>Bits</code>, <code>PEI</code>, <code>MI</code>, <code>Mode</code>, <code>Assembler</code> loaded</td></tr>
+<tr><td><code>make submit</code></td><td>build <code>part1/assignment1.zip</code></td></tr>
+<tr><td><code>make update-starter</code></td><td>pull staff fixes into <code>part1/</code> (commit your work first)</td></tr>
+<tr><td><code>git status</code> / <code>git diff</code></td><td>what changed</td></tr>
+<tr><td><code>git add -A &amp;&amp; git commit -m "…"</code></td><td>save a snapshot</td></tr>
+<tr><td><code>git pull</code> / <code>git push</code></td><td>get your partner's work / share yours</td></tr>
+</table>
+<table>
+<tr><th>Bits</th><th></th></tr>
+<tr><td><code>Bits(int=v, length=w)</code>, <code>Bits(uint=v, length=w)</code></td><td>make a w-bit value (ValueError if it doesn't fit)</td></tr>
+<tr><td><code>.int</code> / <code>.uint</code> / <code>.bin</code> / <code>.hex</code> / <code>len(b)</code></td><td>read it back</td></tr>
+<tr><td><code>b.cut(w)</code></td><td>split into w-bit pieces, <b>most significant first</b></td></tr>
+<tr><td><code>Bits().join([...])</code>, <code>a + b</code>, <code>b * n</code></td><td>pack (first item = most significant), concatenate, repeat</td></tr>
+<tr><td><code>b[i:j]</code>, <code>b[-w:]</code></td><td>slices. Index 0 is the <b>MSB</b>, so <code>b[-w:]</code> is the lowest w bits</td></tr>
+</table>
+
+<h3>Looking ahead</h3>
+<p>Part 2 (out Nov 13) is this same machine in SystemVerilog, synthesized with the Synopsys tools on caddy once
+Farmshare is back. Import it with <code>make update-starter PART=part2</code>. Your Python simulator becomes the reference
+the RTL is checked against, so a careful Part 1 pays off twice.</p>
+
+<footer>Written 2026-11-08 from the Part 1 handout, the starter code (upstream commit af1299c) and Ed posts #204, #207,
+#210, #212, #219 and #220. Every snippet output above was run against this repo's conda environment.</footer>
+</main>
+</div>
+<script>
+(function () {
+  var KEY = "ee271-p1-tutorial";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function paint() {
+    document.querySelectorAll("[data-step]").forEach(function (el) {
+      el.classList.toggle("done", !!state[el.getAttribute("data-step")]);
+    });
+  }
+  document.querySelectorAll("input[data-done]").forEach(function (cb) {
+    var k = cb.getAttribute("data-done");
+    cb.checked = !!state[k];
+    cb.addEventListener("change", function () { state[k] = cb.checked; save(); paint(); });
+  });
+  paint();
+  document.querySelectorAll("pre.cmd").forEach(function (pre) {
+    var b = document.createElement("button");
+    b.className = "copy"; b.type = "button"; b.textContent = "copy";
+    b.addEventListener("click", function () {
+      var text = pre.querySelector("code").innerText.split("\n")
+        .map(function (l) { return l.replace(/\s+#.*$/, ""); }).join("\n").trim();
+      var done = function () { b.textContent = "copied"; setTimeout(function () { b.textContent = "copy"; }, 1200); };
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () {});
+    });
+    pre.appendChild(b);
+  });
+  var root = document.documentElement, t = document.getElementById("theme");
+  try { var saved = localStorage.getItem(KEY + "-theme"); if (saved) root.setAttribute("data-theme", saved); } catch (e) {}
+  t.addEventListener("click", function () {
+    var dark = root.getAttribute("data-theme") ? root.getAttribute("data-theme") === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+    var next = dark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem(KEY + "-theme", next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
