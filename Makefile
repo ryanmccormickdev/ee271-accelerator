@@ -8,7 +8,7 @@ PART ?= part1
 PY   := $(CURDIR)/$(PART)/ee271-conda-env/bin/python
 N    := $(patsubst part%,%,$(PART))
 
-.PHONY: help setup test test-pe test-buffer test-accel test-ours tour repl submit update-starter _env
+.PHONY: help setup test test-pe test-buffer test-accel test-ours tour repl submit update-starter walkthrough walkthrough-check _env
 
 help:
 	@echo "make setup           build the Python environment for $(PART) (run once per machine)"
@@ -21,6 +21,7 @@ help:
 	@echo "make repl            Python prompt with Bits and the instruction classes preloaded"
 	@echo "make submit          build $(PART)/assignment$(N).zip for Gradescope"
 	@echo "make update-starter  pull any staff fixes to the starter code into $(PART)"
+	@echo "make walkthrough     rebuild docs/walkthrough.html (after a starter update)"
 
 setup:
 	@scripts/setup.sh $(PART)
@@ -60,3 +61,13 @@ submit:
 
 update-starter:
 	@scripts/pull-starter.sh $(PART)
+
+# The animated walkthrough (docs/walkthrough.html) is built from docs/walkthrough-src/.
+walkthrough:
+	@if [ -x "$(PY)" ]; then "$(PY)" docs/walkthrough-src/trace_values.py part1 docs/walkthrough-src/values.json; \
+	 else echo "(no conda env: reusing docs/walkthrough-src/values.json)"; fi
+	@python3 docs/walkthrough-src/build.py
+
+walkthrough-check: _env
+	@"$(PY)" docs/walkthrough-src/dump_fixtures.py part1 docs/walkthrough-src/fixtures.json
+	@node docs/walkthrough-src/test_model.js

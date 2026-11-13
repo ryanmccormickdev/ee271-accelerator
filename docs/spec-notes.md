@@ -55,9 +55,12 @@ Memory opcodes are `MI.READ = 0`, `MI.WRITE = 1`, `MI.NOP = 2`.
 - [ ] Every PE gets the **same** PE instruction (that's the SIMD part) but its **own** slice of the MEM0 word.
       All PEs get the same MEM1 word.
 - [ ] The PE outputs, concatenated, form the MEM2 input port.
-- [ ] Our decisions (argue them from the compiler's packing, `make tour`):
-  - which PE reads which 32-bit slice of the MEM0 word, and where each PE's output lands in the MEM2 word;
-  - the order inside one repetition (look at `READ … | MAC …` in the compiler's program).
+- [ ] **Order inside one repetition:** the memory instruction first (READ fills the ports), then feed the PEs, then the
+      PEs execute, then put the PE outputs on MEM2's input port. Staff confirmed that READ supplies the operands to its
+      paired PE operation in the same repetition (Ed #221).
+- [ ] Our decision: which PE reads which 32-bit slice of the MEM0 word. Whatever we pick, each PE's output has to land
+      in the **same position** of the MEM2 word, because the compiler packs rows left to right and
+      `extract_results_from_memory` reads them back left to right (walkthrough, Controller tab).
 
 ## Edge cases worth our own tests
 
@@ -66,7 +69,17 @@ negative (e.g. 2.5 and −2.5 in the scaled value). RND with s = 0. PASS of a ne
 would overflow a 16-bit INT8 accumulator lane. OUT followed by more MACs (the accumulator must survive).
 RND or PASS between two OUTs (the output must survive). Switching modes between instructions.
 
-## What staff have said (Ed, as of Nov 8)
+Two gaps in the public tests worth covering ourselves:
+
+- The public READ tests only ever select **lane 0** of a MEM1 word (`READ INT16 130 26`: 26 is even; `READ INT8 130 24`:
+  24 ends in binary 00). A buffer that always takes the low lane passes them. Test the high half and bytes 1–3.
+- A wrong repetition order (PEs before memory) loses each block's last column. A test whose vector ends in 0 can't
+  see that, because the lost product is zero.
+
+The walkthrough's PE playground (`docs/walkthrough.html`, Processing element tab) has every public PE test plus these
+edge cases as ready-made examples, with the expected register values.
+
+## What staff have said (Ed, as of Nov 9)
 
 - **#219 Farmshare is down.** Part 1 is Python only, so do it locally in a conda environment.
 - **#220 Clone "Permission denied (publickey)":** add your SSH key at code.stanford.edu → Preferences → SSH Keys.
@@ -75,6 +88,10 @@ RND or PASS between two OUTs (the output must survive). Switching modes between 
 - **#204** Part 2 requires a working part 1, so there are **no extensions for part 1**. A project review session is on Fri Nov 13.
 - **#210** Pairs can submit as a group (individual submissions are also OK).
 - **#208** Oral exam format is still being decided.
-- **Open, no staff answer yet (#212):** (1) In one instruction with both `WRITE` and `OUT` (e.g. `WRITE 3 | OUT INT16 | 1 0 0`),
-  does WRITE store the output from before the OUT or after? (2) Can READ's MemBOffset go past MEM1's depth in INT32 mode?
-  Check back before submitting.
+- **#221 (also answers #212), Nov 9:** "Please follow the provided compiler's convention: READ supplies the operands to
+  its paired PE operation, while WRITE is paired with a PE NOP. To prepare the PE output before writing it to memory,
+  issue the necessary PE instructions paired with a memory NOP first, then issue WRITE. Combined WRITE + OUT does not
+  have required behavior and will not be graded. Similarly, out-of-range addresses will not be tested."
+- **#224** The EDA tools for later parts are on the old caddy cluster (`caddyXX.stanford.edu`), reached over ssh. Staff
+  recommend connecting from a Farmshare OnDemand desktop so the GUI tools work without X-forwarding.
+- **#219** The Gradescope submission for part 1 isn't open yet; staff say it will open soon.

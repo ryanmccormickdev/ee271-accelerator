@@ -12,6 +12,11 @@ Our team repo for the EE271 (Fall 2026) course project. It holds all parts in on
 **New here? Open [`docs/tutorial.html`](docs/tutorial.html) in a browser** (`open docs/tutorial.html`).
 It walks through the setup, the code, and the bit-level ideas you'll need.
 
+**To see what the machine actually does, open [`docs/walkthrough.html`](docs/walkthrough.html).** It's an
+animated, step-by-step run of a small matrix through the whole accelerator, plus a hands-on page for each
+component. Its **Read the code** tab shows every starter file block by block, with the matching explanation,
+real variable values and notes on the Python beside each block.
+
 ## Quick start (each partner, once per computer)
 
 Needs `git`, `make` and conda. Any of Miniforge, Miniconda or Anaconda works; `make setup`
@@ -48,6 +53,7 @@ ee271-project/
 ├── playground/tour.py     readable walkthrough / mini-debugger (not submitted)
 ├── docs/
 │   ├── tutorial.html      orientation tutorial
+│   ├── walkthrough.html   animated walkthrough of the hardware (built from walkthrough-src/ by `make walkthrough`)
 │   ├── WORKFLOW.md        how we work together in git
 │   ├── spec-notes.md      spec checklist + clarifications from Ed/staff
 │   └── ai-log.md          running log for the required AI reflection

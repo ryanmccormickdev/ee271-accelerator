@@ -1,0 +1,812 @@
+{
+ "cfg_accel": {
+  "caption": "From running the starter code on the 6×3 example (INT16, 2 PEs):",
+  "rows": [
+   [
+    "accel_config.PE_COUNT",
+    "2"
+   ],
+   [
+    "accel_config.PE_CONFIG",
+    "ProcessingElementConfiguration(INPUT_BITWIDTH=32, ACCUMULATION_BITWIDTH=64, OUTPUT_BITWIDTH=32)"
+   ],
+   [
+    "accel_config.BUFFER_CONFIG",
+    "MainBufferConfiguration(MEM0_BITWIDTH=64, MEM0_DEPTH=65536, MEM1_BITWIDTH=32, MEM1_DEPTH=16384, MEM2_BITWIDTH=64, MEM2_DEPTH=65536)"
+   ]
+  ]
+ },
+ "cfg_inst": {
+  "caption": "From running the starter code on the 6×3 example (INT16, 2 PEs):",
+  "rows": [
+   [
+    "inst_config.MEMORY_INST_CONFIG",
+    "MemoryInstructionConfiguration(OPCODE_BITWIDTH=2, MODE_BITWIDTH=2, MEMA_OFFSET_BITWIDTH=16, MEMB_OFFSET_BITWIDTH=16)"
+   ],
+   [
+    "inst_config.PE_INST_CONFIG",
+    "ProcessingElementInstructionConfiguration(OPCODE_BITWIDTH=2, MODE_BITWIDTH=2, VALUE_BITWIDTH=5)"
+   ],
+   [
+    "inst_config.COUNT_BITWIDTH",
+    "16"
+   ],
+   [
+    "total bits per instruction",
+    "63"
+   ]
+  ]
+ },
+ "c_rows": {
+  "caption": "From running the starter code on the 6×3 example (INT16, 2 PEs):",
+  "rows": [
+   [
+    "matrix.shape",
+    "(6, 3)"
+   ],
+   [
+    "number_of_rows",
+    "4"
+   ],
+   [
+    "row_sub_comp_count",
+    "2"
+   ]
+  ]
+ },
+ "c_slice_b0": {
+  "caption": "Block 0, column 0 (a full block, so no padding):",
+  "rows": [
+   [
+    "sub_matrix_row, sub_matrix_col",
+    "(0, 0)"
+   ],
+   [
+    "sub_matrix",
+    "[1, 3, -2, 0]   (a numpy array, shape (4,))"
+   ],
+   [
+    "elem_count",
+    "4"
+   ]
+  ]
+ },
+ "c_col0": {
+  "caption": "The first pass (block 0, column 0):",
+  "rows": [
+   [
+    "sub_matrix_row, sub_matrix_col",
+    "(0, 0)"
+   ],
+   [
+    "sub_matrix",
+    "[1, 3, -2, 0]   (a numpy array, shape (4,))"
+   ],
+   [
+    "mem_entry",
+    "Bits 0x0001_0003_fffe_0000   (lanes, left to right: [1, 3, -2, 0])"
+   ],
+   [
+    "len(mem_entry)",
+    "64"
+   ]
+  ]
+ },
+ "c_slice_b1": {
+  "caption": "Block 1, column 0, before padding (only rows 4 and 5 exist):",
+  "rows": [
+   [
+    "sub_matrix_row, sub_matrix_col",
+    "(1, 0)"
+   ],
+   [
+    "sub_matrix",
+    "[2, -1]   (a numpy array, shape (2,))"
+   ],
+   [
+    "elem_count",
+    "2"
+   ]
+  ]
+ },
+ "c_pad_b1": {
+  "caption": "Block 1, column 0, after padding:",
+  "rows": [
+   [
+    "sub_matrix",
+    "[2, -1, 0, 0]   (a numpy array, shape (4,))"
+   ],
+   [
+    "mem_entry",
+    "Bits 0x0002_ffff_0000_0000   (lanes, left to right: [2, -1, 0, 0])"
+   ]
+  ]
+ },
+ "c_insts": {
+  "caption": "After both loops finish:",
+  "rows": [
+   [
+    "len(mem0_configs)",
+    "6"
+   ],
+   [
+    "instruction_list",
+    "[\n  'NOP | CLR INT16 | 1 0 0',\n  'READ INT16 0 0 | MAC INT16 | 3 1 1',\n  'NOP | OUT INT16 | 1 0 0',\n  'WRITE 0 | NOP INT16 | 1 0 0',\n  'NOP | CLR INT16 | 1 0 0',\n  'READ INT16 3 0 | MAC INT16 | 3 1 1',\n  'NOP | OUT INT16 | 1 0 0',\n  'WRITE 1 | NOP INT16 | 1 0 0',\n]"
+   ]
+  ]
+ },
+ "c_vcols": {
+  "caption": "From running the starter code on the 6×3 example (INT16, 2 PEs):",
+  "rows": [
+   [
+    "vector.shape",
+    "(3, 1)"
+   ],
+   [
+    "number_of_cols",
+    "2"
+   ],
+   [
+    "col_sub_comp_count",
+    "2"
+   ]
+  ]
+ },
+ "c_vslice0": {
+  "caption": "Entry 0 (v[0] and v[1]):",
+  "rows": [
+   [
+    "sub_vector_col",
+    "0"
+   ],
+   [
+    "sub_vector",
+    "[[2], [-1]]   (a numpy array, shape (2, 1))"
+   ]
+  ]
+ },
+ "c_vrev0": {
+  "caption": "Entry 0 after flatten and reverse (v[1] first, v[0] last):",
+  "rows": [
+   [
+    "sub_vector",
+    "[-1, 2]"
+   ]
+  ]
+ },
+ "c_vword0": {
+  "caption": "MEM1 entry 0:",
+  "rows": [
+   [
+    "mem_entry",
+    "Bits 0xffff_0002   (lanes, left to right: [-1, 2])"
+   ]
+  ]
+ },
+ "c_vslice1": {
+  "caption": "Entry 1 (v[2], plus one zero of padding):",
+  "rows": [
+   [
+    "sub_vector_col",
+    "1"
+   ],
+   [
+    "sub_vector",
+    "[[3], [0]]   (a numpy array, shape (2, 1))"
+   ]
+  ]
+ },
+ "c_vword1": {
+  "caption": "MEM1 entry 1:",
+  "rows": [
+   [
+    "mem_entry",
+    "Bits 0x0000_0003   (lanes, left to right: [0, 3])"
+   ]
+  ]
+ },
+ "c_ret": {
+  "caption": "From running the starter code on the 6×3 example (INT16, 2 PEs):",
+  "rows": [
+   [
+    "len(mem0_configs)",
+    "65536"
+   ],
+   [
+    "len(mem1_configs)",
+    "16384"
+   ],
+   [
+    "mem0_configs[6]  (the first padding entry)",
+    "Bits 0x0000_0000_0000_0000   (lanes, left to right: [0, 0, 0, 0])"
+   ],
+   [
+    "len(matrix)",
+    "6"
+   ]
+  ]
+ },
+ "a_mem_nop": {
+  "caption": "Line 0's memory part, NOP:",
+  "rows": [
+   [
+    "params",
+    "['NOP']"
+   ],
+   [
+    "opcode",
+    "[2]"
+   ],
+   [
+    "inst.get_instruction()",
+    "10 00 0000000000000000 0000000000000000"
+   ]
+  ]
+ },
+ "a_pe_op0": {
+  "caption": "Line 0's PE part, CLR INT16:",
+  "rows": [
+   [
+    "params[0]",
+    "'CLR'"
+   ],
+   [
+    "opcode",
+    "[0, 4]"
+   ]
+  ]
+ },
+ "a_pe_ret": {
+  "caption": "RND INT16 8, finished (opcode | mode | value):",
+  "rows": [
+   [
+    "inst.get_instruction()",
+    "01 01 01000"
+   ]
+  ]
+ },
+ "a_split": {
+  "caption": "From assembling the example program; this is line 1, READ INT16 0 0 | MAC INT16 | 3 1 1:",
+  "rows": [
+   [
+    "inst_str",
+    "'READ INT16 0 0 | MAC INT16 | 3 1 1'"
+   ],
+   [
+    "params",
+    "['READ INT16 0 0', 'MAC INT16', '3 1 1']"
+   ]
+  ]
+ },
+ "a_mem_parse": {
+  "caption": "The memory part of line 1:",
+  "rows": [
+   [
+    "mem_inst_str",
+    "'READ INT16 0 0'"
+   ],
+   [
+    "params",
+    "['READ', 'INT16', '0', '0']"
+   ]
+  ]
+ },
+ "a_mem_op": {
+  "caption": "The memory part of line 1:",
+  "rows": [
+   [
+    "params[0]",
+    "'READ'"
+   ],
+   [
+    "opcode",
+    "[0]"
+   ]
+  ]
+ },
+ "a_mem_read": {
+  "caption": "The memory part of line 1, READ INT16 0 0:",
+  "rows": [
+   [
+    "params",
+    "['READ', 'INT16', '0', '0']"
+   ],
+   [
+    "datatype",
+    "[16]"
+   ],
+   [
+    "Mode.opcode(datatype[0])",
+    "1"
+   ]
+  ]
+ },
+ "a_mem_ret": {
+  "caption": "READ INT16 0 0, finished (opcode | mode | MemAOffset | MemBOffset):",
+  "rows": [
+   [
+    "inst.get_instruction()",
+    "00 01 0000000000000000 0000000000000000"
+   ]
+  ]
+ },
+ "a_pe_parse": {
+  "caption": "The PE part of line 1:",
+  "rows": [
+   [
+    "pe_inst_str",
+    "'MAC INT16'"
+   ],
+   [
+    "params",
+    "['MAC', 'INT16']"
+   ]
+  ]
+ },
+ "a_pe_op1": {
+  "caption": "Line 1's PE part, MAC INT16:",
+  "rows": [
+   [
+    "params[0]",
+    "'MAC'"
+   ],
+   [
+    "opcode",
+    "[0, 0]"
+   ]
+  ]
+ },
+ "a_pe_mode": {
+  "caption": "MAC INT16 (opcode | mode | value):",
+  "rows": [
+   [
+    "datatype",
+    "[16]"
+   ],
+   [
+    "inst.get_instruction()",
+    "00 01 00000"
+   ]
+  ]
+ },
+ "a_sub": {
+  "caption": "From assembling the example program; this is line 1, READ INT16 0 0 | MAC INT16 | 3 1 1:",
+  "rows": [
+   [
+    "mem_inst.get_instruction()",
+    "00 01 0000000000000000 0000000000000000"
+   ],
+   [
+    "pe_inst.get_instruction()",
+    "00 01 00000"
+   ]
+  ]
+ },
+ "a_ctl": {
+  "caption": "From assembling the example program; this is line 1, READ INT16 0 0 | MAC INT16 | 3 1 1:",
+  "rows": [
+   [
+    "params",
+    "['3', '1', '1']"
+   ]
+  ]
+ },
+ "a_ret": {
+  "caption": "From assembling the example program; this is line 1, READ INT16 0 0 | MAC INT16 | 3 1 1:",
+  "rows": [
+   [
+    "inst.get_count().uint",
+    "2"
+   ],
+   [
+    "inst.get_mema_inc().uint",
+    "1"
+   ],
+   [
+    "inst.get_memb_inc().uint",
+    "1"
+   ],
+   [
+    "inst.get_instruction()",
+    "00 01 0000000000000000 0000000000000000 00 01 00000 0000000000000010 1 1"
+   ]
+  ]
+ },
+ "a_mem_write": {
+  "caption": "Line 3's memory part, WRITE 0:",
+  "rows": [
+   [
+    "params",
+    "['WRITE', '0']"
+   ],
+   [
+    "inst.get_instruction()  (before MemBOffset is set)",
+    "01 00 0000000000000000 0000000000000000"
+   ]
+  ]
+ },
+ "a_pe_rnd": {
+  "caption": "An extra line, RND INT16 8 (the example program has no RND):",
+  "rows": [
+   [
+    "params",
+    "['RND', 'INT16', '8']"
+   ],
+   [
+    "value",
+    "8"
+   ]
+  ]
+ },
+ "e_params": {
+  "caption": "With MEM2 as a correct accelerator leaves it for the 6×3 example:",
+  "rows": [
+   [
+    "elems_per_entry",
+    "4.0"
+   ],
+   [
+    "entries_to_read",
+    "2"
+   ]
+  ]
+ },
+ "e_loop0": {
+  "caption": "First pass of the loop:",
+  "rows": [
+   [
+    "mem_idx",
+    "0"
+   ],
+   [
+    "value",
+    "Bits 0xfffd_000c_0007_0006   (lanes, left to right: [-3, 12, 7, 6])"
+   ],
+   [
+    "list(value.cut(16))",
+    "[Bits 0xfffd, Bits 0x000c, Bits 0x0007, Bits 0x0006]"
+   ]
+  ]
+ },
+ "e_ret": {
+  "caption": "At the end:",
+  "rows": [
+   [
+    "output",
+    "[-3, 12, 7, 6, 8, -6, 0, 0]"
+   ],
+   [
+    "output[:num_elems_to_extract]",
+    "[-3, 12, 7, 6, 8, -6]"
+   ]
+  ]
+ },
+ "i_memcfg": {
+  "caption": "The memory part's config in the tests (N = 16):",
+  "rows": [
+   [
+    "inst_config.MEMORY_INST_CONFIG",
+    "MemoryInstructionConfiguration(OPCODE_BITWIDTH=2, MODE_BITWIDTH=2, MEMA_OFFSET_BITWIDTH=16, MEMB_OFFSET_BITWIDTH=16)"
+   ],
+   [
+    "inst_config.MEMORY_INST_CONFIG.get_width()",
+    "36"
+   ]
+  ]
+ },
+ "i_mem_starts": {
+  "caption": "Inside the memory part of line 1, READ INT16 0 0:",
+  "rows": [
+   [
+    "_opcode_start, _mode_start",
+    "(0, 2)"
+   ],
+   [
+    "_mema_offset_start, _memb_offset_start",
+    "(4, 20)"
+   ],
+   [
+    "_instruction_value",
+    "00 01 0000000000000000 0000000000000000"
+   ]
+  ]
+ },
+ "i_set": {
+  "caption": "Each setter call builds a new 36-bit word (opcode | mode | MemAOffset | MemBOffset):",
+  "rows": [
+   [
+    "m = MemoryInstruction(cfg)",
+    "00 00 0000000000000000 0000000000000000"
+   ],
+   [
+    "m.set_opcode(MI.WRITE)",
+    "01 00 0000000000000000 0000000000000000"
+   ],
+   [
+    "m.set_mema_offset(5)",
+    "01 00 0000000000000101 0000000000000000"
+   ]
+  ]
+ },
+ "i_get": {
+  "caption": "Getters on the memory part of line 1, READ INT16 0 0:",
+  "rows": [
+   [
+    "mi.get_opcode()",
+    "Bits('0b00')"
+   ],
+   [
+    "mi.get_opcode().uint",
+    "0"
+   ],
+   [
+    "mi.get_mode().uint",
+    "1"
+   ],
+   [
+    "mi.get_mema_offset().uint",
+    "0"
+   ],
+   [
+    "mi.get_memb_offset().uint",
+    "0"
+   ]
+  ]
+ },
+ "i_mode": {
+  "caption": "Mode's conversions:",
+  "rows": [
+   [
+    "Mode.INT8, Mode.INT16, Mode.INT32",
+    "(8, 16, 32)"
+   ],
+   [
+    "Mode.opcode(8), Mode.opcode(16), Mode.opcode(32)",
+    "(0, 1, 2)"
+   ],
+   [
+    "Mode.bitwidth(0), Mode.bitwidth(1), Mode.bitwidth(2)",
+    "(8, 16, 32)"
+   ]
+  ]
+ },
+ "i_pe_starts": {
+  "caption": "Inside the PE part of line 1, MAC INT16:",
+  "rows": [
+   [
+    "_opcode_start, _mode_start, _value_start",
+    "(0, 2, 4)"
+   ],
+   [
+    "_instruction_value",
+    "00 01 00000"
+   ]
+  ]
+ },
+ "i_pe_get": {
+  "caption": "What a PE decoder reads, for two different instructions:",
+  "rows": [
+   [
+    "MAC INT16: get_opcode().uint, get_value().uint",
+    "(0, 0)"
+   ],
+   [
+    "MAC INT16: get_mode_bitwidth()",
+    "16"
+   ],
+   [
+    "RND INT16 8: get_opcode().uint, get_value().uint",
+    "(1, 8)"
+   ],
+   [
+    "PEI.NO_VALUE, PEI.MAC, PEI.RND, PEI.NOP",
+    "(0, 0, 1, 1)"
+   ]
+  ]
+ },
+ "i_inst_starts": {
+  "caption": "Inside line 1, READ INT16 0 0 | MAC INT16 | 3 1 1:",
+  "rows": [
+   [
+    "_mem_inst_start, _pe_inst_start",
+    "(0, 36)"
+   ],
+   [
+    "_count_start, _mema_inc_start, _memb_inc_start",
+    "(45, 61, 62)"
+   ],
+   [
+    "get_width()",
+    "63"
+   ]
+  ]
+ },
+ "i_inst_get": {
+  "caption": "What a controller reads from line 1:",
+  "rows": [
+   [
+    "instruction.get_count().uint",
+    "2"
+   ],
+   [
+    "instruction.get_mema_inc().uint, get_memb_inc().uint",
+    "(1, 1)"
+   ],
+   [
+    "instruction.get_mem_instruction().get_mema_offset().uint",
+    "0"
+   ],
+   [
+    "instruction.get_pe_instruction().get_value().uint",
+    "0"
+   ]
+  ]
+ },
+ "i_inst_bits": {
+  "caption": "Line 1's full 63-bit word (memory 2|2|16|16, PE 2|2|5, Count 16, increments 1|1):",
+  "rows": [
+   [
+    "get_instruction()",
+    "00 01 0000000000000000 0000000000000000 00 01 00000 0000000000000010 1 1"
+   ]
+  ]
+ },
+ "ta_cfg": {
+  "caption": "In the first public test, run_test(768, 64, 12345, Mode.INT16, 64):",
+  "rows": [
+   [
+    "accel_config.PE_COUNT",
+    "64"
+   ],
+   [
+    "accel_config.BUFFER_CONFIG",
+    "MainBufferConfiguration(MEM0_BITWIDTH=2048, MEM0_DEPTH=65536, MEM1_BITWIDTH=32, MEM1_DEPTH=16384, MEM2_BITWIDTH=2048, MEM2_DEPTH=65536)"
+   ]
+  ]
+ },
+ "ta_data": {
+  "caption": "In the first public test, run_test(768, 64, 12345, Mode.INT16, 64):",
+  "rows": [
+   [
+    "matrix.shape",
+    "(768, 64)"
+   ],
+   [
+    "vector.shape",
+    "(64, 1)"
+   ],
+   [
+    "matrix[0][:8]",
+    "[-3, 0, -4, -1, 4, 0, -3, -4]"
+   ],
+   [
+    "gold_result.shape",
+    "(768,)"
+   ],
+   [
+    "gold_result[:6]",
+    "[92, 59, -3, 165, 31, -17]"
+   ]
+  ]
+ },
+ "ta_compile": {
+  "caption": "In the first public test, run_test(768, 64, 12345, Mode.INT16, 64):",
+  "rows": [
+   [
+    "len(mem0), len(mem0[0])",
+    "(65536, 2048)"
+   ],
+   [
+    "len(mem1), len(mem1[0])",
+    "(16384, 32)"
+   ],
+   [
+    "num_elements",
+    "768"
+   ],
+   [
+    "len(instructions)",
+    "24"
+   ],
+   [
+    "instructions[:4]",
+    "[\n  'NOP | CLR INT16 | 1 0 0',\n  'READ INT16 0 0 | MAC INT16 | 64 1 1',\n  'NOP | OUT INT16 | 1 0 0',\n  'WRITE 0 | NOP INT16 | 1 0 0',\n]"
+   ]
+  ]
+ },
+ "ta_asm": {
+  "caption": "In the first public test, run_test(768, 64, 12345, Mode.INT16, 64):",
+  "rows": [
+   [
+    "len(assembled)",
+    "24"
+   ],
+   [
+    "instructions[1]",
+    "'READ INT16 0 0 | MAC INT16 | 64 1 1'"
+   ],
+   [
+    "assembled[1].get_count().uint",
+    "63"
+   ],
+   [
+    "assembled[1].get_instruction()",
+    "00 01 0000000000000000 0000000000000000 00 01 00000 0000000000111111 1 1"
+   ]
+  ]
+ },
+ "t_pe_inputs": {
+  "caption": "In test_mac_int32:",
+  "rows": [
+   [
+    "a_value",
+    "Bits 0x40000000   (lanes, left to right: [1073741824])"
+   ],
+   [
+    "b_value",
+    "Bits 0x00000002   (lanes, left to right: [2])"
+   ]
+  ]
+ },
+ "t_pe_insts": {
+  "caption": "In test_mac_int32 (opcode | mode | value):",
+  "rows": [
+   [
+    "insts[0]  (MAC INT32)",
+    "00 10 00000"
+   ],
+   [
+    "insts[1]  (OUT INT32)",
+    "00 10 00010"
+   ]
+  ]
+ },
+ "t_pe_expect": {
+  "caption": "In test_mac_int32:",
+  "rows": [
+   [
+    "Bits(hex=\"0x7fffffff\", length=32)",
+    "Bits 0x7fffffff   (lanes, left to right: [2147483647])"
+   ]
+  ]
+ },
+ "t_pe16_inputs": {
+  "caption": "In test_mac_int16:",
+  "rows": [
+   [
+    "a_value",
+    "Bits 0xb1e0_4e20   (lanes, left to right: [-20000, 20000])"
+   ],
+   [
+    "b_value",
+    "Bits 0x0002_0002   (lanes, left to right: [2, 2])"
+   ],
+   [
+    "expected output",
+    "Bits 0x8000_7fff   (lanes, left to right: [-32768, 32767])"
+   ]
+  ]
+ },
+ "t_mb_expect": {
+  "caption": "In test_read_int16:",
+  "rows": [
+   [
+    "correct_mem1_value",
+    "Bits 0x000d_000d   (lanes, left to right: [13, 13])"
+   ],
+   [
+    "correct_mem1_value.uint",
+    "851981"
+   ]
+  ]
+ },
+ "t_mb_inst": {
+  "caption": "In test_read_int16 (opcode | mode | MemAOffset | MemBOffset, with the tests' 10-bit offsets):",
+  "rows": [
+   [
+    "insts[0]  (READ INT16 130 26)",
+    "00 01 0010000010 0000011010"
+   ]
+  ]
+ }
+}

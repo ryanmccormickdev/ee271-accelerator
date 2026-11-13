@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SIMD accelerator walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap">
+<style>
+/*STYLE*/
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap titlebar">
+    <div>
+      <h1>The SIMD accelerator, one step at a time</h1>
+      <p class="sub">EE271 Project Part 1, taken apart: what goes in and out, a tiny matrix pushed through the whole machine, and each component down to the bits your code has to produce.</p>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#big-picture" data-view="big-picture">Big picture</a>
+      <a href="#worked-example" data-view="worked-example">Worked example</a>
+      <a href="#processing-element" data-view="processing-element">Processing element</a>
+      <a href="#main-buffer" data-view="main-buffer">Main buffer</a>
+      <a href="#controller" data-view="controller">Controller</a>
+      <a href="#code-map" data-view="code-map">Read the code</a>
+      <button class="themebtn small" id="themebtn" title="Switch light / dark">Light / dark</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- =================================================================== BIG PICTURE -->
+<section class="view" id="view-big-picture" aria-label="Big picture">
+  <div class="stage">
+    <div>
+      <div class="board">
+        <svg id="bp-svg" viewBox="0 0 1000 560" role="img" aria-label="The host computer on the left, the accelerator on the right, with arrows for every place data crosses between them">
+          <text class="reg" x="16" y="19">HOST · YOUR LAPTOP RUNNING THE TEST</text>
+          <text class="reg" x="318" y="19">ACCELERATOR · WHAT YOUR THREE FILES SIMULATE</text>
+          <rect class="region" x="10" y="28" width="286" height="520" rx="10"/>
+          <rect class="region" x="312" y="28" width="678" height="520" rx="10"/>
+
+          <!-- wires inside the accelerator -->
+          <path class="wire" d="M 468 172 H 590"/><path class="wire" d="M 468 242 H 590"/><path class="wire" d="M 468 338 H 590"/>
+          <path class="wire" style="stroke: var(--m1)" d="M 575 100 V 358"/>
+          <path class="wire" style="stroke: var(--m1)" d="M 575 192 H 590 M 575 262 H 590 M 575 358 H 590"/>
+          <path class="wire" d="M 760 181 H 856"/><path class="wire" d="M 760 251 H 856"/><path class="wire" d="M 760 347 H 856"/>
+          <path class="wire" style="stroke: var(--ctl)" d="M 510 493 H 590"/>
+          <path class="wire" style="stroke: var(--ctl)" d="M 675 462 V 428"/>
+          <path class="wire" style="stroke: var(--ctl); stroke-dasharray: 4 3" d="M 760 493 H 916 V 420"/>
+          <path class="wire" style="stroke: var(--ctl); stroke-dasharray: 4 3" d="M 760 478 H 800 V 74 H 770"/>
+          <path class="wire" style="stroke: var(--ctl); stroke-dasharray: 4 3" d="M 610 462 V 446 H 402 V 420"/>
+          <text class="sm" x="684" y="450">PE instruction, same for every PE</text>
+          <text class="sm" x="414" y="440">memory instruction</text>
+          <!-- external wires -->
+          <path class="wire ext" d="M 278 198 H 336"/>
+          <path class="wire ext" d="M 278 170 H 300 V 74 H 560"/>
+          <path class="wire ext" d="M 278 309 H 304 V 493 H 340"/>
+          <path class="wire ext" d="M 976 275 H 992 V 553 H 300 V 472 H 278"/>
+          <path class="wire" d="M 153 124 V 150"/><path class="wire" d="M 153 246 V 272"/>
+
+          <!-- host cards -->
+          <g id="bp-h1"><rect class="box" x="28" y="50" width="250" height="74" rx="6" style="stroke: var(--line)"/>
+            <text class="lbl" x="40" y="72">numpy, inside the test</text>
+            <text class="sm" x="40" y="92">M: 768 × 64 random ints, −5 … 4</text>
+            <text class="sm" x="40" y="108">v: 64 more; the answer key is M @ v</text></g>
+          <g id="bp-h2"><rect class="box" x="28" y="150" width="250" height="96" rx="6" style="stroke: var(--line)"/>
+            <text class="lbl" x="40" y="172">compiler.py (given)</text>
+            <text class="sm" x="40" y="192">MEM0 image: 65,536 × 2,048 bits</text>
+            <text class="sm" x="40" y="208">MEM1 image: 16,384 × 32 bits</text>
+            <text class="sm" x="40" y="224">program: 24 lines of text</text>
+            <text class="sm" x="272" y="240" text-anchor="end">set_memory(mem0, mem1) →</text></g>
+          <g id="bp-h3"><rect class="box" x="28" y="272" width="250" height="74" rx="6" style="stroke: var(--line)"/>
+            <text class="lbl" x="40" y="294">assembler.py (given)</text>
+            <text class="sm" x="40" y="314">each line → one 63-bit Instruction</text>
+            <text class="sm" x="272" y="338" text-anchor="end">execute_instructions(program) →</text></g>
+          <g id="bp-h4"><rect class="box" x="28" y="420" width="250" height="110" rx="6" style="stroke: var(--line)"/>
+            <text class="lbl" x="40" y="442">extract_results_from_memory</text>
+            <text class="sm" x="272" y="462" text-anchor="end">← get_mem2()</text>
+            <text class="sm" x="40" y="480">cuts MEM2 entries 0–5 into y</text>
+            <text class="sm" x="40" y="496">then checks y == M @ v</text>
+            <text class="lbl" id="bp-verdict" x="40" y="520"></text></g>
+
+          <!-- accelerator boxes -->
+          <g id="bp-m1"><rect class="box" x="560" y="48" width="210" height="52" rx="5" style="stroke: var(--m1)"/>
+            <text class="lbl" x="575" y="70" style="fill: var(--m1)">MEM1 · vector</text>
+            <text class="sm" x="575" y="88">16,384 entries × 32 bits</text></g>
+          <g id="bp-m0"><rect class="box" x="336" y="130" width="132" height="290" rx="5" style="stroke: var(--m0)"/>
+            <text class="lbl" x="350" y="152" style="fill: var(--m0)">MEM0 · matrix</text>
+            <text class="sm" x="350" y="172">65,536 entries</text>
+            <text class="sm" x="350" y="188">× 2,048 bits</text>
+            <text class="sm" x="350" y="216">one 32-bit slice</text>
+            <text class="sm" x="350" y="232">per PE</text></g>
+          <g id="bp-arr"><rect class="box" x="556" y="122" width="218" height="306" rx="10" style="stroke: var(--pe); stroke-dasharray: 5 4; fill: none"/>
+            <text class="sm" x="590" y="140">PE array · 64 PEs</text>
+            <rect class="box" x="590" y="156" width="170" height="50" rx="8" style="stroke: var(--pe)"/>
+            <text class="lbl" x="604" y="178" style="fill: var(--pe)">PE 0</text><text class="sm" x="604" y="195">2 lanes of MAC in INT16</text>
+            <rect class="box" x="590" y="226" width="170" height="50" rx="8" style="stroke: var(--pe)"/>
+            <text class="lbl" x="604" y="248" style="fill: var(--pe)">PE 1</text><text class="sm" x="604" y="265">2 lanes of MAC in INT16</text>
+            <text class="lbl" x="672" y="304">⋮</text>
+            <rect class="box" x="590" y="322" width="170" height="50" rx="8" style="stroke: var(--pe)"/>
+            <text class="lbl" x="604" y="344" style="fill: var(--pe)">PE 63</text><text class="sm" x="604" y="361">2 lanes of MAC in INT16</text></g>
+          <g id="bp-m2"><rect class="box" x="856" y="130" width="120" height="290" rx="5" style="stroke: var(--m2)"/>
+            <text class="lbl" x="870" y="152" style="fill: var(--m2)">MEM2</text>
+            <text class="sm" x="870" y="170">results</text>
+            <text class="sm" x="870" y="188">65,536 entries</text>
+            <text class="sm" x="870" y="204">× 2,048 bits</text></g>
+          <g id="bp-im"><rect class="box" x="340" y="462" width="170" height="62" rx="5" style="stroke: var(--ctl)"/>
+            <text class="lbl" x="352" y="484" style="fill: var(--ctl)">Instruction memory</text>
+            <text class="sm" x="352" y="502">the program list</text></g>
+          <g id="bp-ctl"><rect class="box" x="590" y="462" width="170" height="62" rx="5" style="stroke: var(--ctl)"/>
+            <text class="lbl" x="604" y="484" style="fill: var(--ctl)">Controller</text>
+            <text class="sm" x="604" y="502">runs each instruction</text>
+            <text class="sm" x="604" y="516">Count + 1 times</text></g>
+
+          <!-- invisible paths the packets travel along -->
+          <g fill="none" stroke="none">
+            <path id="bpp-np-comp" d="M 153 124 V 150"/><path id="bpp-comp-asm" d="M 153 246 V 272"/>
+            <path id="bpp-x-m0" d="M 278 198 H 336"/><path id="bpp-x-m1" d="M 278 170 H 300 V 74 H 560"/><path id="bpp-x-im" d="M 278 309 H 304 V 493 H 340"/>
+            <path id="bpp-x-m2" d="M 976 275 H 992 V 553 H 300 V 472 H 278"/>
+            <path id="bpp-im-ctl" d="M 510 493 H 590"/><path id="bpp-ctl-pe" d="M 675 462 V 428"/>
+            <path id="bpp-ctl-m0" d="M 610 462 V 446 H 402 V 420"/><path id="bpp-ctl-m1" d="M 760 478 H 800 V 74 H 770"/><path id="bpp-ctl-m2" d="M 760 493 H 916 V 420"/>
+            <path id="bpp-m0-0" d="M 468 172 H 590"/><path id="bpp-m0-1" d="M 468 242 H 590"/><path id="bpp-m0-2" d="M 468 338 H 590"/>
+            <path id="bpp-m1-0" d="M 575 100 V 192 H 590"/><path id="bpp-m1-1" d="M 575 100 V 262 H 590"/><path id="bpp-m1-2" d="M 575 100 V 358 H 590"/>
+            <path id="bpp-pe-0" d="M 760 181 H 856"/><path id="bpp-pe-1" d="M 760 251 H 856"/><path id="bpp-pe-2" d="M 760 347 H 856"/>
+          </g>
+          <g id="bp-packets"></g>
+        </svg>
+        <div class="legend">
+          <span class="chip"><span class="sw m0"></span>matrix data</span>
+          <span class="chip"><span class="sw m1"></span>vector data</span>
+          <span class="chip"><span class="sw m2"></span>results</span>
+          <span class="chip"><span class="sw ctl"></span>instructions</span>
+          <span class="chip">long dashed lines: data crossing between host and accelerator</span>
+        </div>
+      </div>
+      <div class="phasebtns" role="group" aria-label="Phases">
+        <button class="primary" id="bp-play">Play all four</button>
+        <button data-phase="1">1 · Compile</button>
+        <button data-phase="2">2 · Load</button>
+        <button data-phase="3">3 · Run</button>
+        <button data-phase="4">4 · Read back</button>
+      </div>
+    </div>
+    <aside class="panel">
+      <div aria-live="polite">
+        <h2 id="bp-title">The whole system, at test scale</h2>
+        <div class="prose" id="bp-body"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="section memsec">
+    <h3 id="bp-boundary">Everything that crosses the boundary</h3>
+    <p>Here's the complete list. Your three files never call numpy, never touch the compiler, and never ask the host anything mid-run.</p>
+    <div class="tscroll"><table class="ref">
+      <tr><th>When</th><th>Direction</th><th>What</th><th>Python call</th><th>Size in the INT16 public test</th></tr>
+      <tr><td>before the run</td><td>host → MEM0</td><td>the packed matrix</td><td><code>accel.set_memory(mem0, mem1)</code>, which calls <code>set_mem0</code></td><td>65,536 entries × 2,048 bits. The first 384 hold M; the rest are zeros.</td></tr>
+      <tr><td>before the run</td><td>host → MEM1</td><td>the packed vector</td><td>the same call (<code>set_mem1</code>)</td><td>16,384 entries × 32 bits. The first 32 hold v.</td></tr>
+      <tr><td>the run</td><td>host → controller</td><td>the program, one instruction at a time</td><td><code>accel.execute_instructions(list)</code>, which calls your <code>execute_instruction</code> once per item</td><td>24 instructions, 63 bits each</td></tr>
+      <tr><td>after the run</td><td>MEM2 → host</td><td>the packed results</td><td><code>accel.get_mem2()</code></td><td>65,536 entries × 2,048 bits. The first 6 hold y.</td></tr>
+    </table></div>
+    <p>That Python list of instructions plays the role of the "instruction memory" box in the handout's Figure 3. Part 1 has no clock, no bus and no interrupts; it's just function calls in order. In a real chip the host would load these memories over a bus. Lecture 8's TPU slides show the same idea: the host sends instructions over PCIe and the chip never fetches anything on its own. In Part 2, a testbench will most likely take over the host's job.</p>
+
+    <h3 id="bp-scale">The inputs at the size of the real tests</h3>
+    <p><code>test_accelerator.py</code> runs three cases. All use 32-bit PE inputs and outputs, a 64-bit accumulator, and a 16-bit controller counter, so every memory is 2<sup>16</sup> = 65,536 entries deep except MEM1, which is a quarter of that.</p>
+    <div class="tscroll"><table class="ref" id="bp-scale-table"></table></div>
+    <p class="cap">"Repeats" counts every pass of every instruction (Count + 1 per instruction). Once this is hardware in Part 2, a repeat probably takes about one clock cycle, so it's a rough cycle count. "Multiplies" counts lane MACs, including the ones on padding rows. The matrix and vector entries are random integers from −5 to 4 (<code>np.random.randint(-5, 5)</code>), so no public test ever gets near a clamp limit or an overflow. The private tests use "additional input values and instruction sequences", which is why the component pages cover the edge cases.</p>
+
+    <h3 id="bp-calc">Try other sizes</h3>
+    <p>Same formulas the compiler uses. Memory limits assume the tests' 16-bit counter.</p>
+    <div class="calc">
+      <label>Matrix rows <input type="number" id="calc-rows" min="1" max="1000000" value="768"></label>
+      <label>Matrix columns (= vector length) <input type="number" id="calc-cols" min="1" max="1000000" value="64"></label>
+      <label>PEs <input type="number" id="calc-pes" min="1" max="1024" value="64"></label>
+      <label>Mode <select id="calc-mode"><option value="8">INT8</option><option value="16" selected>INT16</option><option value="32">INT32</option></select></label>
+    </div>
+    <dl class="stats" id="calc-out"></dl>
+    <p id="calc-warn"></p>
+
+    <h3 id="bp-why">Why it's built this way</h3>
+    <div class="cards">
+      <div class="card"><h4>It only does MAC, on purpose</h4><p>Matrix-vector multiply is nothing but multiply-and-add: y[r] = Σ M[r][j]·v[j]. The 768×64 test is 49,152 MACs and nothing else. So instead of a general CPU, the chip is a row of MAC units (the PEs) plus just enough memory and control to keep them busy. Lecture 8 puts it as specialization plus parallelization.</p></div>
+      <div class="card"><h4>SIMD: one instruction, many PEs</h4><p>Single instruction, multiple data. On every repeat, every PE gets the identical PE instruction. The only difference between PEs is which 32-bit slice of the MEM0 word each one gets. More PEs just means a wider MEM0 and MEM2. And because every PE gets the same instruction, its wiring is one shared bus (handout section 3.4).</p></div>
+      <div class="card"><h4>Lanes trade precision for speed</h4><p>Each PE input is 32 bits. In INT32 that's one multiply per repeat. INT16 splits the same wires into 2 independent lanes, and INT8 into 4. Same hardware, 4× the work per repeat when the numbers are 8-bit. That's the quantization trend from lecture 8.</p></div>
+      <div class="card"><h4>The sums stay put, the data streams past</h4><p>Each accumulator lane is assigned one row of M for a whole block and keeps adding to it while the columns stream through, one column per repeat. Only when the block is done does the sum leave the PE (OUT, then WRITE). Accelerator papers call this an output-stationary dataflow.</p></div>
+      <div class="card"><h4>Memory, datapath, control</h4><p>Lecture 8's anatomy of an accelerator maps one to one: <b>memory</b> is the main buffer (MEM0, MEM1, MEM2), the <b>datapath</b> is the PE array, and <b>control</b> is the controller stepping through the instruction memory. Those are your three files: <code>main_buffer.py</code>, <code>processing_element.py</code>, <code>accelerator.py</code>.</p></div>
+    </div>
+
+    <h3 id="bp-words">Words this page uses</h3>
+    <div class="cards">
+      <div class="card"><p><b>PE (processing element):</b> one MAC unit with two registers, the accumulator and the output register.</p><p><b>Lane:</b> one independent number inside a wider word. A 32-bit word in INT16 mode is 2 lanes of 16 bits. Lane 0 is the least significant (rightmost) one.</p><p><b>Slice:</b> one PE's 32-bit share of a wide MEM0 or MEM2 word.</p></div>
+      <div class="card"><p><b>Port:</b> where a memory's output appears (MEM0 and MEM1 output ports), or where MEM2's next input waits. In Python, these are plain attributes like <code>_mem0_output_port</code>.</p><p><b>Broadcast:</b> sending the same value to every PE. That happens with the MEM1 word and with the PE instruction.</p><p><b>Accumulator:</b> the register a PE adds products into. It's twice as wide as the inputs (64 bits) so sums don't overflow early.</p></div>
+      <div class="card"><p><b>Repeat:</b> one pass of an instruction. Every instruction runs Count + 1 times.</p><p><b>Block:</b> the group of rows the PEs work on together. Rows per block = PEs × lanes per PE.</p><p><b>MSB / LSB:</b> most / least significant bit. Words on this page are always written with the MSB on the left, like ordinary numbers.</p></div>
+      <div class="card"><p><b>Clamp (saturate):</b> replace a too-big value with the biggest value that fits, so +200 in 8 bits becomes +127.</p><p><b>Wrap:</b> keep only the low bits, so +200 in 8 bits comes out as −56.</p><p><b>Sign extension:</b> copying the sign bit into the new high bits when you widen a number, so −3 stays −3 (0xFD becomes 0xFFFD).</p></div>
+    </div>
+
+    <h3 id="bp-howto">How to use this page</h3>
+    <ol class="prose">
+      <li>Play the four phases above. It takes about a minute.</li>
+      <li><button class="link" data-goto="worked-example">Worked example</button>: step through a 6×3 matrix on 2 PEs. Every number on the board is computed, not drawn. About 20 steps.</li>
+      <li>Then the component pages, in the order you'll probably write them: <button class="link" data-goto="processing-element">Processing element</button>, <button class="link" data-goto="main-buffer">Main buffer</button>, <button class="link" data-goto="controller">Controller</button>. Each has a playground, the exact rules, what your code has to do, and the traps.</li>
+      <li><button class="link" data-goto="code-map">Read the code</button>: every starter file, block by block, with the explanation beside each block, real values from running it, and notes on the Python.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- =================================================================== WORKED EXAMPLE -->
+<section class="view" id="view-worked-example" aria-label="Worked example" hidden>
+  <div class="cfgbar" id="we-cfg">
+    <span class="grpc">Mode <span class="seg" id="we-mode"><button data-w="8">INT8</button><button data-w="16">INT16</button><button data-w="32">INT32</button></span></span>
+    <label>PEs <select id="we-pes"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+    <label>Numbers <select id="we-data"><option value="example">the 6×3 example</option><option value="small">random, small (like the tests)</option><option value="large">random, large (to see clamping)</option></select></label>
+    <label class="rnd" hidden>Rows <input type="number" id="we-rows" min="1" max="12" value="6"></label>
+    <label class="rnd" hidden>Columns <input type="number" id="we-cols" min="1" max="5" value="3"></label>
+    <label class="rnd" hidden>Seed <input type="number" id="we-seed" min="1" max="9999" value="7"></label>
+    <button class="small" id="we-default">Back to the example</button>
+  </div>
+  <div class="stage">
+    <div>
+      <div class="board">
+        <div class="we-scroll"><div class="we-content" id="we-content"><div id="we-hw"></div><div class="fly-layer" id="we-fly"></div></div></div>
+        <div class="legend">
+          <span class="chip"><span class="sw m0"></span>matrix · MEM0 · input B</span>
+          <span class="chip"><span class="sw m1"></span>vector · MEM1 · input A</span>
+          <span class="chip"><span class="sw pe"></span>accumulator</span>
+          <span class="chip"><span class="sw m2"></span>outputs · MEM2</span>
+          <span class="chip"><span class="sw chg"></span>changed this step</span>
+          <span class="chip"><span class="sw rd"></span>being read</span>
+          <span class="chip">dashed box: built by the host, not loaded yet</span>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="we-prev">Back</button>
+        <button id="we-next" class="primary">Next step</button>
+        <button id="we-replay">Replay</button>
+        <button id="we-play" aria-pressed="false">Auto-play</button>
+        <span class="seg" id="we-fmt" title="How lane values are shown"><button data-fmt="dec" aria-pressed="true">decimal</button><button data-fmt="hex" aria-pressed="false">hex</button></span>
+        <span class="kbd-hint">Arrow keys work too.</span>
+      </div>
+      <div class="track" id="we-track"></div>
+    </div>
+    <aside class="panel">
+      <div aria-live="polite">
+        <h2 id="we-title"></h2>
+        <div class="prose" id="we-body"></div>
+      </div>
+      <pre class="eq" id="we-eq"></pre>
+      <div class="codelinks" id="we-code"></div>
+    </aside>
+  </div>
+  <section class="memsec" aria-label="Bits on the wires">
+    <h3>What's on the wires, in bits</h3>
+    <p class="cap" style="margin-top:0">The instruction the controller is running, as the 63-bit word the assembler built (16-bit counter, like the tests), then every port and register in hex. Hex digits are grouped by lane.</p>
+    <div id="we-bits"></div>
+    <dl class="wires" id="we-wires"></dl>
+  </section>
+</section>
+
+<!-- =================================================================== PROCESSING ELEMENT -->
+<section class="view" id="view-processing-element" aria-label="Processing element" hidden>
+  <div class="stage">
+    <div>
+      <div class="board" id="lab">
+        <div class="cfgbar">
+          <span class="grpc">Mode <span class="seg" id="lab-mode"><button data-w="8">INT8</button><button data-w="16">INT16</button><button data-w="32">INT32</button></span></span>
+          <label>Load an example <select id="lab-preset"></select></label>
+          <button class="small" id="lab-reset">Clear registers</button>
+        </div>
+        <div class="we-content" id="lab-content" style="min-width:0">
+          <div class="labgrid" id="lab-grid"></div>
+          <div class="fly-layer" id="lab-fly"></div>
+        </div>
+        <div class="oprow" role="group" aria-label="PE instructions">
+          <button data-op="MAC">MAC</button>
+          <button data-op="OUT">OUT</button>
+          <button data-op="PASS">PASS</button>
+          <button data-op="CLR">CLR</button>
+          <button data-op="NOP">NOP</button>
+          <span class="rndbox"><button data-op="RND">RND</button><label>s = <input type="number" id="lab-s" min="0" max="31" value="1"></label></span>
+        </div>
+        <div id="lab-progwrap" hidden>
+          <div class="cap" style="margin-top:6px">This example's program:</div>
+          <ol class="proglist" id="lab-prog"></ol>
+          <div class="controls" style="margin-top:8px"><button class="small primary" id="lab-step">Run the next instruction</button><button class="small" id="lab-runall">Run the rest</button></div>
+        </div>
+        <p class="cap">Lanes are shown most significant first, so lane 0 is on the right, just like the hex. Edit A and B directly; the instruction buttons run with the mode selected above. History: <span id="lab-hist">none yet</span></p>
+      </div>
+    </div>
+    <aside class="panel">
+      <div aria-live="polite">
+        <h2 id="lab-title">One PE, by hand</h2>
+        <div class="prose" id="lab-body"><p>Pick an example from the menu, or type numbers into A and B and press instruction buttons. Every public PE test is in the menu, plus the edge cases the private tests could check.</p></div>
+      </div>
+      <pre class="eq" id="lab-eq"></pre>
+      <p class="verdict" id="lab-verdict"></p>
+    </aside>
+  </div>
+
+  <div class="section memsec">
+    <h3 id="pe-io">Inputs, outputs, state</h3>
+    <div class="tscroll"><table class="ref">
+      <tr><th></th><th>In <code>processing_element.py</code></th><th>Bits (tests)</th><th>Comes from / goes to</th></tr>
+      <tr><td>input A, "Data0"</td><td><code>_input_a_value</code>, set by <code>input_a(bits)</code></td><td class="num">32</td><td>the controller: the MEM1 output port, the same word for every PE</td></tr>
+      <tr><td>input B, "Data1"</td><td><code>_input_b_value</code>, set by <code>input_b(bits)</code></td><td class="num">32</td><td>the controller: this PE's own slice of the MEM0 output port</td></tr>
+      <tr><td>instruction</td><td>the argument of <code>execute_instruction(inst)</code></td><td class="num">9</td><td>the controller: the PE part of the current instruction, the same for every PE</td></tr>
+      <tr><td>accumulator</td><td><code>_acc_value</code></td><td class="num">64</td><td>changed only by your handlers; tests read it with <code>get_accumulation()</code></td></tr>
+      <tr><td>output register</td><td><code>_output_value</code></td><td class="num">32</td><td>changed only by OUT and CLR; <code>get_output()</code> hands it to the controller, which puts it on MEM2's input port</td></tr>
+    </table></div>
+    <p>The widths come from <code>ProcessingElementConfiguration</code>: <code>INPUT_BITWIDTH</code>, <code>ACCUMULATION_BITWIDTH</code> and <code>OUTPUT_BITWIDTH</code> are 32, 64 and 32 in every provided test. The handout says these parameters come "through a configuration object", so read them from <code>self._config</code> instead of typing 32 and 64 into your code.</p>
+
+    <h3 id="pe-decode">Decoding the 9-bit instruction</h3>
+    <p>Three fields, left to right: <b>opcode</b> (2 bits), <b>mode</b> (2 bits), <b>value</b> (5 bits). Opcode 0 ("NO_VALUE") means the value field says which instruction it is. Opcode 1 means RND, and then the value field is the shift amount s.</p>
+    <div class="tscroll"><table class="ref" id="pe-enc-table"></table></div>
+    <p>Mode codes: 00 = INT8, 01 = INT16, 10 = INT32. In Python: <code>inst.get_opcode().uint</code>, <code>inst.get_value().uint</code>, and <code>inst.get_mode_bitwidth()</code>, which hands you 8, 16 or 32 directly. Compare against the constants in <code>instruction.py</code>: <code>PEI.NO_VALUE</code> and <code>PEI.RND</code> for the opcode, <code>PEI.MAC</code>, <code>PEI.NOP</code>, <code>PEI.OUT</code>, <code>PEI.PASS</code>, <code>PEI.CLR</code> for the value.</p>
+    <div class="note warn"><b>Trap:</b> <code>PEI.MAC == PEI.NO_VALUE == 0</code> and <code>PEI.NOP == PEI.RND == 1</code>. The same number means different things in different fields. Testing <code>opcode == PEI.NOP</code> is really testing for RND.</div>
+
+    <h3 id="pe-lanes">Lanes: where each number lives</h3>
+    <p>Lane k of a word covers bits k·w through k·w + w − 1, counting bit 0 as the rightmost bit. Lane k of A pairs with lane k of B, goes into lane k of the accumulator, and comes out in lane k of the output. The accumulator lanes are wider (64 / lanes), so the output lanes are narrower than the accumulator's.</p>
+    <div class="controls" style="margin-top:0"><span class="seg" id="ruler-mode"><button data-w="8">INT8</button><button data-w="16" aria-pressed="true">INT16</button><button data-w="32">INT32</button></span></div>
+    <div id="ruler"></div>
+    <p><b>Python's bitstring counts the other way.</b> Hardware numbers bits from the right (bit 0 = LSB). bitstring indexes from the left (index 0 = MSB). So lane 0 of a 32-bit word is <code>word[-w:]</code> (the <i>last</i> w bits), not <code>word[:w]</code>. The friendly way out: <code>word.cut(w)</code> hands back the lanes left to right (lane n−1 first, lane 0 last), and <code>Bits().join(pieces)</code> puts <code>pieces[0]</code> on the left. If you cut with one and join with the other, in the same order, the lanes line up without any index arithmetic.</p>
+
+    <h3 id="pe-ops">The six instructions</h3>
+    <div class="tscroll"><table class="ref">
+      <tr><th>Instruction</th><th>Reads</th><th>Changes</th><th>Rule, per lane</th><th>From the public tests</th></tr>
+      <tr><td><b>MAC</b></td><td>A, B, acc</td><td>acc</td><td>acc = acc + A × B, using the full product. Never saturates: if the sum doesn't fit the accumulator lane, it wraps inside that lane.</td><td>INT16: A = [−20000, 20000], B = [2, 2] gives acc = [−40000, 40000]</td></tr>
+      <tr><td><b>NOP</b></td><td>nothing</td><td>nothing</td><td>nothing</td><td></td></tr>
+      <tr><td><b>OUT</b></td><td>acc</td><td>out</td><td>out = acc clamped to −2<sup>w−1</sup> … 2<sup>w−1</sup> − 1, then narrowed to w bits. The accumulator is unchanged.</td><td>INT16: acc = [−40000, 40000] gives out = [−32768, 32767] = 0x80007fff</td></tr>
+      <tr><td><b>PASS</b></td><td>A only</td><td>acc</td><td>acc = A, sign-extended to the accumulator lane width. The output is unchanged.</td><td>INT16: A = [−15, 7] gives acc = [−15, 7]; OUT then gives 0xfff10007</td></tr>
+      <tr><td><b>CLR</b></td><td>nothing</td><td>acc, out</td><td>acc = 0 and out = 0, all lanes</td><td></td></tr>
+      <tr><td><b>RND s</b></td><td>acc</td><td>acc</td><td>acc = acc / 2<sup>s</sup>, rounded to nearest, ties to even. s is 0 … 31. The output is unchanged.</td><td>INT8: acc = [5, −5, 3, −3], s = 1 gives [2, −2, 2, −2] = 0x02fe02fe</td></tr>
+    </table></div>
+    <p>Only OUT and CLR change the output register. Only MAC, PASS, CLR and RND change the accumulator.</p>
+    <div class="cards">
+      <div class="card"><h4>Why OUT clamps</h4><p>The result has to fit back into a w-bit lane of MEM2. Clamping gives the closest number that fits. Wrapping would give garbage: +40000 wrapped to 16 bits is −25536, so the sign flips.</p></div>
+      <div class="card"><h4>Why MAC doesn't</h4><p>The accumulator is the wide, temporary scratch space. Hardware adders just drop the carry out of the top. That's wrapping, and the spec asks for exactly that. Keep each lane's carry inside its lane.</p></div>
+      <div class="card"><h4>Why RND and PASS exist</h4><p>The compiler never emits them; they're for other programs, like the private tests. RND scales a wide sum back down by a power of two, which is how quantized ML hardware gets results back into a narrow format. PASS starts the accumulators from a value instead of zero.</p></div>
+    </div>
+
+    <h3 id="pe-rnd">Rounding to nearest, ties to even</h3>
+    <p>Divide by 2<sup>s</sup> and pick the nearest integer. When the result is exactly halfway, pick the even neighbor: 2.5 → 2, 3.5 → 4, −2.5 → −2, −3.5 → −4. Anything not exactly halfway goes to the nearest: 3.75 → 4, −84.2 → −84.</p>
+    <p><b>Do it with integers.</b> A 64-bit accumulator can hold numbers a float can't represent exactly (anything past 2<sup>53</sup>), so <code>x / 2**s</code> can be wrong before you even round. Python's <code>round()</code> does ties-to-even, but only after that float division. An exact method, for s ≥ 1:</p>
+    <ol class="prose">
+      <li>q = x &gt;&gt; s. In Python, <code>&gt;&gt;</code> on a negative int rounds toward −∞, so q is always the floor.</li>
+      <li>r = x − q·2<sup>s</sup>, the leftover. It's always between 0 and 2<sup>s</sup> − 1.</li>
+      <li>Compare r with half = 2<sup>s−1</sup>: below half, the answer is q; above half, q + 1; exactly half, whichever of q and q + 1 is even.</li>
+    </ol>
+    <p>With s = 0 nothing changes. Try the "RND ties" example in the menu at the top of this page.</p>
+
+    <h3 id="pe-todo">What your code has to do</h3>
+    <ol class="prose">
+      <li><b><code>execute_instruction(inst)</code></b>: read the opcode field. If it's <code>PEI.RND</code>, call <code>_handle_rnd</code>. Otherwise read the value field and call the matching handler. For NOP, do nothing.</li>
+      <li><b>Each handler, same skeleton:</b> get w from <code>inst.get_mode_bitwidth()</code>. Work out the lane count (input width / w) and the accumulator and output lane widths from <code>self._config</code>. Split the registers you need into signed lane values. Compute each lane on its own. Pack the results back into one <code>Bits</code> of the full register width, keeping the lane order, and assign it to <code>self._acc_value</code> or <code>self._output_value</code>.</li>
+      <li><b><code>_handle_mac</code></b>: acc lane + A lane × B lane, wrapped to the accumulator lane width.</li>
+      <li><b><code>_handle_out</code></b>: clamp each accumulator lane to the output lane's range and pack into <code>OUTPUT_BITWIDTH</code> bits. Don't touch the accumulator.</li>
+      <li><b><code>_handle_pass</code></b>: each A lane's value becomes that accumulator lane. Building <code>Bits(int=value, length=wider)</code> sign-extends for you.</li>
+      <li><b><code>_handle_clr</code></b>: both registers become zero, each at its own width.</li>
+      <li><b><code>_handle_rnd</code></b>: s = <code>inst.get_value().uint</code>; each accumulator lane becomes round-half-even(lane / 2<sup>s</sup>). The output stays as it is.</li>
+    </ol>
+
+    <h3 id="pe-traps">Traps</h3>
+    <ul class="prose">
+      <li><code>Bits(int=x, length=16)</code> raises <code>ValueError</code> if x doesn't fit. A MAC can legitimately overflow its lane, so wrap first: reduce x modulo 2<sup>width</sup>, then build it with <code>uint=</code>, or convert back to signed. OUT has to clamp <i>before</i> building.</li>
+      <li>Lane values are signed (<code>.int</code>). The opcode, mode and value fields are unsigned (<code>.uint</code>).</li>
+      <li><code>Bits</code> objects are immutable. You can't assign into a slice. Build a new one and reassign the attribute.</li>
+      <li>Never do the math on the whole 64-bit accumulator as one number in INT8 or INT16. A carry out of one lane would land in its neighbor.</li>
+      <li>PASS copies A (Data0, the MEM1 word), not B.</li>
+      <li>The three CLR public tests pass on the empty skeleton, because a fresh PE is already all zeros, so they prove nothing. The TODO list in <code>test/test_ours.py</code> has better checks, and every example in this page's menu is a ready-made test case.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- =================================================================== MAIN BUFFER -->
+<section class="view" id="view-main-buffer" aria-label="Main buffer" hidden>
+  <div class="stage">
+    <div>
+      <div class="board" id="mb">
+        <div class="cfgbar">
+          <span class="grpc">Mode <span class="seg" id="mb-mode"><button data-w="8">INT8</button><button data-w="16">INT16</button><button data-w="32">INT32</button></span></span>
+          <label>MEM1 holds <select id="mb-data"><option value="v16">a 16-element vector, packed by the compiler</option><option value="public">MEM1[i] = i (the public READ tests)</option></select></label>
+        </div>
+        <div class="calc" style="margin-top:2px">
+          <label>MemBOffset <span class="v" id="mb-offb-v"></span><input type="range" id="mb-offb" min="0" max="15" value="0"></label>
+          <label>MemAOffset <span class="v" id="mb-offa-v"></span><input type="range" id="mb-offa" min="0" max="5" value="0"></label>
+        </div>
+        <div class="controls" style="margin-top:4px" role="group" aria-label="Memory instructions">
+          <button class="primary" data-mop="READ">READ</button>
+          <button data-mop="WRITE">WRITE</button>
+          <button data-mop="NOP">NOP</button>
+          <button class="small" id="mb-sweep">Sweep MemBOffset 0 → 7</button>
+        </div>
+        <div class="we-content" id="mb-content" style="min-width:0; margin-top:10px">
+          <div id="mb-offbits"></div>
+          <div id="mb-hw"></div>
+          <div class="fly-layer" id="mb-fly"></div>
+        </div>
+      </div>
+    </div>
+    <aside class="panel">
+      <div aria-live="polite">
+        <h2 id="mb-title">The main buffer, by hand</h2>
+        <div class="prose" id="mb-body"></div>
+      </div>
+      <pre class="eq" id="mb-eq"></pre>
+    </aside>
+  </div>
+
+  <div class="section memsec">
+    <h3 id="mb-io">Inputs, outputs, state</h3>
+    <div class="tscroll"><table class="ref">
+      <tr><th></th><th>In <code>main_buffer.py</code></th><th>Shape (INT16 public test)</th><th>Who uses it</th></tr>
+      <tr><td>memory instruction</td><td>the argument of <code>execute_instruction(inst)</code></td><td>36 bits: opcode 2, mode 2, MemAOffset 16, MemBOffset 16</td><td>the controller hands it over, with the offsets already stepped for this repeat</td></tr>
+      <tr><td>MEM0</td><td><code>_mem0</code>, a list of Bits</td><td>65,536 × (PEs × 32) bits</td><td>loaded by <code>set_mem0_bits</code>; read by READ</td></tr>
+      <tr><td>MEM1</td><td><code>_mem1</code></td><td>16,384 × 32 bits</td><td>loaded by <code>set_mem1_bits</code>; read by READ</td></tr>
+      <tr><td>MEM2</td><td><code>_mem2</code></td><td>65,536 × (PEs × 32) bits</td><td>written by WRITE; the host reads it with <code>read_mem2_bits</code></td></tr>
+      <tr><td>MEM0 output port</td><td><code>_mem0_output_port</code></td><td>PEs × 32 bits</td><td>set by READ; the controller reads it with <code>read_mem0_output()</code></td></tr>
+      <tr><td>MEM1 output port</td><td><code>_mem1_output_port</code></td><td>32 bits</td><td>set by READ; the controller reads it with <code>read_mem1_output()</code></td></tr>
+      <tr><td>MEM2 input port</td><td><code>_mem2_input_port</code></td><td>PEs × 32 bits</td><td>the controller sets it with <code>write_mem2_input()</code>; WRITE stores it</td></tr>
+    </table></div>
+
+    <h3 id="mb-ops">The three operations</h3>
+    <ul class="prose">
+      <li><b>READ</b>: the MEM0 port becomes MEM0[MemAOffset], the whole entry, in every mode. The MEM1 port depends on the mode:
+        <ul>
+          <li>INT32: MEM1[MemBOffset], as is.</li>
+          <li>INT16: entry MemBOffset[MSB:1]. MemBOffset[0] picks the half: 0 is the low half (lane 0), 1 is the high half. That half is repeated twice.</li>
+          <li>INT8: entry MemBOffset[MSB:2]. MemBOffset[1:0] picks one of four bytes, 0 being the lowest. That byte is repeated four times.</li>
+        </ul></li>
+      <li><b>WRITE</b>: MEM2[MemAOffset] = the MEM2 input port. MemBOffset is unused (the assembler sets it to 0).</li>
+      <li><b>NOP</b>: nothing. The ports keep their old values.</li>
+    </ul>
+    <p>Opcode values: <code>MI.READ</code> = 0, <code>MI.WRITE</code> = 1, <code>MI.NOP</code> = 2. Mode codes: 0 = INT8, 1 = INT16, 2 = INT32. <code>Mode.bitwidth(code)</code> turns the code into 8, 16 or 32. WRITE and NOP carry mode 0 in their machine code, but it means nothing for them.</p>
+
+    <h3 id="mb-slices">Reading <code>MemBOffset[MSB:1]</code></h3>
+    <p>That's Verilog's bit-slice notation. <code>x[i:j]</code> means bits i down to j, with bit 0 the rightmost. So:</p>
+    <ul class="prose">
+      <li><code>x[MSB:1]</code> is every bit except bit 0, the same as <code>x &gt;&gt; 1</code> (or <code>x // 2</code>). <code>x[0]</code> is <code>x &amp; 1</code> (or <code>x % 2</code>).</li>
+      <li><code>x[MSB:2]</code> is <code>x &gt;&gt; 2</code> (or <code>x // 4</code>). <code>x[1:0]</code> is <code>x &amp; 3</code> (or <code>x % 4</code>).</li>
+    </ul>
+    <p>Turn the offset into an int with <code>.uint</code> first and use integer math. You could index the <code>Bits</code> directly, but its index 0 is the MSB, so bit 0 is <code>offset[-1]</code>, and that's an easy place to slip.</p>
+    <div class="tscroll"><table class="ref" id="mb-offtable"></table></div>
+    <p>Look at the last column of each mode: <b>offset j always lands on v[j]</b>. That's the whole point of the design, next.</p>
+
+    <h3 id="mb-why">Why READ works this way</h3>
+    <div class="cards">
+      <div class="card"><h4>Every lane needs the same v[j]</h4><p>During a MAC, each lane is a different row of M, but they're all on the same column j, so they all need v[j] at the same moment. The buffer takes one w-bit element and copies it into every lane. In INT32 there's only one lane, so there's nothing to copy.</p></div>
+      <div class="card"><h4>Packing keeps MEM1 small</h4><p>The compiler packs 2 (INT16) or 4 (INT8) elements per MEM1 entry, which is why MEM1 is only 2<sup>16−2</sup> = 16,384 entries deep. In INT32 mode an offset of 16,384 or more would point past the end; staff said on Ed (#221) that out-of-range addresses won't be tested.</p></div>
+      <div class="card"><h4>The offset counts elements, not entries</h4><p>So the controller can step through v by adding 1 per repeat in every mode, and the buffer does the unpacking. The compiler reverses each group before packing so that v[0] sits in lane 0. That way "select bits = 0" lines up with "offset 0 = v[0]".</p></div>
+    </div>
+
+    <h3 id="mb-todo">What your code has to do</h3>
+    <ol class="prose">
+      <li><b><code>execute_instruction(inst)</code></b>: read <code>inst.get_opcode().uint</code>. Call <code>_handle_read</code> for <code>MI.READ</code> and <code>_handle_write</code> for <code>MI.WRITE</code>. Do nothing for <code>MI.NOP</code>.</li>
+      <li><b><code>_handle_read</code></b>: get both offsets as ints and the mode width. Set the MEM0 port to MEM0's entry at MemAOffset. For MEM1: work out how many elements share an entry (32 / w), which entry (the offset with its select bits dropped) and which lane (the select bits). Take that lane's bits out of the entry, repeat them to fill the 32-bit word, and set the MEM1 port.</li>
+      <li><b><code>_handle_write</code></b>: store the MEM2 input port at MEM2[MemAOffset].</li>
+    </ol>
+
+    <h3 id="mb-traps">Traps</h3>
+    <ul class="prose">
+      <li><code>get_mode()</code> gives the 2-bit code (0, 1, 2), not 8, 16 or 32. <code>MemoryInstruction</code> has no <code>get_mode_bitwidth()</code>; use <code>Mode.bitwidth()</code>.</li>
+      <li>Lane 0 is the rightmost lane. In bitstring slicing that's the last w bits.</li>
+      <li>The repeated value must be exactly 32 bits (<code>MEM1_BITWIDTH</code>). In INT8 that's the byte four times.</li>
+      <li>READ sets both ports, every time, in every mode.</li>
+      <li>WRITE stores whatever the port holds right now. Getting the PE outputs onto the port is the controller's job, not the buffer's.</li>
+      <li><b>The public READ tests only ever select lane 0.</b> <code>READ INT16 130 26</code>: 26 = 0b11010, select bit 0. <code>READ INT8 130 24</code>: 24 = 0b11000, select bits 00. A buffer that always takes the low lane passes both. (The full accelerator test would catch it, but write your own READ tests for the other lanes.)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- =================================================================== CONTROLLER -->
+<section class="view" id="view-controller" aria-label="Controller" hidden>
+  <div class="stage">
+    <div>
+      <div class="board" id="ctl">
+        <div class="cols2">
+          <div>
+            <h4 style="margin-top:0">The example's program <small class="muted">(6×3, INT16, 2 PEs)</small></h4>
+            <ul class="picklist" id="ctl-pick"></ul>
+          </div>
+          <div>
+            <h4 style="margin-top:0">One repeat, in order</h4>
+            <div class="seqbox" id="ctl-seq" style="grid-template-columns: minmax(0,1fr) minmax(0,1fr)">
+              <div data-s="mem"><b>1 · Memory</b>main buffer runs this repeat's memory instruction</div>
+              <div data-s="feed"><b>2 · Feed</b>MEM0 slice i → PE i's B; MEM1 word → every A</div>
+              <div data-s="pe"><b>3 · PEs</b>every PE runs the same PE instruction</div>
+              <div data-s="collect"><b>4 · Collect</b>PE outputs, joined in order → MEM2 input port</div>
+            </div>
+            <button class="small" id="ctl-animate">Animate one repeat</button>
+          </div>
+        </div>
+        <h4>The selected instruction as bits</h4>
+        <div id="ctl-bits"></div>
+        <div class="tscroll"><table class="ref" id="ctl-fields"></table></div>
+        <h4>How the controller expands it</h4>
+        <div class="tscroll"><table class="ref" id="ctl-expand"></table></div>
+      </div>
+    </div>
+    <aside class="panel">
+      <div aria-live="polite">
+        <h2 id="ctl-title"></h2>
+        <div class="prose" id="ctl-body"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="section memsec">
+    <h3 id="ctl-io">Inputs, outputs, state</h3>
+    <div class="tscroll"><table class="ref">
+      <tr><th></th><th>In <code>accelerator.py</code></th><th>What it is</th></tr>
+      <tr><td>instruction</td><td>the argument of <code>execute_instruction(instruction)</code></td><td>63 bits in the tests: memory instruction (36) + PE instruction (9) + Count (16) + MemAIncrement (1) + MemBIncrement (1)</td></tr>
+      <tr><td>PE array</td><td><code>self._pe_array</code></td><td>a list of <code>PE_COUNT</code> <code>ProcessingElement</code> objects</td></tr>
+      <tr><td>main buffer</td><td><code>self._main_buffer</code></td><td>one <code>MainBuffer</code></td></tr>
+      <tr><td>counter</td><td><code>self._counter</code></td><td>a <code>COUNTER_BITWIDTH</code>-bit <code>Bits</code>, there if you want a bit-accurate repeat counter</td></tr>
+      <tr><td>config</td><td><code>self._controller_config</code></td><td><code>PE_COUNT</code>, <code>PE_CONFIG</code> (the PE bit widths), <code>BUFFER_CONFIG</code></td></tr>
+    </table></div>
+    <p>The controller has no output of its own. Everything it does shows up in the PEs' registers and in MEM2.</p>
+
+    <h3 id="ctl-order">One repeat, step by step</h3>
+    <ol class="prose">
+      <li><b>Memory.</b> Give the main buffer this repeat's memory instruction: the same opcode and mode, with offsets = base + k × increment, where k counts repeats from 0. READ fills the two output ports, WRITE stores the MEM2 input port, and NOP does nothing.</li>
+      <li><b>Feed.</b> Cut the MEM0 output port into <code>PE_COUNT</code> slices of <code>INPUT_BITWIDTH</code> bits. PE i gets slice i through <code>input_b</code>. Every PE gets the MEM1 output port through <code>input_a</code>.</li>
+      <li><b>PEs.</b> Every PE executes the same PE instruction.</li>
+      <li><b>Collect.</b> Join the PE outputs (<code>get_output()</code>), in the same order, into one word and put it on MEM2's input port with <code>write_mem2_input</code>, ready for a later WRITE.</li>
+    </ol>
+    <div class="note"><b>Staff, on Ed #221:</b> "Please follow the provided compiler's convention: READ supplies the operands to its paired PE operation, while WRITE is paired with a PE NOP. To prepare the PE output before writing it to memory, issue the necessary PE instructions paired with a memory NOP first, then issue WRITE. Combined WRITE + OUT does not have required behavior and will not be graded. Similarly, out-of-range addresses will not be tested."</div>
+    <p>So memory first, then the PEs, is required: the READ's data has to reach the MAC in the same repeat. When you collect the outputs only matters for an instruction that pairs WRITE with OUT, and that won't be graded. Collecting at the end of every repeat, as above, works for every program the compiler writes.</p>
+    <h4>What happens with the wrong order</h4>
+    <p>If the PEs ran before the memory, every MAC would use the previous repeat's data. Here's the worked example both ways:</p>
+    <div id="ctl-orderdemo"></div>
+
+    <h3 id="ctl-slices">Same position in, same position out</h3>
+    <p>The compiler packed each block's rows left to right across the MEM0 word, and <code>extract_results_from_memory</code> reads MEM2 left to right. So if PE 0 reads the leftmost slice of MEM0, its output has to land in the leftmost slice of MEM2. In bitstring terms: <code>cut(INPUT_BITWIDTH)</code> yields slices left to right, and <code>Bits().join(outputs)</code> puts <code>outputs[0]</code> on the left. Use them as a pair and the order takes care of itself. (Numbering PEs from the right would also work, as long as you do it in both places. Mixing the two puts results in the wrong order.)</p>
+
+    <h3 id="ctl-why">Why Count and the increments exist</h3>
+    <p>They're a loop built into the hardware. Without them, the program would need one instruction per column per block. With them, it's 4 instructions per block no matter how many columns there are. The INT16 public test is 24 instructions that expand to 402 repeats. The INT32 one is 240 instructions and 4,020 repeats. The instruction memory stays tiny, and that's what lets the controller stay simple.</p>
+
+    <h3 id="ctl-todo">What your code has to do</h3>
+    <ol class="prose">
+      <li>Pull the parts out of the instruction: <code>get_mem_instruction()</code>, <code>get_pe_instruction()</code>, <code>get_count()</code>, <code>get_mema_inc()</code>, <code>get_memb_inc()</code>. The last three are <code>Bits</code>, so use <code>.uint</code>. Read the base offsets from the memory instruction.</li>
+      <li>Loop Count + 1 times, k = 0, 1, …, Count. Each time, build this repeat's memory instruction (same opcode and mode, offsets base + k × increment), then do the four steps above.</li>
+      <li>That's it. <code>execute_instructions</code> already calls you once per instruction.</li>
+    </ol>
+
+    <h3 id="ctl-traps">Traps</h3>
+    <ul class="prose">
+      <li>Count is stored as repeats − 1. Loop Count + 1 times, not Count.</li>
+      <li>Don't permanently change the <code>Instruction</code> you were handed. If you bump its memory instruction's offsets in place, that object no longer matches the program, and running it a second time would start from the wrong addresses. Work on a copy for each repeat (Python's <code>copy.copy</code> is enough here, since the <code>Bits</code> inside are immutable), or recompute the offsets from the original base values every time.</li>
+      <li><code>set_mema_offset</code> builds <code>Bits(uint=..., length=16)</code>, which raises if base + k × increment reaches 65,536. Staff said out-of-range addresses won't be tested.</li>
+      <li>Memory, then feed, then PEs. Swap them and every MAC is one repeat behind (the demo above).</li>
+      <li>A test can't catch the wrong order if its vector's last element is 0: the one product you'd lose is zero anyway. One of the random cases used to check this page has exactly that.</li>
+      <li>Every PE gets the same MEM1 word and the same PE instruction object. That's fine; PEs only read the instruction.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- =================================================================== READ THE CODE -->
+<section class="view" id="view-code-map" aria-label="Read the code" hidden>
+  <div style="padding-top:16px">
+    <div class="section">
+      <h2>Read the code</h2>
+      <p>Every starter file, top to bottom, cut into highlighted blocks. Next to each block: what it does, the part of the handout (or of the animation) it implements, what its variables actually hold when it runs on the 6×3 example, and how to read the Python in it. A block that's only Python plumbing says so.</p>
+      <div class="legend" style="padding-top:0">
+        <span class="chip"><span class="sw m0"></span>matrix / MEM0</span>
+        <span class="chip"><span class="sw m1"></span>vector / MEM1</span>
+        <span class="chip"><span class="sw pe"></span>PE</span>
+        <span class="chip"><span class="sw m2"></span>results / MEM2</span>
+        <span class="chip"><span class="sw ctl"></span>instructions / controller</span>
+        <span class="chip"><span class="sw" style="background:var(--paper-3);border-color:var(--line)"></span>plumbing</span>
+        <span class="chip"><span class="sw chg"></span>where your code goes</span>
+      </div>
+    </div>
+
+    <details class="maps" id="cm-objmap" open>
+      <summary>Who calls whom: one test run, as code</summary>
+      <p class="cap" style="margin-top:4px">The whole program is this one call tree. Click any name to jump to its code.</p>
+      <ul class="tree">
+        <li><button class="link" data-goto="code-map/cm-run-test"><code>run_test()</code></button> <span class="muted">in test_accelerator.py, the host</span>
+          <ul>
+            <li><button class="link" data-goto="code-map/cm-sizing"><code>generate_accelerator_and_instruction_configuration()</code></button> <span class="muted">→ two config records: the hardware's sizes and the instruction format</span></li>
+            <li><button class="link" data-goto="code-map/r-asm-class"><code>Assembler(inst_config)</code></button> <span class="muted">→ an object that turns text into instructions</span></li>
+            <li><button class="link" data-goto="code-map/r-acc-init"><code>Accelerator(accel_config)</code></button> <span class="badge yours">yours</span> <span class="muted">→ builds the hardware:</span>
+              <ul>
+                <li><button class="link" data-goto="code-map/r-acc-pes"><code>self._pe_array</code></button> <span class="muted">a list of PE_COUNT <code>ProcessingElement</code> objects, each with <code>_input_a_value</code>, <code>_input_b_value</code>, <code>_acc_value</code>, <code>_output_value</code></span></li>
+                <li><button class="link" data-goto="code-map/r-acc-mb"><code>self._main_buffer</code></button> <span class="muted">one <code>MainBuffer</code>: <code>_mem0</code>, <code>_mem1</code>, <code>_mem2</code> and three ports</span></li>
+              </ul></li>
+            <li><button class="link" data-goto="code-map/cm-rows-per-block"><code>compile_matrix_vector_multiplication(M, v, …)</code></button> <span class="muted">→ MEM0 image, MEM1 image, program text</span></li>
+            <li><button class="link" data-goto="code-map/cm-acc-host"><code>accel.set_memory(mem0, mem1)</code></button> <span class="muted">→ <code>MainBuffer.set_mem0_bits</code> / <code>set_mem1_bits</code></span></li>
+            <li><button class="link" data-goto="code-map/r-asm-all"><code>assembler.assemble_instructions(text)</code></button> <span class="muted">→ a list of</span> <button class="link" data-goto="code-map/cm-inst"><code>Instruction</code></button> <span class="muted">objects, each a MemoryInstruction + a ProcessingElementInstruction + Count and the two increments</span></li>
+            <li><button class="link" data-goto="code-map/r-acc-loop"><code>accel.execute_instructions(list)</code></button>
+              <ul>
+                <li><button class="link" data-goto="code-map/cm-acc-yours"><code>accel.execute_instruction(inst)</code></button> <span class="badge yours">yours</span> <span class="muted">once per instruction, which repeats Count + 1 times:</span>
+                  <ul>
+                    <li><button class="link" data-goto="code-map/cm-mb-yours"><code>self._main_buffer.execute_instruction(mem_inst)</code></button> <span class="badge yours">yours</span> <span class="muted">READ fills the ports, WRITE stores into MEM2</span></li>
+                    <li><button class="link" data-goto="code-map/cm-mb-ports"><code>read_mem0_output()</code>, <code>read_mem1_output()</code></button> <span class="muted">then</span> <button class="link" data-goto="code-map/r-pe-inputs"><code>pe.input_b(slice)</code>, <code>pe.input_a(word)</code></button> <span class="muted">for every PE</span></li>
+                    <li><button class="link" data-goto="code-map/cm-pe-yours"><code>pe.execute_instruction(pe_inst)</code></button> <span class="badge yours">yours</span> <span class="muted">the same instruction for every PE</span></li>
+                    <li><button class="link" data-goto="code-map/cm-pe-out"><code>pe.get_output()</code></button> <span class="muted">for every PE, joined, then</span> <button class="link" data-goto="code-map/cm-mb-ports"><code>write_mem2_input(word)</code></button></li>
+                  </ul></li>
+              </ul></li>
+            <li><button class="link" data-goto="code-map/cm-extract"><code>extract_results_from_memory(accel.get_mem2(), …)</code></button> <span class="muted">→ y, compared with numpy's M @ v</span></li>
+          </ul></li>
+      </ul>
+    </details>
+
+    <details class="maps" id="py-primer">
+      <summary>Python primer: everything this code uses, in one place</summary>
+      <div class="cards">
+        <div class="card" id="py-import"><h4>Files, modules, imports</h4><p>Each .py file is a <b>module</b>. <code>from src.compiler import f</code> makes <code>f</code> usable by name. <code>import numpy as np</code> loads a whole module under a short name, so you write <code>np.zeros(...)</code>. Inside <code>src/</code>, <code>from .instruction import X</code> (leading dot) means the file next door.</p></div>
+        <div class="card" id="py-class"><h4>Classes, objects, <code>self</code></h4><p>A <b>class</b> is a blueprint, roughly a C struct plus the functions that work on it. <code>pe = ProcessingElement(cfg)</code> makes an <b>object</b> and runs <code>__init__(self, cfg)</code> to fill it in. Functions defined inside a class are <b>methods</b>; Python passes the object as the first parameter, <code>self</code>. So inside <code>execute_instruction(self, inst)</code>, <code>self._acc_value</code> is <i>this</i> PE's accumulator. <code>self.x = …</code> creates or replaces an attribute.</p></div>
+        <div class="card" id="py-underscore"><h4>Names starting with <code>_</code></h4><p><code>_acc_value</code>, <code>_handle_mac</code>: "internal, use from inside the class". It's a naming convention only; Python doesn't enforce it.</p></div>
+        <div class="card" id="py-dataclass"><h4><code>@dataclass</code> records</h4><p><code>@dataclass class Cfg: WIDTH : int</code> makes a record type (like a struct). <code>Cfg(WIDTH=32)</code> builds one, <code>cfg.WIDTH</code> reads it, and printing one shows every field, as in the value tables here.</p></div>
+        <div class="card" id="py-hints"><h4>Type hints</h4><p><code>x : int</code>, <code>-&gt; Bits</code>, <code>list[Bits]</code>: notes for humans and editors about what a value should be. Python never checks them when the program runs.</p></div>
+        <div class="card" id="py-args"><h4>Function arguments</h4><p><b>Defaults:</b> <code>def f(a, b=4)</code>. <b>Keyword arguments:</b> <code>f(1, b=5)</code>, <code>Bits(int=-3, length=8)</code>. <b>Several results:</b> <code>return a, b</code> returns a tuple, and <code>x, y = f()</code> unpacks it.</p></div>
+        <div class="card" id="py-lists"><h4>Lists and comprehensions</h4><p><code>[]</code> is an empty list, <code>lst[i]</code> an item, <code>len(lst)</code> the length, <code>lst + [x]</code> a new list with x added. <code>[f(x) for x in xs]</code> is a <b>comprehension</b>: a one-line loop that builds a list. <code>for _ in range(n)</code> is used when the loop variable isn't needed.</p></div>
+        <div class="card" id="py-slice"><h4>Slicing and indexing</h4><p><code>a[i:j]</code> is items i … j−1 (the end is never included). <code>a[:j]</code> starts at the beginning, <code>a[i:]</code> goes to the end, <code>a[-1]</code> is the last item. numpy 2-D: <code>m[r0:r1, c]</code> is rows r0 … r1−1 of column c. For a <code>Bits</code>, index 0 is the <b>leftmost</b> (most significant) bit.</p></div>
+        <div class="card" id="py-text"><h4>Text</h4><p><code>f"READ {x}"</code> is an <b>f-string</b>: <code>{x}</code> is replaced by x's value. <code>s.strip()</code> trims spaces, <code>.upper()</code> uppercases, <code>.split('|')</code> cuts into a list, <code>int('3')</code> turns text into a number.</p></div>
+        <div class="card" id="py-dict"><h4>Dictionaries</h4><p>A lookup table: <code>d = {'READ': [0], 'WRITE': [1]}</code>. <code>d['READ']</code> is <code>[0]</code>; <code>d.get('X')</code> is <code>None</code> instead of an error when the key is missing.</p></div>
+        <div class="card" id="py-errors"><h4>Errors</h4><p><code>raise ValueError('…')</code> stops the program with a message. <code>try: … except: …</code> catches an error and does something else instead.</p></div>
+        <div class="card" id="py-int"><h4>Integer math</h4><p><code>/</code> always gives a float (<code>32/8</code> is <code>4.0</code>); <code>//</code> is floor division; <code>%</code> is the remainder; <code>&gt;&gt;</code> and <code>&lt;&lt;</code> shift (on negatives <code>&gt;&gt;</code> rounds toward −∞); <code>&amp;</code> <code>|</code> are bitwise AND / OR; <code>**</code> is power. <b>Python ints never overflow</b>: <code>2**100</code> is fine. A fixed width only exists where you create one, for example a <code>Bits</code> of a given length, which raises an error if the value doesn't fit.</p></div>
+        <div class="card" id="py-bits"><h4><code>Bits</code> (the bitstring library)</h4><p><b>Make one:</b> <code>Bits(int=-2, length=16)</code> (signed), <code>Bits(uint=5, length=8)</code>, <code>Bits(hex='0x7f')</code>, <code>Bits(bin='0101')</code>. <b>Read it:</b> <code>.int</code>, <code>.uint</code>, <code>.hex</code>, <code>.bin</code>, <code>len(b)</code>. <b>Cut it:</b> <code>b[0:16]</code> (from the left), <code>b.cut(16)</code> (16-bit pieces, left to right). <b>Combine:</b> <code>Bits().join([a, b])</code> or <code>a + b</code> (a on the left), <code>b * 4</code> (b repeated). <code>==</code> compares every bit. A Bits never changes: make a new one instead.</p></div>
+        <div class="card" id="py-numpy"><h4>numpy, only what the starter uses</h4><p>Arrays have a <code>.shape</code> like <code>(768, 64)</code>. <code>np.zeros(n)</code>, <code>np.concatenate([a, b])</code>, <code>a.flatten()</code> (to 1-D), <code>np.ceil</code>, <code>np.log2</code>, <code>np.random.randint(lo, hi, size=…)</code> (hi excluded), <code>a @ b</code> (matrix multiply), <code>np.all(a == b)</code> (every element equal).</p></div>
+        <div class="card" id="py-main"><h4>Running a file</h4><p><code>if __name__ == "__main__": main()</code> runs <code>main()</code> only when the file is run directly, not when it's imported by another file.</p></div>
+      </div>
+    </details>
+
+    <!--READER-->
+  </div>
+</section>
+
+</main>
+<footer class="wrap">
+  Made for EE271 Project Part 1 (<code>handouts/Project_Part_1.pdf</code>). The animations run on a small JavaScript model of the accelerator, checked against every public test and against the starter's own compiler and assembler output. It isn't the Python you submit. Built with Claude Code; see <code>docs/ai-log.md</code>.
+</footer>
+
+<script>
+/*MODEL*/
+</script>
+<script>
+/*APP*/
+</script>
+</body>
+</html>
