@@ -185,6 +185,8 @@ Every experiment: one change, `make check` + `make eq-stress` green, `make synth
   don't); INT8 can't run below 5 PEs.
 - **Leakage** in this library (typical corner) is about 15–27 nW/µm², so a 300k µm² design leaks roughly 5–8 mW.
   Area shows up in the power term too.
+- **Clock power:** a DFFR_X1 clock pin costs about 9.6 fJ per cycle, so the 1,536 PE flops alone burn about 7.4 mW at
+  2 ns, every cycle, whether or not their value changes. That is what clock gating removes.
 
 ## Calendar
 
@@ -193,7 +195,7 @@ Every experiment: one change, `make check` + `make eq-stress` green, `make synth
 | **Sat 11/14** | Setup on both laptops; read; pair session #1 (contract); start modules |
 | Sun 11/15 | Modules to green on their own checks; open PRs; teach-backs |
 | Mon 11/16 | `top.sv` together; `make check` green; caddy access sanity check (log in, clone, `make setup PART=part2`) |
-| Tue 11/17 | Caddy: `make vcs-eq`, `make synth`, fix `compile.log`; pair session #3 reading the reports; baseline FoM |
+| Tue 11/17 | Caddy: `make vcs-eq`, `make synth`, fix `compile.log`; pair session #3 reading the reports; baseline FoM. **First-run checks:** below |
 | Wed 11/18 | `make eq-stress`; spec edge cases; review the whole RTL together; **mock oral #1** (Parts 1–2, 15 min each) |
 | **Thu 11/19** | **Submit Part 2** (`make submit-check`, `make submit PART=part2`, tag `part2-submitted`) |
 | Fri 11/20 | Backup deadline. Review session 9 (Part 3 + HLS). Pair session #4: Part 3 strategy; create `optimized_verilog/` |
@@ -204,6 +206,19 @@ Every experiment: one change, `make check` + `make eq-stress` green, `make synth
 | Wed 12/2 | Oral prep: `docs/oral-prep.html` mock mode, swap roles, fill every **Our design** field |
 | **Thu 12/3** | **Oral exam** |
 | Fri 12/4 | Handout's report date: backup only |
+
+## First Design Compiler run: check these three things
+
+1. **Did the logic survive?** In `runs/<tag>/area_report_hier`, every `g_pe[*]` PE instance should have several
+   thousand µm² (a naive PE is roughly 10–15k µm² by Yosys estimate; 16 PEs ≈ 150k, which matches the staff's
+   `TARGET_AREA=150000`). The SRAMs are empty modules and `top` has no outputs, so a tool may delete logic whose only
+   loads are those empty pins: Yosys does exactly that (0 cells; see `docs/synthesis.html`, Black boxes). If DC does
+   too, ask on Ed before patching anything. The usual remedy is `set_dont_touch` on the memory instances before `compile_ultra`.
+2. **Did DesignWare load?** `dc_synth.tcl` points `dw_foundation.sldb` at `/cad/synopsys/syn/M-2016.12-SP2/...`
+   while `load_modules.sh` loads DC S-2021.06-SP5-4. Look for "Cannot find" / unresolved-library messages in
+   `compile.log`.
+3. **Did it fail quietly?** The staff Makefile pipes DC through `tee`, so `make` "succeeds" even when DC errors out (the
+   same goes for `check_results.sh` in the equivalence tests). `make synth` counts error lines in `compile.log` for you.
 
 ## Questions to ask staff on Ed
 

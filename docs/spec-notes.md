@@ -150,6 +150,11 @@ a throwaway reference RTL (kept outside the repo) and deliberately broken copies
   `addr_from_controller_reg` (last cycle), using a single `mode` input. Feed it last cycle's mode for the data side
   (see the trap below).
 - **Assembler:** NOP and WRITE leave the memory **mode field at 0 (INT8)**; only READ sets it.
+- **Synthesis script quirks** (from reading it; confirm on the first run): `make synthesize` pipes DC through `tee`, so its
+  exit status says nothing; `results.txt` is appended to (our `make synth` clears it first); the staff Makefile runs
+  `ivd-gv` with 16 PEs whatever you want (ours passes `PE_COUNT`); DesignWare is looked up under an older install path
+  (`M-2016.12-SP2`) than the loaded DC (S-2021.06-SP5-4); `set_max_fanout` and the 3/4-period input delay only
+  touch input ports, effectively just `instruction_count`.
 - **Synthesis defaults:** 2.0 ns clock, `TARGET_AREA=150000`, `compile_ultra -retime -timing_high_effort_script` with
   `set_optimize_registers true` already in `dc_synth.tcl`, Nangate 45 nm + DesignWare. Part 3 area cap: 1,000,000 µm².
 
