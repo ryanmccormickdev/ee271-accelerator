@@ -5,8 +5,9 @@ split the work so that **both of us can defend every line in the oral exam**. Ed
 
 ## Start here (first session, ~2 hours)
 
-1. **Get the repo** (Ryan, once): `git switch main && git merge --ff-only part2-setup && scripts/share-on-github.sh <partner-username>`.
-   Partner: accept the GitHub invite, then `git clone ... && cd ee271-project && make setup && make setup PART=part2`.
+1. **Get the repo.** It's at https://github.com/ryanmccormickdev/ee271-accelerator (private; Ryan invites the partner
+   with `scripts/share-on-github.sh <partner-username>`). Partner: accept the GitHub invite, then
+   `git clone https://github.com/ryanmccormickdev/ee271-accelerator.git ee271-project && cd ee271-project && make setup && make setup PART=part2`.
 2. **Prove the toolchain** on your laptop: `make check`. On the untouched skeleton it *should* fail, with messages
    about missing names and x values. That's the starting line.
 3. **Read** `docs/part2-rtl.html` (start with the *Cycles* tab), then this file's [timing contract](#the-timing-contract).

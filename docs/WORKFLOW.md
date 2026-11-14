@@ -107,7 +107,7 @@ OnDemand desktop so the GUIs work without X forwarding).
 ```sh
 ssh <sunetid>@login.farmshare.stanford.edu          # or use the OnDemand desktop's terminal
 ssh -XY caddy.best.stanford.edu                      # (staff also wrote caddyXX.stanford.edu)
-git clone https://github.com/<owner>/ee271-project.git && cd ee271-project
+git clone https://github.com/ryanmccormickdev/ee271-accelerator.git ee271-project && cd ee271-project
 make setup PART=part2                                # Linux conda env, bitstring<5 pinned (once per machine)
 tcsh                                                 # the course's module setup is tcsh
 source part2/load_modules.sh                         # vcs/S-2021.09-SP1, dc_shell/S-2021.06-SP5-4, ivd-* on PATH

@@ -30,7 +30,7 @@ Needs `git`, `make` and conda (`make setup` explains how to install it if missin
 `brew install icarus-verilog verilator surfer` (Icarus is the default simulator, Verilator does lint, Surfer shows waveforms).
 
 ```sh
-git clone <our private GitHub URL> ee271-project
+git clone https://github.com/ryanmccormickdev/ee271-accelerator.git ee271-project
 cd ee271-project
 make setup                 # Part 1's environment
 make setup PART=part2      # Part 2's (pins bitstring<5: the staff tools break on bitstring 5)
@@ -83,10 +83,14 @@ ee271-project/
   oral exam, and the final report needs a one-page reflection. Log as you go in `docs/ai-log.md`.
 - **Keep this repo private.** The honor code forbids letting other students see or copy our code.
 
-## Sharing this repo (one time, by whoever owns it)
+## Sharing this repo
+
+It lives at https://github.com/ryanmccormickdev/ee271-accelerator (**private**). To give the partner access (Ryan,
+as the owner):
 
 ```sh
 scripts/share-on-github.sh <partner-github-username>
 ```
 
-This creates a **private** GitHub repo, pushes, and invites the partner. Then see `docs/WORKFLOW.md`.
+It pushes `main`, stops if the repo isn't private, and sends a GitHub invite (accept it from GitHub's email or
+notifications). Then see `docs/WORKFLOW.md`.
