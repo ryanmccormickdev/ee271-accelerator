@@ -137,7 +137,8 @@ check:
 	  && echo && echo "ALL LOCAL CHECKS PASS for $(RTL) ($(PE_COUNT) PEs, $(SIM)). Before submitting also run: make eq-stress, and on caddy: make vcs-eq"
 
 waves:
-	@f=$$(find build -name 'waves.vcd' -type f 2>/dev/null | xargs ls -t 2>/dev/null | head -1); \
+	@files=$$(find build -name 'waves.vcd' -type f 2>/dev/null); f=""; \
+	 if [ -n "$$files" ]; then f=$$(ls -t $$files | head -1); fi; \
 	 if [ -z "$$f" ]; then echo "No waveform yet. Run e.g. make tb TB=pe, or make eq MODE=int32 WAVES=1"; exit 1; fi; \
 	 echo ">> $$f"; \
 	 if command -v surfer >/dev/null; then (surfer "$$f" >/dev/null 2>&1 &); \

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Local equivalence test: our RTL vs the staff's Python reference, the same recipe as
-# part2/equivalence_testing/Makefile (int8_test / int16_test / int32_test) but with Verilator instead of VCS.
+# part2/equivalence_testing/Makefile (int8_test / int16_test / int32_test) but with Icarus (default) or Verilator instead of VCS.
 #
 #   scripts/rtl/eq.sh int8|int16|int32|all       the official tests (1024x1024 / 512x512 / 256x256, seeds 0 and 12345)
 #   scripts/rtl/eq.sh stress                     extra seeds, sizes and value ranges the official tests don't cover

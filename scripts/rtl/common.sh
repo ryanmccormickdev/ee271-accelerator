@@ -52,9 +52,10 @@ pick_python
 # Run a staff tool: ivd gv|cc|as|mg|sim [args...]. They import `src` via simulator/bin/src -> ../src.
 ivd() { local t="$1"; shift; "$PY" "$BIN/ivd-$t" "$@"; }
 
-# Smallest instruction-memory depth (power of two, >= 128) that holds N instructions.
-# ivd-as silently drops instructions beyond --controller_imem_depth, so we size it to the program.
-imem_depth_for() { local d=128; while [ "$d" -lt "$1" ]; do d=$((d * 2)); done; echo "$d"; }
+# Smallest instruction-memory depth (power of two, >= 128) for an INST_COUNT of N (program lines + the zero word).
+# ivd-as silently drops instructions beyond --controller_imem_depth, and the testbench's instruction_count port is
+# only log2(depth) bits wide, so N must be strictly less than the depth (N = depth would wrap to 0).
+imem_depth_for() { local d=128; while [ "$d" -le "$1" ]; do d=$((d * 2)); done; echo "$d"; }
 
 need_tool() { command -v "$1" >/dev/null 2>&1 || die "$1 not found. $2"; }
 
