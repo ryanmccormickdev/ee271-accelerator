@@ -35,19 +35,34 @@ class MainBuffer:
 
     def execute_instruction(self, instruction : MemoryInstruction) -> None:
         # START IMPLEMENTATION
-        # Your Code Here
+        op = instruction.get_opcode().uint
+        if op == MI.READ:
+            self._handle_read(instruction)
+        elif op == MI.WRITE:
+            self._handle_write(instruction)
+        else: # NOP
+            pass
         # END IMPLEMENTATION
         return None
 
     def _handle_read(self, instruction : MemoryInstruction) -> None:
         # START IMPLEMENTATION
-        # Your Code Here
+        w = Mode.bitwidth(instruction.get_mode().uint)
+        lanes_per_word = self._buffer_config.MEM1_BITWIDTH // w
+        
+        self._mem0_output_port = self._mem0[instruction.get_mema_offset().uint]
+        
+        # MEM1 needs different treatment
+        mem1_offset = instruction.get_memb_offset().uint
+        mem1_word = mem1_offset // lanes_per_word
+        mem1_lane = lanes_per_word - 1 - (mem1_offset % lanes_per_word)
+        self._mem1_output_port = list(self._mem1[mem1_word].cut(w))[mem1_lane] * lanes_per_word
         # END IMPLEMENTATION
         return None
 
     def _handle_write(self, instruction : MemoryInstruction) -> None:
         # START IMPLEMENTATION
-        # Your Code Here
+        self._mem2[instruction.get_mema_offset().uint] = self._mem2_input_port
         # END IMPLEMENTATION
         return None
 
