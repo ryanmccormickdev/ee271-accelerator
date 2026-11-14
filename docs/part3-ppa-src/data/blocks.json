@@ -1,0 +1,586 @@
+{
+ "tool": "Yosys 0.68+post (git sha1 c12172fbae8af5e20f6fb52e3d4e92d56ed587b6, Release, AppleClang clang++ 21.0.0.21000101)",
+ "liberty": "NangateOpenCellLibrary_typical.lib",
+ "label": "Yosys + open Nangate45 estimate, not Design Compiler",
+ "flow": "synth -noabc [-booth]; dfflibmap; abc: strash; map -D <target>; stime -p",
+ "blocks": [
+  {
+   "module": "mul32s",
+   "what": "32x32 signed multiplier, 64-bit product",
+   "relaxed": {
+    "area_um2": 4928.45,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 2037.74,
+    "cells": {
+     "XNOR2_X1": 1213,
+     "NAND2_X1": 643,
+     "XOR2_X1": 504,
+     "OAI22_X1": 496,
+     "INV_X1": 388,
+     "OAI21_X1": 314,
+     "NOR2_X1": 212,
+     "AOI21_X1": 152,
+     "AND2_X1": 69,
+     "NAND3_X1": 13,
+     "NOR3_X1": 13,
+     "OAI221_X1": 8,
+     "OR2_X1": 7,
+     "MUX2_X1": 5,
+     "OAI211_X1": 4,
+     "AND3_X1": 2,
+     "NAND4_X1": 2,
+     "AOI211_X1": 1,
+     "NOR4_X1": 1
+    }
+   },
+   "fast": {
+    "area_um2": 8562.81,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 1810.88,
+    "cells": {
+     "NAND2_X1": 2037,
+     "INV_X1": 1199,
+     "AOI21_X1": 1105,
+     "NAND3_X1": 947,
+     "NOR2_X1": 859,
+     "OAI211_X1": 633,
+     "XNOR2_X1": 576,
+     "OAI21_X1": 398,
+     "OAI22_X1": 318,
+     "AND3_X1": 237,
+     "AOI22_X1": 95,
+     "XOR2_X1": 75,
+     "AND2_X1": 74,
+     "NOR3_X1": 43,
+     "OR2_X1": 38,
+     "NAND4_X1": 28,
+     "OAI221_X1": 21,
+     "AOI211_X1": 5,
+     "MUX2_X1": 5,
+     "OR3_X1": 4,
+     "AND4_X1": 3
+    }
+   },
+   "array_relaxed": {
+    "area_um2": 7426.72,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 1814.47,
+    "cells": {
+     "NAND2_X1": 1833,
+     "XNOR2_X1": 1290,
+     "XOR2_X1": 1127,
+     "NOR2_X1": 812,
+     "INV_X1": 523,
+     "OAI21_X1": 491,
+     "AOI21_X1": 488,
+     "NOR3_X1": 29,
+     "AND2_X1": 27,
+     "NAND3_X1": 22,
+     "OR2_X1": 13,
+     "OAI221_X1": 10,
+     "AND4_X1": 5,
+     "AOI211_X1": 4,
+     "AND3_X1": 3,
+     "NAND4_X1": 3,
+     "OAI211_X1": 2,
+     "MUX2_X1": 1
+    }
+   }
+  },
+  {
+   "module": "mul17s",
+   "what": "17x17 signed multiplier, 34-bit product",
+   "relaxed": {
+    "area_um2": 1589.35,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 1351.39,
+    "cells": {
+     "XNOR2_X1": 378,
+     "NAND2_X1": 235,
+     "XOR2_X1": 151,
+     "INV_X1": 144,
+     "OAI22_X1": 128,
+     "OAI21_X1": 96,
+     "NOR2_X1": 86,
+     "AOI21_X1": 44,
+     "AND2_X1": 26,
+     "MUX2_X1": 18,
+     "OR2_X1": 8,
+     "NAND3_X1": 7,
+     "AND3_X1": 3,
+     "NOR3_X1": 3,
+     "OAI221_X1": 3,
+     "NAND4_X1": 2,
+     "OAI211_X1": 1
+    }
+   },
+   "fast": {
+    "area_um2": 2634.2,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 1073.09,
+    "cells": {
+     "NAND2_X1": 702,
+     "INV_X1": 362,
+     "AOI21_X1": 327,
+     "NAND3_X1": 290,
+     "NOR2_X1": 207,
+     "XNOR2_X1": 176,
+     "OAI211_X1": 161,
+     "OAI21_X1": 119,
+     "OAI22_X1": 82,
+     "AND3_X1": 66,
+     "AOI22_X1": 34,
+     "AND2_X1": 33,
+     "XOR2_X1": 26,
+     "NAND4_X1": 21,
+     "MUX2_X1": 20,
+     "NOR3_X1": 20,
+     "OR2_X1": 18,
+     "OAI221_X1": 6,
+     "OR3_X1": 2,
+     "AND4_X1": 1
+    }
+   },
+   "array_relaxed": {
+    "area_um2": 2189.18,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 1142.86,
+    "cells": {
+     "NAND2_X1": 494,
+     "XNOR2_X1": 411,
+     "XOR2_X1": 303,
+     "NOR2_X1": 244,
+     "AOI21_X1": 159,
+     "INV_X1": 151,
+     "OAI21_X1": 131,
+     "AND2_X1": 17,
+     "NAND3_X1": 11,
+     "NOR3_X1": 11,
+     "OR2_X1": 8,
+     "AOI211_X1": 3,
+     "OAI221_X1": 3,
+     "AND3_X1": 2,
+     "AND4_X1": 2,
+     "NAND4_X1": 2,
+     "MUX2_X1": 1,
+     "OAI211_X1": 1,
+     "OR3_X1": 1
+    }
+   }
+  },
+  {
+   "module": "mul16s",
+   "what": "16x16 signed multiplier, 32-bit product",
+   "relaxed": {
+    "area_um2": 1324.41,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 1295.76,
+    "cells": {
+     "XNOR2_X1": 350,
+     "NAND2_X1": 188,
+     "INV_X1": 134,
+     "OAI22_X1": 120,
+     "XOR2_X1": 99,
+     "OAI21_X1": 74,
+     "NOR2_X1": 73,
+     "AOI21_X1": 41,
+     "AND2_X1": 13,
+     "NAND3_X1": 8,
+     "OAI221_X1": 4,
+     "OR2_X1": 4,
+     "NOR3_X1": 3,
+     "AND3_X1": 2,
+     "AND4_X1": 1,
+     "AOI211_X1": 1,
+     "MUX2_X1": 1,
+     "NAND4_X1": 1,
+     "OAI211_X1": 1
+    }
+   },
+   "fast": {
+    "area_um2": 2111.77,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 1027.81,
+    "cells": {
+     "NAND2_X1": 511,
+     "INV_X1": 282,
+     "AOI21_X1": 253,
+     "NAND3_X1": 210,
+     "XNOR2_X1": 203,
+     "NOR2_X1": 189,
+     "OAI211_X1": 116,
+     "OAI21_X1": 93,
+     "OAI22_X1": 88,
+     "AND3_X1": 50,
+     "AND2_X1": 32,
+     "AOI22_X1": 24,
+     "XOR2_X1": 20,
+     "OR2_X1": 14,
+     "NAND4_X1": 8,
+     "NOR3_X1": 8,
+     "OAI221_X1": 5,
+     "MUX2_X1": 3,
+     "OR3_X1": 2,
+     "AND4_X1": 1
+    }
+   },
+   "array_relaxed": {
+    "area_um2": 1975.05,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 1164.61,
+    "cells": {
+     "NAND2_X1": 423,
+     "XNOR2_X1": 381,
+     "XOR2_X1": 261,
+     "NOR2_X1": 228,
+     "INV_X1": 171,
+     "AOI21_X1": 150,
+     "OAI21_X1": 114,
+     "AND2_X1": 14,
+     "NOR3_X1": 12,
+     "OR2_X1": 9,
+     "NAND3_X1": 8,
+     "AND3_X1": 3,
+     "OAI221_X1": 2,
+     "AND4_X1": 1,
+     "MUX2_X1": 1,
+     "NAND4_X1": 1,
+     "OR3_X1": 1
+    }
+   }
+  },
+  {
+   "module": "mul8s",
+   "what": "8x8 signed multiplier, 16-bit product",
+   "relaxed": {
+    "area_um2": 361.49,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 849.65,
+    "cells": {
+     "XNOR2_X1": 83,
+     "NAND2_X1": 45,
+     "INV_X1": 40,
+     "XOR2_X1": 37,
+     "NOR2_X1": 29,
+     "OAI22_X1": 28,
+     "AOI21_X1": 16,
+     "OAI21_X1": 14,
+     "AND2_X1": 7,
+     "NAND3_X1": 6,
+     "OAI211_X1": 2,
+     "MUX2_X1": 1,
+     "NOR3_X1": 1,
+     "OR2_X1": 1
+    }
+   },
+   "fast": {
+    "area_um2": 567.91,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 675.24,
+    "cells": {
+     "NAND2_X1": 113,
+     "INV_X1": 84,
+     "AOI21_X1": 75,
+     "NAND3_X1": 59,
+     "XNOR2_X1": 53,
+     "OAI21_X1": 49,
+     "NOR2_X1": 37,
+     "OAI211_X1": 24,
+     "OAI22_X1": 21,
+     "AND3_X1": 10,
+     "NOR3_X1": 8,
+     "AND2_X1": 7,
+     "OR2_X1": 7,
+     "XOR2_X1": 6,
+     "AOI22_X1": 5,
+     "NAND4_X1": 5,
+     "AOI211_X1": 1,
+     "MUX2_X1": 1,
+     "OAI221_X1": 1
+    }
+   },
+   "array_relaxed": {
+    "area_um2": 467.89,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 806.24,
+    "cells": {
+     "XNOR2_X1": 102,
+     "NAND2_X1": 92,
+     "NOR2_X1": 60,
+     "XOR2_X1": 53,
+     "AOI21_X1": 44,
+     "INV_X1": 35,
+     "OAI21_X1": 15,
+     "NOR3_X1": 5,
+     "NAND3_X1": 3,
+     "OR2_X1": 2,
+     "AND3_X1": 1,
+     "AOI211_X1": 1,
+     "MUX2_X1": 1,
+     "NAND4_X1": 1,
+     "OAI211_X1": 1
+    }
+   }
+  },
+  {
+   "module": "add64",
+   "what": "64-bit adder (Yosys's own adder structure)",
+   "relaxed": {
+    "area_um2": 429.32,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 642.13,
+    "cells": {
+     "XNOR2_X1": 105,
+     "NAND2_X1": 81,
+     "OAI21_X1": 60,
+     "NOR2_X1": 41,
+     "AOI21_X1": 32,
+     "XOR2_X1": 22,
+     "INV_X1": 21,
+     "OAI211_X1": 5,
+     "NAND3_X1": 4,
+     "OR3_X1": 2,
+     "AND4_X1": 1,
+     "AOI211_X1": 1,
+     "NOR3_X1": 1,
+     "OAI221_X1": 1,
+     "OR2_X1": 1
+    }
+   },
+   "fast": {
+    "area_um2": 498.48,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 417.67,
+    "cells": {
+     "XNOR2_X1": 99,
+     "NAND2_X1": 92,
+     "OAI21_X1": 61,
+     "AOI21_X1": 49,
+     "INV_X1": 47,
+     "NOR2_X1": 45,
+     "XOR2_X1": 27,
+     "AND2_X1": 15,
+     "NAND3_X1": 7,
+     "OAI211_X1": 5,
+     "OR2_X1": 4,
+     "NAND4_X1": 3,
+     "OAI221_X1": 3,
+     "AND4_X1": 1,
+     "AOI22_X1": 1
+    }
+   }
+  },
+  {
+   "module": "add64_ks",
+   "what": "64-bit adder written as a Kogge-Stone prefix tree",
+   "relaxed": {
+    "area_um2": 896.15,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 380.48,
+    "cells": {
+     "INV_X1": 179,
+     "NOR2_X1": 167,
+     "NAND2_X1": 150,
+     "AOI21_X1": 129,
+     "XNOR2_X1": 121,
+     "OAI21_X1": 87,
+     "OAI211_X1": 19,
+     "NAND3_X1": 17,
+     "OAI221_X1": 16,
+     "AND2_X1": 15,
+     "NAND4_X1": 9,
+     "OR2_X1": 8,
+     "NOR3_X1": 7,
+     "XOR2_X1": 6,
+     "AND3_X1": 1,
+     "NOR4_X1": 1
+    }
+   },
+   "fast": {
+    "area_um2": 1376.02,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 356.38,
+    "cells": {
+     "NAND2_X1": 387,
+     "OAI21_X1": 230,
+     "AOI21_X1": 220,
+     "INV_X1": 182,
+     "NOR2_X1": 143,
+     "XNOR2_X1": 95,
+     "NAND4_X1": 73,
+     "NAND3_X1": 40,
+     "XOR2_X1": 19,
+     "OAI211_X1": 18,
+     "AND2_X1": 12,
+     "NOR3_X1": 8,
+     "AND4_X1": 2,
+     "AOI22_X1": 2,
+     "OR2_X1": 2,
+     "AND3_X1": 1,
+     "NOR4_X1": 1
+    }
+   }
+  },
+  {
+   "module": "reg64_arst",
+   "what": "64-bit register, async active-low reset (DFFR_X1)",
+   "relaxed": {
+    "area_um2": 340.48,
+    "seq_area_um2": 340.48,
+    "abc_delay_ps": null,
+    "cells": {
+     "DFFR_X1": 64
+    }
+   },
+   "fast": {
+    "area_um2": 340.48,
+    "seq_area_um2": 340.48,
+    "abc_delay_ps": null,
+    "cells": {
+     "DFFR_X1": 64
+    }
+   }
+  },
+  {
+   "module": "reg64_norst",
+   "what": "64-bit register, no reset (DFF_X1)",
+   "relaxed": {
+    "area_um2": 289.41,
+    "seq_area_um2": 289.41,
+    "abc_delay_ps": null,
+    "cells": {
+     "DFF_X1": 64
+    }
+   },
+   "fast": {
+    "area_um2": 289.41,
+    "seq_area_um2": 289.41,
+    "abc_delay_ps": null,
+    "cells": {
+     "DFF_X1": 64
+    }
+   }
+  },
+  {
+   "module": "reg64_en",
+   "what": "64-bit register with load enable, no reset, no clock gating",
+   "relaxed": {
+    "area_um2": 408.58,
+    "seq_area_um2": 289.41,
+    "abc_delay_ps": null,
+    "cells": {
+     "DFF_X1": 64,
+     "MUX2_X1": 64
+    }
+   },
+   "fast": {
+    "area_um2": 408.58,
+    "seq_area_um2": 289.41,
+    "abc_delay_ps": null,
+    "cells": {
+     "DFF_X1": 64,
+     "MUX2_X1": 64
+    }
+   }
+  },
+  {
+   "module": "mux4_32",
+   "what": "4:1 mux, 32 bits wide",
+   "relaxed": {
+    "area_um2": 174.23,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 362.88,
+    "cells": {
+     "INV_X1": 65,
+     "NAND2_X1": 34,
+     "MUX2_X1": 32,
+     "OAI221_X1": 32,
+     "NOR2_X1": 1,
+     "OR2_X1": 1
+    }
+   },
+   "fast": {
+    "area_um2": 215.19,
+    "seq_area_um2": 0.0,
+    "abc_delay_ps": 643.31,
+    "cells": {
+     "NAND3_X1": 128,
+     "NAND2_X1": 96,
+     "INV_X1": 3,
+     "NOR2_X1": 1
+    }
+   }
+  }
+ ],
+ "sweeps": {
+  "mul32s": [
+   {
+    "target_ps": 100,
+    "area_um2": 8562.81,
+    "abc_delay_ps": 1810.88
+   },
+   {
+    "target_ps": 1850,
+    "area_um2": 4928.45,
+    "abc_delay_ps": 2037.74
+   },
+   {
+    "target_ps": 1900,
+    "area_um2": 4928.45,
+    "abc_delay_ps": 2037.74
+   },
+   {
+    "target_ps": 1950,
+    "area_um2": 4928.45,
+    "abc_delay_ps": 2037.74
+   },
+   {
+    "target_ps": 2000,
+    "area_um2": 4928.45,
+    "abc_delay_ps": 2037.74
+   },
+   {
+    "target_ps": 2050,
+    "area_um2": 4928.45,
+    "abc_delay_ps": 2037.74
+   },
+   {
+    "target_ps": 100000,
+    "area_um2": 4928.45,
+    "abc_delay_ps": 2037.74
+   }
+  ],
+  "add64": [
+   {
+    "target_ps": 100,
+    "area_um2": 498.48,
+    "abc_delay_ps": 417.67
+   },
+   {
+    "target_ps": 450,
+    "area_um2": 459.38,
+    "abc_delay_ps": 481.19
+   },
+   {
+    "target_ps": 500,
+    "area_um2": 432.78,
+    "abc_delay_ps": 565.05
+   },
+   {
+    "target_ps": 550,
+    "area_um2": 435.44,
+    "abc_delay_ps": 607.43
+   },
+   {
+    "target_ps": 600,
+    "area_um2": 433.31,
+    "abc_delay_ps": 648.97
+   },
+   {
+    "target_ps": 100000,
+    "area_um2": 429.32,
+    "abc_delay_ps": 642.13
+   }
+  ]
+ }
+}

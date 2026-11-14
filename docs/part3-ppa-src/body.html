@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Part 3 PPA planner</title>
+<meta name="description" content="EE271 Project Part 3: the figure of merit taken apart, the cycle model with measured runs, a FoM calculator, and each optimization explained.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap">
+<style>
+/*STYLE*/
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap titlebar">
+    <div>
+      <h1>Part 3: the figure of merit and how to move it</h1>
+      <p class="sub">Plan the optimizations before you have numbers, then plug your real ones in as they arrive. Every measured number here comes from a real local run. Every estimate is labeled.</p>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#fom" data-view="fom">Figure of merit</a>
+      <a href="#cycles" data-view="cycles">Cycle model</a>
+      <a href="#calc" data-view="calc">Calculator</a>
+      <a href="#reuse" data-view="reuse">Multiplier sharing</a>
+      <a href="#opt" data-view="opt">Optimizations</a>
+      <a href="#blocks" data-view="blocks">Building blocks</a>
+      <a href="#plan" data-view="plan">Plan</a>
+      <a href="#words" data-view="words">Words</a>
+      <button class="themebtn small" id="themebtn" title="Switch light / dark">Light / dark</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- =================================================================== FIGURE OF MERIT -->
+<section class="view" id="view-fom" aria-label="The figure of merit">
+<div class="section">
+  <h2>The figure of merit, taken apart</h2>
+  <p class="lede">Part 3 grades one number. The handout (section 2.1) defines it, and your goal is to make it small:</p>
+  <div class="formula">FoM = (T<sub>INT8</sub> + T<sub>INT16</sub> + T<sub>INT32</sub>)<sup>2.3</sup> × Area(µm²) × Power(mW) × 10<sup>−15</sup>
+    <small>T<sub>mode</sub> is the time the equivalence test for that mode takes, in ns: the cycle count times your clock period. You have to be able to synthesize the design at that period without a timing violation, and the area cap is 1,000,000 µm².</small></div>
+
+  <h3 id="fom-where">Where each number comes from</h3>
+  <div class="tscroll"><table class="ref">
+    <tr><th>Term</th><th>Comes from</th><th>Exactly which line</th></tr>
+    <tr><td>cycles, per mode</td><td>the testbench, at the end of <code>make int8_test</code> (and int16, int32)</td><td><code>Computation took N clock cycles.</code> It is <code>$time / CLK_PERIOD</code> at the moment MEM2 is dumped (<code>tb_top.sv:133</code>), so it includes the 5 reset cycles.</td></tr>
+    <tr><td>clock period</td><td>what you pass to synthesis</td><td><code>CLK_PERIOD</code> in <code>part2/unoptimized_verilog/synth/Makefile</code> (default 2.000 ns), echoed as the first line of <code>results.txt</code></td></tr>
+    <tr><td>timing met?</td><td>the timing report</td><td>the <code>slack (MET)</code> or <code>slack (VIOLATED)</code> line copied into <code>results.txt</code>. Needs to be ≥ 0.</td></tr>
+    <tr><td>area</td><td>the area report</td><td><code>Total cell area:</code> in <code>results.txt</code>. The script copies only this line, not <code>Total area</code>, which adds a wire-load estimate.</td></tr>
+    <tr><td>power</td><td>the power report</td><td><code>Total Dynamic Power</code> plus <code>Cell Leakage Power</code>, which should equal the last column of the power table's <code>Total</code> row. All three lines land in <code>results.txt</code>.</td></tr>
+  </table></div>
+  <p class="cap">The handout only says "Power (mW)". Total power (dynamic plus leakage) is the natural reading, and it is what the calculator uses. If you're unsure which number staff want, ask on Ed before you compare designs.</p>
+
+  <h3 id="fom-base">One worked baseline</h3>
+  <p>Take 16 PEs and the synthesis script's default 2.000 ns clock. A design that issues one repetition per cycle (zero bubbles) takes <span class="label-real">measured</span> 16,440 + 8,248 + 4,152 = 28,840 cycles for the three tests (see <button class="link" data-goto="cycles">Cycle model</button>). So T = 28,840 × 2 ns = 57,680 ns, and T<sup>2.3</sup> = 8.92 × 10<sup>10</sup>. That makes</p>
+  <div class="formula">FoM = 8.92 × 10<sup>−5</sup> × Area(µm²) × Power(mW)<small>for 16 PEs at 2.000 ns with zero bubbles. <span class="label-ill">illustrative</span> If area were 200,000 µm² and power 30 mW, that is 535.</small></div>
+  <p>The absolute number means little on its own. What matters is how it moves when you change something.</p>
+
+  <h3 id="fom-sens">Which term is worth the most</h3>
+  <p>Take the log of both sides and the product turns into a sum:</p>
+  <div class="formula">ln FoM = 2.3 · ln T + ln Area + ln Power + constant<small>So for small changes, ΔFoM/FoM ≈ 2.3·ΔT/T + ΔA/A + ΔP/P. Exactly: FoM<sub>new</sub>/FoM<sub>old</sub> = (T<sub>new</sub>/T<sub>old</sub>)<sup>2.3</sup> · (A<sub>new</sub>/A<sub>old</sub>) · (P<sub>new</sub>/P<sub>old</sub>).</small></div>
+  <div class="tscroll"><table class="ref">
+    <tr><th>You change</th><th class="num">FoM is multiplied by</th><th class="num">FoM change</th></tr>
+    <tr><td>time −10%</td><td class="num">0.9<sup>2.3</sup> = 0.785</td><td class="num ok">−21.5%</td></tr>
+    <tr><td>time +10%</td><td class="num">1.1<sup>2.3</sup> = 1.245</td><td class="num bad">+24.5%</td></tr>
+    <tr><td>area −10%</td><td class="num">0.900</td><td class="num ok">−10.0%</td></tr>
+    <tr><td>power −10%</td><td class="num">0.900</td><td class="num ok">−10.0%</td></tr>
+    <tr><td>area and power each −10%</td><td class="num">0.810</td><td class="num ok">−19.0%</td></tr>
+  </table></div>
+  <p>A 10% cut in time is worth about twice a 10% cut in area or in power. Turned around: a change that saves 5% of the time pays for itself until area × power grows by 12.5%. One that saves 10% of the time can afford 27.4%.</p>
+  <div class="box" id="whatif">
+    <h4>What-if</h4>
+    <div class="ctl-grid">
+      <label>Time change <span class="v" id="wi-t-v"></span><input type="range" id="wi-t" min="-50" max="50" step="1" value="-10"></label>
+      <label>Area change <span class="v" id="wi-a-v"></span><input type="range" id="wi-a" min="-50" max="100" step="1" value="5"></label>
+      <label>Power change <span class="v" id="wi-p-v"></span><input type="range" id="wi-p" min="-50" max="100" step="1" value="5"></label>
+    </div>
+    <div id="wi-out"></div>
+  </div>
+
+  <h3 id="fom-t">What can actually move the time</h3>
+  <p>T = period × total cycles. For a design that issues one repetition per cycle, the total is fixed by the PE count alone: <b>1,801 × ceil(256 / P) + 24</b> cycles on the three official tests (derived and measured on the <button class="link" data-goto="cycles">Cycle model</button> tab). The compiled program is fixed, and the memories deliver one column per cycle. So the only cycle-count levers are more PEs and not losing cycles to bubbles. Everything else moves T through the clock period.</p>
+  <p>The FoM adds times, so a cycle saved in INT32 is worth exactly as much as a cycle saved in INT8. INT8 just has more of them: about 57% of the cycles at any PE count, INT16 29%, INT32 14%.</p>
+
+  <h3 id="fom-period">The clock-period trade</h3>
+  <p>Shrinking the period helps T directly, but it moves the other two terms against you:</p>
+  <ul class="prose">
+    <li><b>Time</b> scales with the period, and it carries the 2.3 exponent.</li>
+    <li><b>Dynamic power</b> scales with 1/period. Each cycle costs about the same energy, and there are more cycles per second. Leakage doesn't depend on the clock.</li>
+    <li><b>Area</b> grows as the target tightens. DC upsizes cells, picks faster (bigger) adder and multiplier structures, and adds buffers. <span class="label-est">Yosys estimate</span> The same 32×32 multiplier mapped for area is 4,928 µm² (ABC's delay estimate 2.04 ns). Mapped for speed it's 8,563 µm² (1.81 ns): 74% more area for 11% less delay. That's why the last few percent of period are expensive.</li>
+  </ul>
+  <p>If power is proportional to area (more gates, more switching and leakage), these combine into one expression. Here d is the dynamic share of the power at a reference period τ<sub>0</sub>:</p>
+  <div class="formula">FoM(τ) / FoM(τ<sub>0</sub>) = (τ/τ<sub>0</sub>)<sup>2.3</sup> × (A(τ)/A<sub>0</sub>)<sup>2</sup> × (d·τ<sub>0</sub>/τ + 1 − d)<small>With all-dynamic power (d = 1) this is τ<sup>1.3</sup> × A²: a 10% shorter period is worth 12.8% if area stays put, and breaks even if area grows 7.1%.</small></div>
+  <p><span class="label-est">Liberty estimate</span> How big is d? The open Nangate45 Liberty (typical corner) gives cells a leakage of about 15–27 nW per µm² of area: DFF_X1 17.5, NAND2_X1 21.8, INV_X1 27.0. So a 300,000 µm² design leaks roughly 5–8 mW whatever the clock. Your dynamic power comes from the report. The course's .db may be a different corner, so read both numbers off your own power report.</p>
+  <div class="box">
+    <h4>Play with the period trade <span class="label-ill">model</span></h4>
+    <div class="ctl-grid">
+      <label><span>Reference period τ<sub>0</sub> (ns)</span> <span class="v" id="pt-tau0-v"></span><input type="range" id="pt-tau0" min="1" max="5" step="0.05" value="2.5"></label>
+      <label><span>Dynamic share of power at τ<sub>0</sub></span> <span class="v" id="pt-d-v"></span><input type="range" id="pt-d" min="0.5" max="1" step="0.01" value="0.85"></label>
+      <label>Area growth per 10% tighter clock <span class="v" id="pt-g-v"></span><input type="range" id="pt-g" min="0" max="0.4" step="0.01" value="0.06"></label>
+      <label>Fastest period that still meets timing (ns) <span class="v" id="pt-min-v"></span><input type="range" id="pt-min" min="0.6" max="4" step="0.05" value="1.6"></label>
+    </div>
+    <div class="chart" id="pt-chart"></div>
+    <p class="cap" id="pt-note"></p>
+  </div>
+  <p><b>Where this model breaks.</b> DC's area isn't a smooth function of the period. Two runs a few picoseconds apart can differ by several percent, and near the fastest achievable period the area climbs steeply before timing fails. Power isn't exactly proportional to area: flops, which toggle their clock pin every cycle, and logic, which toggles with the data, scale differently. DC's power is itself an estimate built on default switching activity (see <button class="link" data-goto="opt/gating">clock gating</button>). Use the model to decide what to try, then measure.</p>
+
+  <h3 id="fom-pe">The PE-count trade</h3>
+  <p>More PEs mean fewer tiles, so fewer cycles. Area and power grow with the PE count. In the ideal case, with tiles dividing evenly, no fixed cost, and power proportional to area at a fixed clock:</p>
+  <div class="formula">T ∝ 1/P,  Area ∝ P,  Power ∝ P  ⇒  FoM ∝ P<sup>−2.3</sup> · P · P = P<sup>−0.3</sup><small>Doubling the PE count multiplies the FoM by 2<sup>−0.3</sup> = 0.81 (19% better), and you keep winning, slowly, until the area cap.</small></div>
+  <ul class="prose">
+    <li><b>Fixed costs help bigger arrays.</b> The controller, the buffer's address and lane-select logic, and the instruction-memory pointer don't grow with P, so their share shrinks as P grows.</li>
+    <li><b>Tile rounding hurts most PE counts.</b> The number of tiles is ceil(256 / P) for all three tests, so a PE count is only worth paying for if it's the smallest one that reaches its tile count: P = ceil(256 / t) = 16, 18, 19, 20, 22, 24, 26, 29, 32, 37, 43, 52, 64, 86, 128. Any count in between adds PEs that only compute zero-padding rows. <span class="label-real">measured</span> 43 and 48 PEs take exactly the same cycles (6,170 / 3,098 / 1,562), so 48 only adds area and power.</li>
+    <li><b>Per-tile overhead is small.</b> Each tile spends 3 repetitions on CLR, OUT and WRITE, and each test adds 8 cycles. At 128 PEs (2 tiles) the total is 3,626 cycles against an ideal 3,584: 1.2%.</li>
+  </ul>
+  <div class="box">
+    <h4>Play with the PE-count trade <span class="label-ill">model</span></h4>
+    <div class="ctl-grid">
+      <label>Area per PE (µm²) <span class="v" id="pe-a-v"></span><input type="range" id="pe-a" min="3000" max="30000" step="250" value="13000"></label>
+      <label>Area that doesn't grow with P (µm²) <span class="v" id="pe-f-v"></span><input type="range" id="pe-f" min="0" max="60000" step="500" value="5000"></label>
+    </div>
+    <div class="chart" id="pe-chart"></div>
+    <p class="cap" id="pe-note"></p>
+  </div>
+  <p><b>Where this model breaks.</b> The period isn't constant in P. The vector word and the PE instruction are broadcast to every PE, and with the script's <code>set_max_fanout 4</code> DC builds buffer trees about log<sub>4</sub>(loads) deep. Those trees sit on the multiplier path, so a big array can need a slower clock. Synthesis run time grows with P too. The defaults above (13,000 µm² per PE, 5,000 fixed) are rough starting values from the <button class="link" data-goto="blocks">Building blocks</button> tab. Replace them with your own numbers from <code>reports/area_report_hier</code> as soon as you have them.</p>
+
+  <div class="quiz">
+    <h3>Quiz yourself</h3>
+    <details><summary>Why is a 10% cut in cycles worth more than a 10% cut in area?</summary><p>The time sum is raised to the power 2.3 and area to the power 1. In log form, ln FoM = 2.3·ln T + ln A + ln P, so a 10% cut in T multiplies the FoM by 0.9<sup>2.3</sup> = 0.785 (−21.5%), while a 10% cut in area gives 0.9 (−10%).</p></details>
+    <details><summary>You shorten the clock period by 10% and nothing else changes. What happens to each term?</summary><p>T drops 10% (FoM × 0.785). Dynamic power rises by 1/0.9 = 11% (leakage doesn't change). Area stays the same only in this thought experiment; in reality DC grows it. With all-dynamic power the net is 0.9<sup>1.3</sup> = 0.872, a 12.8% improvement, and it breaks even if area grows 7.1%.</p></details>
+    <details><summary>Why is 43 PEs better than 48 PEs for this FoM?</summary><p>Both need ceil(256/P) = 6 tiles, so they take exactly the same cycles (measured 6,170 / 3,098 / 1,562). 48 PEs just add 5 PEs of area and power that compute zero-padding rows.</p></details>
+    <details><summary>A cycle saved in INT32 or a cycle saved in INT8: which is worth more?</summary><p>The same. The FoM adds the three times before raising to 2.3, so every cycle saved anywhere shortens T by one clock period.</p></details>
+    <details><summary>Why can't any optimization except more PEs (or fixing bubbles) reduce the cycle count?</summary><p>The program comes from the staff compiler and runs cols + 3 repetitions per tile. The memories deliver one matrix column per cycle, so one repetition per cycle is the ceiling. Fewer tiles needs more PEs. Overlapping CLR/OUT/WRITE could save at most 3 cycles per tile, about 1% of the FoM.</p></details>
+  </div>
+</div>
+</section>
+
+<!-- =================================================================== CYCLE MODEL -->
+<section class="view" id="view-cycles" aria-label="Cycle model" hidden>
+<div class="section">
+  <h2>The cycle model</h2>
+  <div class="headsup"><b>Heads-up</b>Every count on this tab was measured with a throwaway zero-bubble reference design that lives only in a scratch folder, never in the repo. It issues one repetition per cycle, and each PE operation happens one cycle after its memory operation. That is one valid timing choice, not the only one, and this tab shows its consequences. If you want to work the Part 2 timing out yourself first, do the controller and buffer before reading on. Your own design may differ by a constant (fine) or by bubbles (worth fixing; the bottom of this tab says how much).</div>
+
+  <h3 id="cy-prog">Step 1: what the program does per tile</h3>
+  <p>The staff compiler (<code>part1/src/compiler.py:88-91</code>, the same file as <code>part2/simulator/src/compiler.py</code>) emits four instructions per tile of rows:</p>
+  <div class="tscroll"><table class="ref">
+    <tr><th>Instruction (as text)</th><th>Memory op</th><th>PE op</th><th class="num">Repetitions</th></tr>
+    <tr><td><code>NOP | CLR INTx | 1 0 0</code></td><td>nothing</td><td>clear acc and out</td><td class="num">1</td></tr>
+    <tr><td><code>READ INTx base 0 | MAC INTx | cols 1 1</code></td><td>read one column of the tile and one vector element</td><td>multiply-accumulate</td><td class="num">cols</td></tr>
+    <tr><td><code>NOP | OUT INTx | 1 0 0</code></td><td>nothing</td><td>clamp acc into out</td><td class="num">1</td></tr>
+    <tr><td><code>WRITE tile | NOP INTx | 1 0 0</code></td><td>store all PE outputs as one MEM2 word</td><td>nothing</td><td class="num">1</td></tr>
+  </table></div>
+  <p>The count you write is the number of repetitions; the assembler stores count − 1. So one tile is <b>cols + 3</b> repetitions.</p>
+
+  <h3 id="cy-tiles">Step 2: how many tiles</h3>
+  <p>Rows per tile = P × lanes (<code>compiler.py:68</code>, lanes = 32 / mode width: 4, 2, 1). Tiles = ceil(rows / (P × lanes)) (<code>compiler.py:69</code>). The three official tests (<code>part2/equivalence_testing/Makefile</code>) are INT8 1024×1024, INT16 512×512 and INT32 256×256. That gives 1024/(4P), 512/(2P) and 256/P: <b>every test has ceil(256 / P) tiles</b>.</p>
+
+  <h3 id="cy-tb">Step 3: what the hardware and the testbench add</h3>
+  <ul class="prose">
+    <li><b>One extra instruction.</b> The testbench is told <code>INST_COUNT</code> = lines in <code>mat_mul.asm</code> + 1 (equivalence Makefile, line 51). <code>ivd-as</code> pads the instruction file with all-zero words, and the extra word decodes as <code>READ INT8 0 0 | MAC INT8</code> with count 0: one harmless repetition.</li>
+    <li><b>Reset.</b> <code>rst_n</code> is low for 5 clock periods (<code>tb_top.sv:5-6, 100-105</code>). The clock's first rising edge after reset is at 55 ns.</li>
+    <li><b>The PE stage.</b> In this design <code>pe_inst_valid</code> is a one-cycle-delayed copy of <code>buf_inst_valid</code>, so the pipeline drains one cycle after the last memory op.</li>
+    <li><b>The end check.</b> <code>simulation_complete = (pc == instruction_count) &amp;&amp; ~pe_inst_valid &amp;&amp; ~buf_inst_valid</code> (<code>tb_top.sv:129</code>). On its rising edge the testbench waits one more <code>CLK_PERIOD</code>, then dumps MEM2 and prints <code>$time / 10</code>.</li>
+  </ul>
+  <div class="chart" style="padding:10px">
+    <h4>A toy run: 2 tiles of a 3-column matrix (R = 2 × 6 + 1 = 13 repetitions)</h4>
+    <p class="csub">Each box is one 10 ns clock cycle. Memory ops issue in a cycle, their PE ops run one cycle later, and a WRITE commits at the end of the cycle after it issues.</p>
+    <div class="tl-scroll" id="tl-box"></div>
+  </div>
+  <p>With R repetitions, the last PE op ends at 65 + 10R ns, the dump happens at 75 + 10R ns, and integer division gives (75 + 10R) / 10 = R + 7. With R = tiles × (cols + 3) + 1:</p>
+  <div class="formula">cycles = tiles × (cols + 3) + 8,   tiles = ceil(rows / (P × lanes))<small>The 8 is 5 reset cycles, 1 for the all-zero word, 1 for the PE stage to drain, and 1 for the testbench's wait. The first edge comes half a cycle after reset ends, and the integer division drops that half again.</small></div>
+  <p>Summed over the three official tests: <b>Σ cycles = 1,801 × ceil(256 / P) + 24</b>, because 1027 + 515 + 259 = 1,801.</p>
+
+  <h3 id="cy-check">Step 4: check it against real runs</h3>
+  <p><span class="label-real">measured</span> Each row is three full official-size equivalence tests (the staff Makefile's recipe and seeds) run locally on the reference design. Every run that could run matched the formula exactly, and Icarus and Verilator (built with <code>-O2 -fno-inline</code>) printed identical counts.</p>
+  <div class="chart" id="cy-chart"></div>
+  <div class="tscroll" id="cy-table"></div>
+  <p class="cap" id="cy-foot"></p>
+  <p>The model also holds off the official sizes. <span class="label-real">measured</span> <span id="cy-odd"></span></p>
+
+  <h3 id="cy-imem">The instruction-memory depth trap</h3>
+  <p>A program has 4 × tiles instructions. Three things must fit:</p>
+  <ul class="prose">
+    <li><code>ivd-as</code> writes exactly <code>--controller_imem_depth</code> words (default 128): the program, then zero words. A longer program is cut off <b>without a warning</b> (<code>ivd-as:41-48</code>).</li>
+    <li>The program plus its all-zero word must fit in the depth.</li>
+    <li><code>INST_COUNT</code> = lines + 1 is loaded into <code>instruction_count</code>, which is only <code>IMEM_ADDR_WIDTH</code> = ceil(log<sub>2</sub> depth) bits wide (<code>ivd-gv</code>). A bigger number silently wraps.</li>
+  </ul>
+  <p>For the official tests that means 4 × ceil(256 / P) + 2 ≤ depth. The default depth of 128 works for <b>P ≥ 9</b>. P = 5 to 8 need 256, and P = 4 needs 512. If you go below 9 PEs, pass the same <code>--controller_imem_depth</code> to <code>ivd-gv</code>, <code>ivd-as</code> and <code>ivd-sim</code>. <span class="label-real">measured</span> Here is what happens if you don't (Icarus, INT8, default depth):</p>
+  <div class="tscroll" id="cy-trunc"></div>
+  <div class="note warn"><b>Two more sizing traps.</b> (1) <code>part2/unoptimized_verilog/synth/Makefile</code> runs <code>ivd-gv --out defines.sv</code> with no <code>--pe_count</code>, so synthesis builds 16 PEs no matter what your tests used. Change both. (2) The staff reference simulator can't run the INT8 test with 4 PEs. It bumps MemAOffset after the last repetition too, and 63 × 1024 + 1024 = 65,536 doesn't fit the 16-bit field (<code>ValueError</code> from <code>accelerator.py:113</code>). The INT8 test needs P ≥ 5.</div>
+
+  <h3 id="cy-mem0">MEM0 and MEM2 width</h3>
+  <p>MEM0 and MEM2 are P × 32 bits wide (<code>compiler.py:26, 30</code>): 512 bits at 16 PEs, 4,096 bits at 128. Their depth is 2<sup>16</sup> = 65,536 entries, and a test uses tiles × cols MEM0 entries (65,536 for INT8 at P = 4, which is why that case sits right on the edge). In synthesis the memories are empty black boxes (<code>synth/macros/array.sv</code>), so their width costs no area in the FoM. In a real chip a 4,096-bit-wide SRAM port would be its own design problem.</p>
+
+  <h3 id="cy-bubbles">What bubbles cost</h3>
+  <p><span class="label-real">measured</span> Two deliberately slowed copies of the reference controller (scratch only), run through the same three official tests (Icarus):</p>
+  <div class="tscroll" id="cy-var"></div>
+  <p>One idle cycle per instruction costs 4 cycles per tile: <b>tiles × (cols + 7) + 8</b>, about +1.5% FoM at 16 PEs. Taking two cycles per repetition (read in one cycle, compute in the next, no overlap) doubles everything: <b>2 × tiles × (cols + 3) + 8</b>, about 4.9 times the FoM. By contrast, an extra pipeline stage that doesn't stall adds about one cycle per test at the end, +3 cycles of 28,840: +0.02% FoM.</p>
+  <p class="cap">One cycle of difference: in the one-bubble variant at 16 PEs, the testbench sometimes reports one cycle less. <code>pe_inst_valid</code> falls and <code>buf_inst_valid</code> rises at the same clock edge while <code>pc == instruction_count</code>, and <code>always @(posedge simulation_complete)</code> fires on that zero-width glitch. A pipeline that lets both valids drop for even a moment before its last WRITE commits gets dumped early. <span id="cy-glitch"></span></p>
+
+  <div class="quiz">
+    <h3>Quiz yourself</h3>
+    <details><summary>Derive the INT8 cycle count for 16 PEs.</summary><p>Rows per tile = 16 × 4 = 64, so tiles = 1024 / 64 = 16. Each tile is 1024 + 3 = 1,027 repetitions, so 16,432, plus 1 for the all-zero word, gives R = 16,433. The testbench adds 5 reset cycles, 1 for the PE stage and 1 for its wait: 16,440.</p></details>
+    <details><summary>Why do all three official tests have the same number of tiles?</summary><p>1024 rows / (P × 4 lanes) = 512 / (P × 2) = 256 / (P × 1) = 256 / P. The tests were sized so that each mode's lanes exactly offset its row count.</p></details>
+    <details><summary>Your design with 8 PEs fails int8_test but passes int16 and int32. What do you check first?</summary><p>The instruction memory depth. 8 PEs give 32 tiles = 128 instructions. With the default depth of 128 there's no room for the zero word, and INST_COUNT = 129 wraps to 1 in the 7-bit instruction_count. Pass --controller_imem_depth 256 to ivd-gv, ivd-as and ivd-sim. (int16/int32 have the same tile count, so they'd fail too if they used 8 PEs. If they pass, check that every Makefile target really got the same --pe_count.)</p></details>
+    <details><summary>What does the "+8" consist of?</summary><p>5 reset cycles, 1 repetition for the all-zero padding instruction, 1 cycle for the PE operation that trails the last memory operation, and 1 cycle the testbench waits after simulation_complete. The half-cycle offset of the first clock edge is cancelled by the integer division.</p></details>
+    <details><summary>Your pipelined design reports 3 more cycles per test than before. Is that a problem?</summary><p>No, if it's a constant: 9 more cycles out of 28,840 is +0.07% FoM. It is a problem if the count grows with the number of tiles or instructions (that's a bubble), or if MEM2 is dumped before the last WRITE (a valid signal dropped too early).</p></details>
+  </div>
+</div>
+</section>
+
+<!-- =================================================================== CALCULATOR -->
+<section class="view" id="view-calc" aria-label="FoM calculator" hidden>
+<div class="section">
+  <h2>FoM calculator</h2>
+  <p class="lede">Paste what synthesis and the tests printed, check the parsed numbers, and compare with a saved baseline. It all runs in this page, offline.</p>
+  <div class="split">
+    <div>
+      <h3 style="margin-top:6px">1 · Paste</h3>
+      <p class="cap" style="margin-top:0">Paste <code>results.txt</code> from the synth folder and/or the output of <code>make int8_test</code>, <code>int16_test</code>, <code>int32_test</code> (or <code>make eq</code>). The parser looks for the lines <code>dc_synth.tcl</code> writes and for <code>Computation took N clock cycles</code>. It takes the mode from the nearest INT8 / INT16 / INT32 mention above each count; with no mode names, three counts are taken in INT8, INT16, INT32 order.</p>
+      <textarea id="paste" spellcheck="false" wrap="off" aria-label="Paste results.txt and test output here"></textarea>
+      <div class="rowbtns"><button class="primary" id="parse">Parse</button><button id="sample">Load the illustrative sample</button><button id="clearpaste">Clear</button></div>
+      <div id="parse-out"></div>
+      <div class="note"><b>About the sample.</b> <span class="label-ill">illustrative</span> Its DC lines are made up. Their shape follows the grep commands at the end of <code>dc_synth.tcl</code> and the usual layout of DC's reports, but nobody has run DC on this design yet, so check the parser against your first real <code>results.txt</code>. Its three testbench lines are real: they're from the 16-PE runs on the Cycle model tab, so loading it also sets the PE count to 16. Whatever <code>check_error</code> writes into <code>results.txt</code> is unknown too; lines the parser doesn't recognize are listed for you to read.</div>
+    </div>
+    <div>
+      <h3 style="margin-top:6px">2 · The numbers</h3>
+      <div class="ctl-grid">
+        <label>PE count <input type="number" id="c-p" min="1" max="1024" value="16"></label>
+        <label>Clock period (ns) <input type="number" id="c-per" min="0.1" max="100" step="0.001" value="2.000"></label>
+        <label>Cycles from <select id="c-cycsrc"><option value="model">the zero-bubble model</option><option value="typed">typed / parsed below</option></select></label>
+        <label>INT8 cycles <input type="number" id="c-c8" min="1"></label>
+        <label>INT16 cycles <input type="number" id="c-c16" min="1"></label>
+        <label>INT32 cycles <input type="number" id="c-c32" min="1"></label>
+        <label>Total cell area (µm²) <input type="number" id="c-area" min="0" step="0.001"></label>
+        <label>Total power (mW) <input type="number" id="c-pow" min="0" step="0.0001"></label>
+        <label>Worst slack (ns) <input type="number" id="c-slack" step="0.0001"></label>
+      </div>
+      <h3>3 · Result</h3>
+      <dl class="stats" id="c-out"></dl>
+      <div id="c-checks"></div>
+      <h3>4 · Compare and log</h3>
+      <div class="rowbtns"><button id="c-savebase">Save as baseline</button><button id="c-savebest">Save as previous best</button><button id="c-forget">Forget saved</button></div>
+      <div id="c-compare"></div>
+      <div class="ctl-grid">
+        <label>Who <input type="text" id="c-who" placeholder="initials"></label>
+        <label>Tag (runs/) <input type="text" id="c-tag" placeholder="short run name"></label>
+        <label>Commit <input type="text" id="c-commit" placeholder="abc1234"></label>
+        <label>Change <input type="text" id="c-change" placeholder="what this run changed"></label>
+        <label>Note <input type="text" id="c-note" placeholder="what you expected, what happened"></label>
+      </div>
+      <div class="rowbtns"><button id="c-row">Make the experiment-log row</button><span class="cap" id="c-rowmsg"></span></div>
+      <pre class="parsed" id="c-rowout" hidden></pre>
+      <p class="cap">The row follows the columns of the table in <code>docs/experiments.md</code> (the <code>#</code> column is left for you). A filled-in note comes out as a second line for the notes list under that table. Use <code>make fom</code> as the cross-check: this calculator and <code>make fom</code> should agree.</p>
+    </div>
+  </div>
+  <div class="quiz">
+    <h3>Quiz yourself</h3>
+    <details><summary>Your pasted results.txt shows two "Total cell area" lines. What happened, and which one counts?</summary><p><code>dc_synth.tcl</code> appends to <code>results.txt</code> with <code>&gt;&gt;</code>, so two runs went into one file because <code>make clean</code> wasn't run in between. Only the last run's lines belong to the netlist in <code>reports/</code> now. Use those, and start each run clean.</p></details>
+    <details><summary>The calculator says your counts are +2 in every mode versus the model. Is something wrong?</summary><p>Probably not. The same small offset in every mode means a fixed extra latency, such as one more pipeline stage to drain at the end, and it costs almost nothing. An offset that differs per mode or grows with the tile count means bubbles, or counts taken at a different PE count.</p></details>
+    <details><summary>Against your baseline the factors are time<sup>2.3</sup> ×0.70, area ×1.10, power ×1.25. Did the FoM improve?</summary><p>Multiply: 0.70 × 1.10 × 1.25 = 0.9625, so yes, by 3.75%. Time did all the work, and area and power gave most of it back. A report should say exactly that.</p></details>
+  </div>
+</div>
+</section>
+
+<!-- =================================================================== MULTIPLIER SHARING -->
+<section class="view" id="view-reuse" aria-label="Multiplier sharing" hidden>
+<div class="section">
+  <h2>Hardware reuse: four multipliers for every mode</h2>
+  <p class="lede">The handout (2.2.1) says the usual PE uses 4 8-bit, 2 16-bit and 1 32-bit multipliers, that only one mode is used at a time, and that "it is possible to use a total of 4 or less multipliers." This tab is the arithmetic behind that sentence. It is the math, not the RTL.</p>
+  <div class="headsup"><b>Heads-up</b>The demo below computes exactly what a shared multiplier array has to compute, in JavaScript. Treat it like the walkthrough's model.js: it's effectively the reference arithmetic. Try to derive the split yourself first, then use the demo to check your edge cases.</div>
+
+  <h3 id="re-why">Why seven multipliers is wasteful</h3>
+  <p>Every PE runs one mode at a time. A PE written as "one <code>*</code> per lane per mode" can end up with seven multipliers that all compute every cycle on the same input wires, while a mode mux throws six results away. <span class="label-est">Yosys estimate</span> Those seven are about 9,023 µm² per PE (4 × 361 + 2 × 1,324 + 4,928, Booth-encoded, mapped for area). Four 17×17 multipliers are about 6,357 µm². DC may already share some operators across your case branches, so before you change anything, look at what it built: <code>report_resources</code> lists every multiplier and adder it inferred and which DesignWare implementation it chose. Treat it as a commonly used command and check it exists on caddy's DC.</p>
+
+  <h3 id="re-math">The math: one 32×32 product from four 17×17 products</h3>
+  <p>Split each 32-bit signed operand into halves. The high half keeps the sign; the low half is just bits, an unsigned number from 0 to 65,535:</p>
+  <div class="formula">a = a<sub>H</sub> · 2<sup>16</sup> + a<sub>L</sub>,  a<sub>H</sub> = signed a[31:16],  a<sub>L</sub> = unsigned a[15:0]<small>Check with a = −5 = 0xFFFFFFFB: a<sub>H</sub> = 0xFFFF = −1 and a<sub>L</sub> = 0xFFFB = 65,531, and −1 · 65,536 + 65,531 = −5.</small></div>
+  <p>Multiply out:</p>
+  <div class="formula">a · b = a<sub>H</sub>b<sub>H</sub> · 2<sup>32</sup> + (a<sub>H</sub>b<sub>L</sub> + a<sub>L</sub>b<sub>H</sub>) · 2<sup>16</sup> + a<sub>L</sub>b<sub>L</sub></div>
+  <ul class="prose">
+    <li><b>Why 17 bits.</b> Each partial product mixes signed and unsigned halves. A signed multiplier handles both if every operand gets a 17th bit on top: a copy of the sign bit for a signed half, a 0 for an unsigned half. So 65,531 becomes the positive 17-bit number 0_1111111111111011, and −1 becomes 1_1111111111111111.</li>
+    <li><b>How wide each product is.</b> a<sub>H</sub>b<sub>H</sub> fits in 32 signed bits (its extremes are about ±2<sup>30</sup>). Each cross term a<sub>H</sub>b<sub>L</sub> or a<sub>L</sub>b<sub>H</sub> just fits in 32 signed bits too (−32,768 × 65,535 = −2,147,450,880), but their sum needs 33. a<sub>L</sub>b<sub>L</sub> is at most 65,535² &lt; 2<sup>32</sup>, an unsigned 32-bit number.</li>
+    <li><b>A free concatenation.</b> Because a<sub>L</sub>b<sub>L</sub> &lt; 2<sup>32</sup>, the outer terms don't overlap: a<sub>H</sub>b<sub>H</sub> · 2<sup>32</sup> + a<sub>L</sub>b<sub>L</sub> is just {a<sub>H</sub>b<sub>H</sub>[31:0], a<sub>L</sub>b<sub>L</sub>[31:0]}. Only the two cross terms, sign-extended and shifted left 16, need a real addition.</li>
+    <li><b>The accumulate.</b> In INT32 mode the 64-bit accumulator gets acc + concatenation + cross term: a three-input add, which a carry-save stage (a row of full adders) reduces to one ordinary adder.</li>
+  </ul>
+  <p><b>INT16</b> uses two of the same four multipliers. Lane 1 is a[31:16] × b[31:16], which is exactly a<sub>H</sub>b<sub>H</sub>. Lane 0 is a[15:0] × b[15:0], but now both halves are <i>signed</i>, so the low operands get their sign bit as the 17th bit instead of a 0. The two cross multipliers sit idle; hold their inputs at 0 so they don't toggle. The same concatenation {lane 1, lane 0} drops each lane product into its 32-bit accumulator lane. The carry between bit 31 and bit 32 must be killed.</p>
+  <p><b>INT8</b> uses all four, one 8×8 lane each, with 8-bit operands sign-extended to 17 bits. The products are 16 bits, concatenated into the four 16-bit accumulator lanes. Carries are killed at bits 16, 32 and 48. Which multiplier takes which lane is your choice; pick whatever makes the input muxes simplest.</p>
+  <p>So each multiplier input is a small mux steered by the PE instruction's mode field. Its 17th bit is either a sign copy or 0, depending on the mode. That one bit is where most sharing bugs live.</p>
+
+  <div class="mdemo" id="mdemo">
+    <h3 style="margin-top:0">Try it, bit by bit</h3>
+    <div class="ctl-grid" id="md-ctl"></div>
+    <div class="rowbtns" id="md-btns"></div>
+    <div id="md-out"></div>
+  </div>
+
+  <h3 id="re-plan">Applying it to this design</h3>
+  <div class="facets">
+    <div class="facet here"><h4>In this design</h4><p>Only the multiply-add part of MAC changes. CLR, OUT, PASS and RND, the accumulator lanes, and the timing of everything around the PE stay as they are. The mode that steers the input muxes is the PE instruction's mode (<code>pe_inst.mode</code>), the same field that already picks the lane layout.</p></div>
+    <div class="facet effect"><h4>Expected effect</h4><p><span class="label-est">Yosys estimate</span> Multiplier area per PE goes from about 9,000 to 6,400 µm². Input muxes and the extra carry-save stage take back a few hundred, so expect a net of about −2,000 µm² per PE, roughly 15% of a naive PE. If power falls with area, the FoM improves about 1 − 0.85² ≈ 28%. Cycles don't change. The period may move either way: muxes in front, a 17×17 instead of a 32×32 inside (ABC estimates 1.35 ns against 2.04 ns), and a three-input add behind. The freed area can also buy more PEs.</p></div>
+    <div class="facet risk"><h4>Risks</h4><ul><li>The 17th bit per mode: zero-extension for the low halves in INT32, sign-extension in INT16 and INT8.</li><li>Carries leaking across lane boundaries, in every adder in the chain, including the carry vector of a carry-save stage.</li><li>A cross-term sum that's one bit too narrow (it needs 33 bits before the shift).</li><li>The official tests use values −5…4, so products are tiny and many high-bit bugs never show. Negative values do exercise the halves (a<sub>H</sub> = −1). Test the PE with random full-range operands in all three modes against <code>$signed(a) * $signed(b)</code>, and run <code>make eq-stress</code>.</li></ul></div>
+    <div class="facet measure"><h4>How to measure</h4><p>Per-PE area in <code>reports/area_report_hier</code> before and after; <code>report_resources</code> to confirm four multipliers; the timing report, to see whether the worst path still goes through a multiplier and how long it is; the power report; then the FoM. The cycle counts should be identical.</p></div>
+    <div class="facet write"><h4>What to write</h4><p>"We replaced the per-mode multipliers with four 17×17 signed multipliers whose operands are selected by mode (sign- or zero-extended 16-bit halves in INT32, sign-extended lanes in INT16/INT8). PE area went from X to Y µm² (−Z%), power from … to …, and the FoM improved by W%, almost all of it from the area and power terms because cycles and period were unchanged." Add one sentence on what the timing report showed.</p></div>
+  </div>
+  <p><b>A different route.</b> One 32×32 array can also produce two 16×16 or four 8×8 products if you zero the partial-product blocks that would mix lanes (a "partitioned" or subword-parallel multiplier). That is fewer gates than four separate multipliers. But you'd build the partial-product array yourself instead of writing <code>*</code>, which gives up DesignWare's tuned multiplier. That's a much bigger job; try the four-multiplier version first.</p>
+
+  <div class="quiz">
+    <h3>Quiz yourself</h3>
+    <details><summary>How do four multipliers compute a 32×32 product?</summary><p>Split a and b into a signed high half and an unsigned low half. Compute a<sub>H</sub>b<sub>H</sub>, a<sub>H</sub>b<sub>L</sub>, a<sub>L</sub>b<sub>H</sub>, a<sub>L</sub>b<sub>L</sub> on 17×17 signed multipliers (17th bit = sign copy for a signed half, 0 for an unsigned half). Then a·b = a<sub>H</sub>b<sub>H</sub>·2<sup>32</sup> + (a<sub>H</sub>b<sub>L</sub> + a<sub>L</sub>b<sub>H</sub>)·2<sup>16</sup> + a<sub>L</sub>b<sub>L</sub>, where the outer two terms are a plain concatenation.</p></details>
+    <details><summary>Why 17×17 and not 16×16?</summary><p>An unsigned 16-bit half (0 to 65,535) doesn't fit a 16-bit signed input. Adding a 17th bit lets one signed multiplier handle signed×signed, signed×unsigned and unsigned×unsigned. The alternative is 16×16 unsigned multipliers plus correction terms for the signs.</p></details>
+    <details><summary>In INT16 mode, what's different about the low operands compared with INT32?</summary><p>Their 17th bit. In INT32 the low half is unsigned, so the 17th bit is 0. In INT16 the low half is lane 0, a signed number, so the 17th bit copies bit 15.</p></details>
+    <details><summary>Why might the official tests not catch a sharing bug?</summary><p>Their values are −5…4, so products are tiny and bits far above the bottom never carry information. Bugs that only matter for large magnitudes (a cross-term sum truncated to 32 bits, a carry leaking into a neighboring lane at bit 48) can pass. Randomized full-range PE tests and eq-stress catch those.</p></details>
+  </div>
+</div>
+</section>
+
+<!-- =================================================================== OPTIMIZATIONS -->
+<section class="view" id="view-opt" aria-label="Optimizations" hidden>
+<div class="section">
+  <h2>The other optimizations, in depth</h2>
+  <p class="lede">For each one: what it is, how it applies to this design, what it should do to cycles, area, power, period and the FoM, what can go wrong, how to measure it, and what to write. The handout's list is sections 2.2.2 to 2.2.6.</p>
+  <div class="subnav" role="group" aria-label="Jump to">
+    <button data-goto="opt/retime">Retiming and pipelining</button>
+    <button data-goto="opt/timing">The timing loop</button>
+    <button data-goto="opt/gating">Clock gating</button>
+    <button data-goto="opt/sizing">Design sizing</button>
+    <button data-goto="opt/else">Anything else</button>
+  </div>
+
+  <div class="optsec" id="retime">
+    <h2>Register retiming and manual pipelining</h2>
+    <div class="facets">
+      <div class="facet what"><h4>What retiming is</h4>
+        <p>Retiming moves existing registers across combinational logic so the delays on either side even out, without changing what the circuit does at its inputs and outputs. DC does it when you pass <code>-retime</code> to <code>compile_ultra</code> and set <code>set_optimize_registers true</code>. <b>The staff script already does both</b> (<code>dc_synth.tcl:68-69</code>), so your baseline is already retimed.</p>
+        <p>What it can't do:</p>
+        <ul><li>Add registers. It only moves the ones you wrote, so to get more stages you add registers in RTL and let retiming place them. That's what the handout means by "instantiate a series of registers and allow the synthesis tool to optimize them."</li><li>Change latency. The number of registers on every input-to-output path stays the same.</li><li>Shorten a loop. A feedback loop with one register keeps all its logic inside one cycle, wherever the register sits.</li><li>Move a register across a black box. The SRAM outputs here are black-box pins, so there's no register on the memory side for it to pull into the multiplier.</li></ul></div>
+      <div class="facet here"><h4>In this design</h4>
+        <p>The PE's long path starts at a register that steers the multiplier's operands, for example one that selects the vector lane or holds the PE instruction. The path runs through the multiplier and the 64-bit add and ends at the accumulator. To cut it, register something in the middle: the product (or the four partial products). Then stage 1 multiplies and stage 2 accumulates, and <code>-retime</code> can slide that register into the multiplier tree to balance the stages.</p>
+        <p>The accumulator update itself is a loop, acc ← acc + product, and it must close every cycle: one more MAC arrives every cycle. Pipelining the multiplier leaves the 64-bit add plus the next-state mux as the loop. To cut that, you need a different representation, such as <b>carry-save accumulation</b>: keep acc as two vectors and add each product with a row of full adders (constant delay, whatever the width), resolving them with a real adder only when OUT or RND needs the value. It costs a second 64-bit register per PE and an adder on the OUT/RND path. RND (shift and round, acc → acc) is a loop too. Once the multiplier is pipelined, it may become the worst path even though the tests never run it, because DC times every path.</p></div>
+      <div class="facet risk"><h4>System-level consequences (the hard part)</h4>
+        <ul><li><b>OUT after the last MAC.</b> Every PE op must see the accumulator after the previous op's update. If MAC writes acc in stage 2, OUT has to read acc in stage 2 (or later), or it reads it one MAC too early.</li><li><b>WRITE after OUT.</b> The program puts WRITE right after OUT with no spacer. With a deeper PE, the OUT result reaches the output register later, so the WRITE has to commit later by the same number of cycles. For example, delay the buffer's write strobe and address, or delay the buffer op in the controller.</li><li><b>The testbench's end check.</b> It dumps MEM2 one cycle after pc reaches instruction_count while <code>dut.pe_inst_valid</code> and <code>dut.buf_inst_valid</code> are both low. Keep a valid high until the last WRITE has committed, and never let both drop at the same edge, even for an instant: the testbench fires on a zero-width glitch (measured, see the <button class="link" data-goto="cycles/cy-bubbles">Cycle model</button> tab).</li><li><b>No stalls.</b> Handle the hazards with matched delays, not bubbles. One bubble per instruction costs about 1.5% FoM; stalling every MAC would double the cycles.</li></ul></div>
+      <div class="facet effect"><h4>Expected effect</h4>
+        <p>Cycles: about +1 per test per added stage at the end (+0.02% FoM each). Area: one 64-bit product register is about 290–340 µm² per PE <span class="label-est">Yosys estimate</span>, more if retiming duplicates flops. Power: more clocked flops, and dynamic power rises as the period falls. Period: the big lever, if the multiplier dominates the worst path today.</p>
+        <p><span class="label-ill">illustrative</span> If one stage took the period from 2.5 to 1.5 ns and area grew 5%: with power ∝ area/period, FoM × (1.5/2.5)<sup>1.3</sup> × 1.05<sup>2</sup> = 0.51 × 1.10 = 0.57, about 43% better. That's a guess at the shape, not a prediction; measure it.</p></div>
+      <div class="facet measure"><h4>How to measure</h4>
+        <p>Compare the timing report before and after: the worst path's startpoint, endpoint and arrival time should change, ending at your new register or starting from it. Look in <code>compile.log</code> for what the retiming step reports. Check the cycle counts (a constant +1 or +2) and run the official tests and <code>make eq-stress</code> on Icarus. Look at the waveform around one OUT → WRITE pair.</p></div>
+      <div class="facet write"><h4>What to write</h4>
+        <p>"We registered the product, so a MAC multiplies in one stage and accumulates in the next, and delayed the WRITE commit by one more cycle so it captures the OUT result. With <code>-retime</code> DC moved the register into the multiplier tree. The worst path went from [startpoint → endpoint, X ns] to [..., Y ns], so we lowered the clock from A to B ns. Cycles grew by 1 per test. The FoM improved by Z%: the time term contributed …, area and power …."</p></div>
+    </div>
+    <p>Carry-save, in one picture: a full adder takes three bits and returns a sum bit and a carry bit (the carry belongs one position to the left). A row of 64 of them turns three numbers into two in one full-adder delay, because no carry ripples across the row. A sum kept as two numbers (S, C) can absorb a new product every cycle that way. Only reading the value needs a real adder: S + C.</p>
+  </div>
+
+  <div class="optsec" id="timing">
+    <h2>The timing loop: read the report, find the path, cut it</h2>
+    <p>The handout's loop (2.2.3): synthesize, read the timing report, find the violating paths, add registers along them, repeat. Here is what that looks like in a DC report. <span class="label-ill">illustrative</span> The layout is DC's usual <code>report_timing</code> format. The instance names, cells and numbers are invented, so don't compare your numbers with these.</p>
+<pre class="report">  Startpoint: u_buffer/lane_sel_reg[1]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: g_pe[7].u_pe/acc_reg[47]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Point                                         Incr       Path
+  ----------------------------------------------------------------
+  clock clk (rise edge)                       0.0000     0.0000
+  clock network delay (ideal)                 0.0000     0.0000
+  u_buffer/lane_sel_reg[1]/CK (DFFR_X1)       0.0000     0.0000 r
+  u_buffer/lane_sel_reg[1]/Q (DFFR_X1)        0.1021     0.1021 f
+  u_buffer/U812/ZN (AOI22_X1)                 0.0614     0.1635 r
+  ...                                                            <span class="hl">(fanout buffers to every PE)</span>
+  g_pe[7].u_pe/mult_x_1/U2301/ZN (XNOR2_X1)   0.0701     0.9935 r
+  ...                                                            <span class="hl">(the multiplier: most of the path)</span>
+  g_pe[7].u_pe/add_x_3/U97/ZN (OAI21_X1)      0.0432     2.2101 f
+  g_pe[7].u_pe/acc_reg[47]/D (DFFR_X1)        0.0000     2.2101 f
+  data arrival time                                      2.2101
+
+  clock clk (rise edge)                       2.0000     2.0000
+  clock network delay (ideal)                 0.0000     2.0000
+  g_pe[7].u_pe/acc_reg[47]/CK (DFFR_X1)       0.0000     2.0000 r
+  library setup time                         -0.0386     1.9614
+  data required time                                     1.9614
+  ----------------------------------------------------------------
+  data required time                                     1.9614
+  data arrival time                                     -2.2101
+  ----------------------------------------------------------------
+  <span class="hl">slack (VIOLATED)                                      -0.2487</span></pre>
+    <ul class="prose">
+      <li><b>Startpoint and endpoint</b> are the two registers the path runs between. The memories are empty black boxes, so their pins should start or end no timed path (check this in your first real report). The paths you'll see run register to register. The multiplier shows up on paths that start at a register steering its operands, such as the lane select or the PE instruction.</li>
+      <li><b>Incr</b> is each cell's delay. <b>Path</b> is the running total, the <b>data arrival time</b>.</li>
+      <li><b>Data required time</b> = clock period − the flop's setup time. <b>Slack</b> = required − arrival. Negative means it violates, and the clock would need to be at least |slack| slower.</li>
+      <li>The report shows the single worst path per path group (one group here: <code>clk</code>). Fix it and the next one appears, often close behind. To see several, the commonly used form is <code>report_timing -max_paths 10</code>, and <code>report_qor</code> (already in the script) gives the worst negative slack, the total negative slack and the number of violating paths. Check both commands' options on caddy.</li>
+      <li>The instance names tell you whose logic it is. Look for a multiplier or adder (inferred arithmetic often shows up with names like <code>mult_…</code>, <code>add_…</code> or <code>DP_OP_…</code>), a long mux chain, or a run of buffers, which means fanout.</li>
+    </ul>
+    <p><b>Ways to cut a path,</b> roughly in order of cost: register in the middle (pipelining, as above). Precompute: decode the mode into one-hot select signals a cycle early and register them. Duplicate a register that fans out to every PE, so each group of PEs gets its own copy and the buffer tree gets shallower. Restructure, for example by moving a mux from in front of the multiplier to behind it. Every cut that adds a stage brings the OUT → WRITE and end-of-test rules from the retiming section with it.</p>
+  </div>
+
+  <div class="optsec" id="gating">
+    <h2>Clock gating</h2>
+    <div class="facets">
+      <div class="facet what"><h4>What it is, and what DC does</h4>
+        <p>A register that only sometimes loads is, in plain logic, a flop with a 2:1 mux in front: D = enable ? new : Q. It still burns clock power every cycle. Clock gating replaces the hold mux with an <b>integrated clock-gating cell (ICG)</b> that stops the clock to the whole register bank when the enable is 0. The Nangate library has <code>CLKGATETST_X1</code> (3.99 µm², a latch plus an AND gate with a test-enable pin) and <code>CLKGATE_X1</code> (3.458 µm²). DC inserts them where it finds load-enable registers.</p>
+        <p><span class="label-est">Yosys estimate</span> A 64-bit register with a load enable and no gating is 408.6 µm² (64 DFF_X1 + 64 MUX2_X1). Without the muxes it's 289.4 µm², plus one 3.99 µm² ICG: about −115 µm² per 64-bit register, before counting the clock power saved.</p></div>
+      <div class="facet here"><h4>The RTL style that exposes enables</h4>
+        <p>Write the enable in the clocked block, so DC infers a load-enable register:</p>
+<pre class="snip">always_ff @(posedge clk or negedge rst_n)
+  if (!rst_n)      out_q &lt;= '0;
+  else if (out_en) out_q &lt;= out_next;   <span class="c">// no else: holds</span></pre>
+        <p>A hold written as a default in <code>always_comb</code> (next = q unless …) and registered every cycle may not be recognized as an enable. <code>report_clock_gating</code> tells you which registers were gated and which weren't.</p></div>
+      <div class="facet here"><h4>Which registers idle in this design</h4>
+        <p>From the program structure (per official test, per tile of cols + 3 repetitions):</p>
+        <ul><li><b>PE output register</b> (32 bits × P): loads only on OUT and CLR, 2 of every cols + 3 repetitions. That's busy 0.19% of the cycles in INT8, 0.39% in INT16, 0.77% in INT32. The best candidate.</li><li><b>Controller instruction register</b>: loads once per instruction, 4 times per tile.</li><li><b>Buffer write address</b>, if it's registered every cycle: only WRITE needs it.</li><li><b>PE accumulator</b> (64 bits × P): loads on MAC and CLR, (cols + 1)/(cols + 3) of the cycles, 99.8% in INT8. Gating it saves almost nothing in the real test.</li><li>Pipeline registers you add: busy whenever MACs flow, about 99%.</li></ul></div>
+      <div class="facet risk"><h4>How DC's default activity skews the savings</h4>
+        <p>Without simulation data, <code>report_power</code> estimates switching activity on its own (vectorless). Primary inputs and black-box outputs get default toggle rates and static probabilities, and DC propagates them through the logic. Here almost everything starts at black-box SRAM outputs. A gating enable is a decode of instruction bits, like "opcode is OUT or CLR", so the probability DC assigns it comes from that propagation. It has no knowledge that 99.7% of the PE instructions in the INT8 test are MACs. So the reported saving can be far from what the chip would see running the test. Gating the accumulator might show a large "saving" in the report although in the real test it loads almost every cycle.</p>
+        <p>The FoM uses DC's reported power, so both numbers matter. In the report, say which activity assumption the power number rests on, and explain the change from the real duty cycles above.</p></div>
+      <div class="facet measure"><h4>Commands (commonly used; check them on caddy)</h4>
+        <ul><li><code>set_clock_gating_style</code> (for example <code>-sequential_cell latch -positive_edge_logic {integrated} -minimum_bitwidth 4</code>) and then <code>compile_ultra -gate_clock</code>. Older flows use <code>insert_clock_gating</code>.</li><li><code>report_clock_gating</code>: how many registers were gated and why the others weren't.</li><li><code>report_power</code>: compare the register and clock_network rows before and after.</li><li><code>report_switching_activity</code>: what activity DC assumed.</li></ul>
+        <p>Option names change between DC versions, so read <code>man compile_ultra</code> on the version caddy runs before you trust any of these. Ask on Ed whether you may edit <code>dc_synth.tcl</code> for this. The handout leaves "the exact steps … as an exercise for the reader", which suggests yes.</p></div>
+      <div class="facet effect"><h4>Expected effect, and SAIF</h4>
+        <p>Area: small, the hold muxes minus one ICG per bank (about −55 µm² per PE for the 32-bit output register). Power: real-activity savings come mostly from the output register and controller registers. Their size depends on the "register" share of your power report, roughly register share × (gated bits / all bits) × (1 − duty cycle). Cycles and period: unchanged, if the enable's timing fits (the ICG latch needs the enable before the clock edge, like a flop's D input).</p>
+        <p><b>"Anything else" idea: SAIF.</b> Record real switching activity from simulation: VCS can write a SAIF file, or Synopsys <code>vcd2saif</code> converts a VCD. Then <code>read_saif -input file.saif -instance_name tb_top/dut</code> before <code>report_power</code>, plus <code>saif_map</code> for RTL-to-gate names. That reports power for the actual test workload. <b>Ask staff on Ed whether SAIF-annotated power is acceptable for the FoM</b> before you invest in it.</p></div>
+      <div class="facet write"><h4>What to write</h4>
+        <p>"We wrote the output and instruction registers with explicit load enables and enabled DC's clock gating (commands …). <code>report_clock_gating</code> shows N registers gated. Reported power fell from X to Y mW (register group from … to …), area from … to …, and the FoM improved Z%. The output register loads in only 2 of 1,027 INT8 repetitions, so in the real test its clock power almost disappears. DC's vectorless estimate assumes [what report_switching_activity showed], which is why the reported change is [larger/smaller] than the real one."</p></div>
+    </div>
+  </div>
+
+  <div class="optsec" id="sizing">
+    <h2>Design sizing: the PE count and the clock period</h2>
+    <div class="facets">
+      <div class="facet what"><h4>PE-count sweep</h4>
+        <ol><li>Only try tile-efficient counts: P = ceil(256 / tiles) = 16, 18, 19, 20, 22, 24, 26, 29, 32, 37, 43, 52, 64, 86, 128. Anything else adds PEs without removing a tile.</li><li>Synthesize at 2 or 3 points (say 16, 32, 64) at one period. Fit area ≈ A<sub>fixed</sub> + P · A<sub>PE</sub> (and the same for power). From that, predict the area cap and the FoM curve (the <button class="link" data-goto="fom/fom-pe">PE-count model</button>), then confirm the best point with a real run.</li><li>Recheck the period at the chosen P: bigger arrays mean deeper broadcast buffer trees.</li><li>Change <code>--pe_count</code> everywhere: the three tools in the equivalence Makefile (<code>ivd-gv</code>, <code>ivd-cc</code>, <code>ivd-sim</code>; the handout's 2.2.5 lists these), <code>ivd-as</code> if you go below 9 PEs (imem depth), and the synth Makefile's <code>ivd-gv</code>.</li></ol></div>
+      <div class="facet what"><h4>Clock-period sweep (binary search)</h4>
+        <ol><li>Find a period that passes (hi) and one that fails (lo).</li><li>Synthesize at mid = (lo + hi)/2 with <code>make synthesize CLK_PERIOD=mid</code>. If the worst slack is ≥ 0, set hi = mid, else lo = mid.</li><li>Stop when hi − lo ≤ 0.05 ns, or when the runs get too slow.</li></ol>
+        <p>Run <code>make clean</code> between runs: <code>dc_synth.tcl</code> appends to <code>results.txt</code> (<code>&gt;&gt;</code>), so without it the file collects several runs. The calculator warns if it sees more than one.</p></div>
+      <div class="facet risk"><h4>Things to know</h4>
+        <ul><li>DC isn't monotonic: a tighter target can pass where a looser one failed, and area grows as you tighten. Compute the FoM at every passing point and keep the best. It's often a little above the fastest passing period.</li><li>Use the period you synthesized at, with that run's area and power. "2.0 ns with +0.3 ns of slack" does not let you claim 1.7 ns; you'd have to synthesize at 1.7 and pass.</li><li>The sweep is also the first thing to redo after every other optimization: the best P and period move.</li><li>Big P means long DC runs. Time your first run and plan around it. Separate synth folders let runs go in parallel, because outputs go to fixed names in the current folder.</li></ul></div>
+      <div class="facet effect"><h4>Expected effect</h4>
+        <p>From the model: each doubling of P is worth about −19% while tiles divide evenly and area stays under the cap. The period sweep is worth whatever slack your baseline leaves on the table. Both are cheap in effort and need no RTL change, which is why they come first.</p></div>
+    </div>
+  </div>
+
+  <div class="optsec" id="else">
+    <h2>Anything else (2.2.6), with honest expected value</h2>
+    <div class="tscroll"><table class="ref">
+      <tr><th>Idea</th><th>What it does here</th><th>Expected value</th><th>Risk</th></tr>
+      <tr><td><b>Keep zero bubbles</b></td><td>Issue one repetition per cycle, back-to-back across instructions</td><td><span class="label-real">measured</span> 1 bubble per instruction = +1.5% FoM; 2 cycles per repetition = ×4.9</td><td>Low. If your Part 2 design has bubbles, this is the cheapest cycle win there is.</td></tr>
+      <tr><td><b>Operand isolation</b></td><td>Hold the inputs of unused logic at a constant (the idle cross multipliers in INT16/INT8, the RND shifter when not rounding) so it stops toggling</td><td>Real activity: moderate in a design with per-mode multipliers, small after sharing. DC's vectorless estimate may credit it differently. Costs some AND gates and a little delay.</td><td>Low, if the gating uses the same mode bits as the datapath.</td></tr>
+      <tr><td><b>Resetless datapath flops</b></td><td>Drop the async reset on acc, out and pipeline registers. Keep it on the FSM, counters, valid bits and pointers.</td><td><span class="label-est">Yosys estimate</span> DFF_X1 4.522 vs DFFR_X1 5.320 µm²; 96 flops = −77 µm² per PE (under 1%)</td><td>Values are X in simulation until the first CLR. Every compiled program starts with CLR, but the staff PE bench may not. Run them all.</td></tr>
+      <tr><td><b>Mode-specific narrowing</b></td><td>Don't build wider arithmetic than a mode needs: clamp comparators sized per lane, no 96-bit intermediates for rounding, shift amounts beyond the lane width handled by a simple saturate</td><td>Depends entirely on how wide your Part 2 code is; read your area_report_hier first</td><td>Edge cases of RND and OUT (shift ≥ lane width, the most negative value) are where narrowing bugs hide.</td></tr>
+      <tr><td><b>Register the broadcast</b></td><td>Give groups of PEs their own registered copy of the vector word and PE instruction, so the fanout tree isn't on the multiplier path</td><td>Only if the timing report shows long buffer chains at large P</td><td>+1 cycle of latency: apply the OUT → WRITE and end-of-test rules.</td></tr>
+      <tr><td><b>Overlap CLR / OUT / WRITE</b></td><td>Start the next tile's CLR in the same cycle as this tile's WRITE commit, and so on</td><td>At most 3 cycles per tile: −1.1% FoM at 16 PEs</td><td>High for the payoff: the controller has to reason across instructions.</td></tr>
+      <tr><td><b>Exploit the repeated vector lane</b></td><td><code>vector_decoder</code> copies the same vector element into every lane, so all lanes multiply by the same number</td><td>Tempting, but a PE that relied on it would break the PE spec for general inputs (PASS, the PE bench)</td><td>Don't, unless staff say the PE-level spec no longer matters in Part 3.</td></tr>
+      <tr><td><b>Check nothing was optimized away</b></td><td>The memories are empty black boxes, so DC could, in principle, treat their outputs as constant</td><td>Not an optimization: a sanity check. Every PE instance in <code>area_report_hier</code> should have substantial area.</td><td>If PEs are tiny, your "great" FoM is fake.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="quiz">
+    <h3>Quiz yourself</h3>
+    <details><summary>The script already uses -retime. Why didn't it fix your timing?</summary><p>Retiming only moves registers you already have, and it can't shorten a loop. The long path runs from a register through the multiplier and adder into the accumulator, a one-register loop with nothing in the middle to move. You add a pipeline register (for example on the product), and retiming then places it well.</p></details>
+    <details><summary>Why must the accumulate step close in one cycle?</summary><p>Each MAC adds to the result of the previous one, and a new MAC arrives every cycle. If acc + product took two cycles, the next MAC would read an accumulator that doesn't include its predecessor yet. Ways around it change the representation (carry-save) or the schedule (stalls, which cost cycles).</p></details>
+    <details><summary>You add one pipeline stage to the PE. What else in the system must change?</summary><p>OUT must read the accumulator after the last MAC's update, so do it in the same or a later stage. The WRITE that follows OUT has to commit one cycle later than before. A valid signal the testbench watches has to stay high until that last WRITE commits, without a glitch where both drop.</p></details>
+    <details><summary>Why can clock-gating the accumulator change DC's reported power a lot but the real power hardly at all?</summary><p>In the real test the accumulator loads in about 99.8% of INT8 cycles (MAC), so gating rarely stops its clock. DC's vectorless analysis doesn't know the program. It propagates default probabilities to the enable, which can make the register look idle much of the time, so the report credits a saving the workload wouldn't see.</p></details>
+    <details><summary>Your design passes at 1.8 ns and fails at 1.7 ns. What period do you use in the FoM?</summary><p>1.8 ns, with the area and power from the 1.8 ns run. If you think something between them passes, synthesize there; positive slack at 1.8 doesn't entitle you to a shorter period. Also compare the FoM at 1.8 against slightly looser periods, because area and power change too.</p></details>
+  </div>
+</div>
+</section>
+
+<!-- =================================================================== BUILDING BLOCKS -->
+<section class="view" id="view-blocks" aria-label="Building blocks" hidden>
+<div class="section">
+  <h2>Building-block numbers</h2>
+  <p class="lede">Real, local measurements of generic blocks: multipliers, adders, registers, a mux. They're what a PE is made of, but they're not anyone's PE. They give you orders of magnitude before your first DC run.</p>
+  <div class="note warn"><b>Yosys + open Nangate45 estimate, not Design Compiler.</b> Synthesized with <span id="bk-tool"></span> and the open-source Nangate45 Liberty (typical corner). It's the same cell family as the course's .db, with identical cell areas, but a different synthesis tool. DC with DesignWare picks its own multiplier and adder structures and upsizes for your clock, so its numbers will differ. Re-measure with <code>make synthesize</code> and <code>reports/area_report_hier</code>.</div>
+  <div class="tscroll" id="bk-table"></div>
+  <div class="chart" id="bk-chart"></div>
+  <p class="cap" id="bk-flow"></p>
+
+  <h3 id="bk-est">What they add up to <span class="label-est">rough estimate</span></h3>
+  <div id="bk-sums"></div>
+  <p>The rest of a naive PE (adders for each lane layout, the next-state muxes for acc and out, clamping, and the RND shifter and rounding) is a few thousand µm² more, depending on how you write it. So a naive PE lands somewhere around <b>12,000–15,000 µm²</b> in this estimate, and the multipliers are most of it.</p>
+  <p><b>Ballpark PE count under the cap:</b> at 13,000 µm² per PE plus a few thousand fixed, about 1,000,000 / 13,000 ≈ 75 PEs fit. The nearest tile-efficient sizes are 64 (4 tiles) and 86 (3 tiles); 86 needs a PE under about 11,500 µm², and 128 needs under about 7,700 µm². DC at a tight clock will likely be bigger than Yosys's area-oriented mapping, which pushes these down. Treat it as "64 probably fits; anything bigger is a question your own area report answers."</p>
+
+  <h3 id="bk-speed">Speed costs area</h3>
+  <p>The same function mapped by ABC for area ("relaxed") and for minimum delay ("fast"):</p>
+  <div class="tscroll" id="bk-speedtab"></div>
+  <p class="cap">ABC's delay comes from the Liberty tables, with no wire load and ideal input drivers. Use it to compare blocks with each other, never to predict DC's timing report. The Kogge-Stone row is the same 64-bit add written as a parallel-prefix tree: faster than Yosys's own adder and about twice the area. Choosing an adder structure for the clock is exactly what DC and DesignWare do for you.</p>
+
+  <h3 id="bk-repro">Reproduce</h3>
+  <p>The blocks are in <code>docs/part3-ppa-src/blocks/*.v</code> (written in the Verilog subset Yosys's built-in frontend accepts). <code>python3 docs/part3-ppa-src/record_blocks.py --lib &lt;NangateOpenCellLibrary_typical.lib&gt;</code> re-synthesizes them all in about a minute and rewrites <code>data/blocks.json</code>.</p>
+
+  <div class="quiz">
+    <h3>Quiz yourself</h3>
+    <details><summary>Why are four 17×17 multipliers bigger than one 32×32, yet sharing still saves area?</summary><p>One 32×32 Booth multiplier shares its whole reduction tree. Four separate ones each have their own tree and final adder, so 4 × 1,589 = 6,357 µm² against 4,928. But the naive PE has seven multipliers (about 9,023 µm²), and the four shared ones replace all seven.</p></details>
+    <details><summary>Why can't you use these numbers in your report?</summary><p>They're from Yosys, not Design Compiler. DC uses DesignWare components and sizes cells for your clock and constraints. The FoM must come from your own synthesis runs. These are only for planning.</p></details>
+    <details><summary>A register with a load enable costs 408.6 µm² for 64 bits, one without costs 289.4. Where does the difference go with clock gating?</summary><p>The 64 hold muxes (MUX2_X1, 1.862 µm² each) disappear. One clock-gating cell (CLKGATETST_X1, 3.99 µm²) stops the clock for the whole bank instead.</p></details>
+  </div>
+</div>
+</section>
+
+<!-- =================================================================== PLAN -->
+<section class="view" id="view-plan" aria-label="Plan" hidden>
+<div class="section">
+  <h2>Plan: the experiment protocol and an order of attack</h2>
+
+  <h3 id="pl-protocol">The protocol, for every experiment</h3>
+  <ol class="prose">
+    <li><b>One change per experiment.</b> If you change two things and the FoM moves, you can't say why, and "why" is half of what the report and the oral exam ask.</li>
+    <li><b>Correctness gate: the official tests pass AND <code>make eq-stress</code> passes.</b> The official tests have blind spots: the INT16 test vector ends in 0 and the INT32 one in −1, and a buffer bug that mis-decodes the last MAC operand passes all three. Pipelining and multiplier sharing are exactly where such bugs appear. <code>make eq</code> and <code>make eq-stress</code> use Icarus for pass/fail by default. <code>SIM=verilator</code> builds with <code>-O2 -fno-inline</code> (with inlining, Verilator skips the first instruction of every program). <code>make eq-both</code> runs both and flags any disagreement as a simulator issue, not a design bug.</li>
+    <li><b>Take the FoM's cycle counts from the official tests only.</b> eq-stress is for correctness.</li>
+    <li><b>Timing met at the period you use:</b> worst slack ≥ 0 in that run's <code>results.txt</code>, no errors in <code>compile.log</code> or the <code>check_error</code> output, area ≤ 1,000,000 µm², and every PE visibly present in <code>reports/area_report_hier</code>.</li>
+    <li><b>Record every run</b>, including failures, in <code>docs/experiments.md</code>. Compute the FoM with <code>make fom</code> (or this page's calculator, which should agree).</li>
+    <li><b>Compute "% improvement" the same way every time.</b> Use it against the previous best and against the baseline.</li>
+    <li><b>Write the report paragraph right after the run</b>, while you still remember why you expected it to work. Use the template below.</li>
+    <li><b>Keep the evidence:</b> commit or tag the RTL you measured, and keep that run's <code>results.txt</code> and <code>reports/</code>.</li>
+  </ol>
+  <div class="formula" id="pl-pct">% improvement = (FoM<sub>reference</sub> − FoM<sub>new</sub>) / FoM<sub>reference</sub> × 100<small>Positive means better (the FoM went down). Improvements don't add: two 20% improvements give 1 − 0.8 × 0.8 = 36%, not 40%. Multiply the ratios, and state the definition once in the report.</small></div>
+
+  <h3 id="pl-log">The experiment log</h3>
+  <p><code>docs/experiments.md</code> holds one row per run you might cite, with these columns, and a list of notes under the table: what you expected, what happened, why. It also gives the exact <code>make synth</code> and <code>make fom</code> commands that produce and score a run.</p>
+  <div class="tscroll"><table class="ref tight">
+    <tr><th>#</th><th>Date</th><th>Who</th><th>Tag (runs/)</th><th>Commit</th><th>Change</th><th>PEs</th><th>Period (ns)</th><th>Cycles 8/16/32</th><th>Area (µm²)</th><th>Power (mW)</th><th>Worst slack</th><th>FoM</th><th>% vs prev best</th><th>% vs baseline</th></tr>
+  </table></div>
+  <p class="cap">The calculator's "Make the experiment-log row" button builds this row (and the note line) from your pasted results.</p>
+
+  <h3 id="pl-para">A report paragraph, per optimization</h3>
+  <p>The handout asks for a short description of each optimization, how it changed the FoM (as a percentage), and a short reflection on why. One way to make the "why" exact is to split the change into its three factors. Because FoM<sub>new</sub>/FoM<sub>old</sub> = (T ratio)<sup>2.3</sup> × (A ratio) × (P ratio), you can say how much each term contributed. The calculator shows this split against your saved baseline.</p>
+  <div class="box"><p style="margin:0"><b>[Name of the optimization].</b> What we changed, in one or two sentences. What we expected and which term it should move. Result: P, period, cycles, area, power, FoM, % vs previous best (table row). Why: the factor split (for example "time ×0.80, area ×1.06, power ×1.12, so −5% net"), tied to what we saw in the timing, area or power report. What we'd try next.</p></div>
+
+  <h3 id="pl-order">A suggested order of attack (about 10 days)</h3>
+  <p>Cheap, high-yield, no-RTL experiments first. RTL changes in order of expected value per day. Re-sweep at the end, because every optimization moves the best P and period. The split gives each of you clear ownership, with a rule: <b>nobody merges an optimization the other can't explain.</b> Swap who presents each result in your practice sessions.</p>
+  <ol class="days" id="pl-days">
+    <li><b class="day">Day 0</b> (as Part 2 closes) <span class="who ab">both</span>: tag the Part 2 design. Baseline run: <code>make eq</code> + <code>make eq-stress</code> pass, <code>make synthesize</code> at the default 2.000 ns with 16 PEs, first row in <code>docs/experiments.md</code>. Check area_report_hier and the timing report together. Post your Ed questions (below).</li>
+    <li><b class="day">Days 1–2</b> <span class="who a">A</span> runs the period sweep on the baseline (binary search). <span class="who b">B</span> runs the PE sweep at the period A found (16, 32, 64), fits area and power per PE, and fills in the PE-count model. Together: pick the baseline configuration for everything after.</li>
+    <li><b class="day">Days 3–5</b> <span class="who b">B</span> implements multiplier sharing; <span class="who a">A</span> writes the randomized full-range PE test first, reviews the math against the <button class="link" data-goto="reuse">sharing tab</button>, and checks <code>report_resources</code> before and after.</li>
+    <li><b class="day">Days 5–7</b> <span class="who a">A</span> adds the pipeline stage (product register, WRITE delay, end-of-test valid); <span class="who b">B</span> reviews the OUT → WRITE timing on a waveform and reads the new timing report. Re-run the period sweep.</li>
+    <li><b class="day">Day 8</b> <span class="who ab">both</span>: clock gating (enables in RTL, DC options, report_clock_gating). If staff allowed SAIF, one annotated run for the explanation.</li>
+    <li><b class="day">Day 9</b> <span class="who ab">both</span>: final P and period sweep with everything on. Small items from "anything else" only if time is left.</li>
+    <li><b class="day">Day 10</b> <span class="who ab">both</span>: write the report (each writes the sections the other owned, then swap and correct), plus the AI reflection page. Mock oral: each explains the other's optimizations, the cycle model and the FoM split, with this page's quiz questions and <code>docs/oral-prep/part3-ppa.md</code>.</li>
+    <li><b class="day">Day 11</b>: buffer. Plan for the report being due Dec 1, which is what the professor said on Ed (the handout says Dec 4). Part 3 allows no late days.</li>
+  </ol>
+  <h3 id="pl-ed">Questions worth asking on Ed early</h3>
+  <ul class="prose">
+    <li>Which power number goes into the FoM: total (dynamic + leakage) from report_power?</li>
+    <li>Is SAIF-annotated power acceptable, or must the FoM use DC's default (vectorless) activity?</li>
+    <li>May we edit <code>dc_synth.tcl</code> (for clock gating options) and the Makefiles (PE count, imem depth)?</li>
+    <li>Does the full PE spec (PASS, RND, every edge case) still have to hold in Part 3, or only the equivalence tests?</li>
+  </ul>
+
+  <div class="quiz">
+    <h3>Quiz yourself</h3>
+    <details><summary>Why is "official tests pass" not enough to accept an optimization?</summary><p>The official tests have blind spots (the INT16 vector ends in 0, the INT32 one in −1, values are only −5…4). A real buffer bug that drops the last MAC operand passes all three. eq-stress uses other seeds and sizes that aren't tile multiples, and optimizations like pipelining and sharing are where such bugs show up.</p></details>
+    <details><summary>Run A improves the FoM 20% and run B, on top of A, another 20%. What's the total improvement?</summary><p>36%: the ratios multiply, 0.8 × 0.8 = 0.64. Percentages don't add.</p></details>
+    <details><summary>Why do the period and PE sweeps come first?</summary><p>They need no RTL change, they're cheap to run, and their effect is large (period through the 2.3 exponent, P through the tile count). They also set the configuration every later experiment is measured against.</p></details>
+  </div>
+</div>
+</section>
+
+<!-- =================================================================== WORDS -->
+<section class="view" id="view-words" aria-label="Words this page uses" hidden>
+<div class="section">
+  <h2>Words this page uses</h2>
+  <dl class="words">
+    <div><dt>FoM (figure of merit)</dt><dd>The single number Part 3 grades: (sum of the three test times)<sup>2.3</sup> × area × power × 10<sup>−15</sup>. Lower is better.</dd></div>
+    <div><dt>PPA</dt><dd>Power, performance, area: the three things the FoM combines.</dd></div>
+    <div><dt>Tile</dt><dd>The group of matrix rows the PE array works on at once: P × lanes rows. The compiler emits 4 instructions per tile.</dd></div>
+    <div><dt>Lane</dt><dd>One independent number inside a 32-bit word: 4 lanes in INT8, 2 in INT16, 1 in INT32.</dd></div>
+    <div><dt>Repetition</dt><dd>One pass of an instruction. An instruction runs count + 1 times, its stored count plus one.</dd></div>
+    <div><dt>Bubble</dt><dd>A cycle in which no repetition is issued. Zero-bubble means one repetition every cycle, including across instruction boundaries.</dd></div>
+    <div><dt>Clock period, frequency</dt><dd>Time between rising clock edges (ns), and its inverse. Dynamic power grows with frequency.</dd></div>
+    <div><dt>Critical path</dt><dd>The slowest register-to-register path. It sets the shortest period that meets timing.</dd></div>
+    <div><dt>Arrival, required, setup</dt><dd>When data gets to a flop's input; the latest it may get there (period − setup time); and how long before the clock edge a flop needs its input stable.</dd></div>
+    <div><dt>Slack, WNS, TNS</dt><dd>Slack = required − arrival; negative means a violation. WNS is the worst slack, TNS the sum of all negative slacks.</dd></div>
+    <div><dt>Retiming</dt><dd>Moving existing registers across logic to balance stage delays without changing behavior at the boundaries.</dd></div>
+    <div><dt>Pipelining</dt><dd>Adding registers to split long logic into stages. Throughput can stay one per cycle while latency grows.</dd></div>
+    <div><dt>Latency, throughput</dt><dd>Cycles from an operation's start to its result, and operations finished per cycle.</dd></div>
+    <div><dt>Hazard</dt><dd>An operation reading a value before an earlier operation has written it, here OUT before the last MAC, or WRITE before OUT.</dd></div>
+    <div><dt>Carry-save</dt><dd>Keeping a sum as two numbers (sum bits and carry bits) so a new term can be added with a row of full adders in constant time. A real adder resolves it when needed.</dd></div>
+    <div><dt>CPA, carry kill</dt><dd>A carry-propagate adder is an ordinary adder. A carry kill forces the carry between two lanes to 0 so the lanes stay independent.</dd></div>
+    <div><dt>Booth encoding, reduction tree</dt><dd>The usual multiplier structure: fewer partial products (Booth), summed by a tree of full adders, then one final adder. DesignWare picks the variant.</dd></div>
+    <div><dt>DesignWare</dt><dd>Synopsys's library of arithmetic building blocks (<code>dw_foundation.sldb</code> in the script). DC implements <code>*</code> and <code>+</code> with them.</dd></div>
+    <div><dt>Partial product</dt><dd>One piece of a product, such as a<sub>H</sub>b<sub>L</sub>, summed after shifting to make the whole product.</dd></div>
+    <div><dt>Sign and zero extension</dt><dd>Widening a number by copying its sign bit (keeps a signed value) or by adding zeros (keeps an unsigned value).</dd></div>
+    <div><dt>Clock gating, ICG</dt><dd>Stopping the clock of registers that won't load. An integrated clock-gating cell (latch + AND) does it glitch-free. Nangate: CLKGATETST_X1.</dd></div>
+    <div><dt>Load enable</dt><dd>A register input that says "load this cycle"; without gating it's a hold mux in front of every flop.</dd></div>
+    <div><dt>Dynamic, internal, switching, leakage power</dt><dd>Dynamic = internal (inside cells as they switch) + switching (charging wires and inputs). Leakage flows even when nothing switches.</dd></div>
+    <div><dt>Switching activity, toggle rate, static probability</dt><dd>How often a net changes per cycle, and how much of the time it's 1. DC needs them to estimate dynamic power.</dd></div>
+    <div><dt>Vectorless estimate, SAIF</dt><dd>Power estimated from default, propagated activity, versus activity annotated from a simulation, stored in a SAIF (Switching Activity Interchange Format) file.</dd></div>
+    <div><dt>Operand isolation</dt><dd>Holding the inputs of unused logic constant so it doesn't toggle.</dd></div>
+    <div><dt>Black box</dt><dd>A module with ports and no contents. Here the SRAMs in synthesis: no area, no timing through them.</dd></div>
+    <div><dt>Fanout, buffer tree</dt><dd>How many inputs a signal drives. The script caps it at 4, so DC inserts trees of buffers for signals broadcast to every PE.</dd></div>
+    <div><dt>Wire load model</dt><dd>DC's guess of wire capacitance from fanout, before any layout (here <code>1K_hvratio_1_4</code>).</dd></div>
+    <div><dt>Upsizing</dt><dd>Replacing a cell with a stronger, bigger version (X1 → X2 → X4) to make a path faster.</dd></div>
+    <div><dt>Log-sensitivity</dt><dd>How much ln FoM moves per unit change in ln of an input: 2.3 for time, 1 for area, 1 for power.</dd></div>
+    <div><dt>Tile-efficient P</dt><dd>A PE count with no wasted rows on the last tile for these tests: P = ceil(256 / tiles).</dd></div>
+    <div><dt>Glitch</dt><dd>A zero-width or very short pulse on a combinational signal, for example when two inputs change at the same edge.</dd></div>
+    <div><dt>Duty cycle</dt><dd>The fraction of cycles in which a signal, here a register's load enable, is active.</dd></div>
+    <div><dt>Yosys, ABC</dt><dd>Open-source synthesis tools used for this page's estimates. Yosys reads the Verilog and calls ABC to map the logic onto library cells. They are not Design Compiler.</dd></div>
+    <div><dt>Parallel-prefix (Kogge-Stone) adder</dt><dd>An adder that computes all carries in log<sub>2</sub>(width) levels instead of letting them ripple. It's faster than a ripple-carry adder and bigger.</dd></div>
+  </dl>
+</div>
+</section>
+
+</main>
+<footer class="wrap">
+  Related pages: <a href="walkthrough.html">Part 1 walkthrough</a> · <a href="part2-rtl.html">Part 2 RTL</a> · <a href="synthesis.html">synthesis with Design Compiler</a> · <a href="oral-prep.html">oral-exam practice</a>.<br>
+  Made for EE271 Project Part 3 (<code>handouts/Project_Part_3.md</code>). Measured cycle counts: <code>docs/part3-ppa-src/data/cycles.json</code>. Building-block areas: <code>docs/part3-ppa-src/data/blocks.json</code>. Rebuild with <code>python3 docs/part3-ppa-src/build.py</code>. Built with Claude Code; see <code>docs/ai-log.md</code>.
+</footer>
+
+<script>
+/*DATA*/
+</script>
+<script>
+/*LIB*/
+</script>
+<script>
+/*APP*/
+</script>
+</body>
+</html>

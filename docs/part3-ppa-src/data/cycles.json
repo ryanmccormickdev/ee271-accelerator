@@ -1,0 +1,999 @@
+{
+ "what": "Cycle counts printed by part2/equivalence_testing/testbench/tb_top.sv ('Computation took N clock cycles') for a throwaway zero-bubble reference RTL (never in the repo), at the official test sizes.",
+ "simulators": {
+  "icarus": "Icarus Verilog 13.0",
+  "verilator": "Verilator 5.052"
+ },
+ "tests": {
+  "INT8": {
+   "rows": 1024,
+   "cols": 1024,
+   "lanes": 4
+  },
+  "INT16": {
+   "rows": 512,
+   "cols": 512,
+   "lanes": 2
+  },
+  "INT32": {
+   "rows": 256,
+   "cols": 256,
+   "lanes": 1
+  }
+ },
+ "official": [
+  {
+   "P": 4,
+   "mode": "INT16",
+   "tiles": 64,
+   "asm_lines": 256,
+   "imem_depth": 512,
+   "cycles": 32968,
+   "model": 32968,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 4,
+   "mode": "INT32",
+   "tiles": 64,
+   "asm_lines": 256,
+   "imem_depth": 512,
+   "cycles": 16584,
+   "model": 16584,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 4,
+   "mode": "INT8",
+   "tiles": 64,
+   "asm_lines": 256,
+   "imem_depth": 512,
+   "cycles": null,
+   "model": 65736,
+   "icarus": "FAIL",
+   "verilator": "FAIL",
+   "note": "staff ivd-sim raises ValueError (MemAOffset 65,536 does not fit 16 bits), so there is no reference output"
+  },
+  {
+   "P": 5,
+   "mode": "INT16",
+   "tiles": 52,
+   "asm_lines": 208,
+   "imem_depth": 256,
+   "cycles": 26788,
+   "model": 26788,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 5,
+   "mode": "INT32",
+   "tiles": 52,
+   "asm_lines": 208,
+   "imem_depth": 256,
+   "cycles": 13476,
+   "model": 13476,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 5,
+   "mode": "INT8",
+   "tiles": 52,
+   "asm_lines": 208,
+   "imem_depth": 256,
+   "cycles": 53412,
+   "model": 53412,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 6,
+   "mode": "INT16",
+   "tiles": 43,
+   "asm_lines": 172,
+   "imem_depth": 256,
+   "cycles": 22153,
+   "model": 22153,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 6,
+   "mode": "INT32",
+   "tiles": 43,
+   "asm_lines": 172,
+   "imem_depth": 256,
+   "cycles": 11145,
+   "model": 11145,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 6,
+   "mode": "INT8",
+   "tiles": 43,
+   "asm_lines": 172,
+   "imem_depth": 256,
+   "cycles": 44169,
+   "model": 44169,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 7,
+   "mode": "INT16",
+   "tiles": 37,
+   "asm_lines": 148,
+   "imem_depth": 256,
+   "cycles": 19063,
+   "model": 19063,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 7,
+   "mode": "INT32",
+   "tiles": 37,
+   "asm_lines": 148,
+   "imem_depth": 256,
+   "cycles": 9591,
+   "model": 9591,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 7,
+   "mode": "INT8",
+   "tiles": 37,
+   "asm_lines": 148,
+   "imem_depth": 256,
+   "cycles": 38007,
+   "model": 38007,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 8,
+   "mode": "INT16",
+   "tiles": 32,
+   "asm_lines": 128,
+   "imem_depth": 256,
+   "cycles": 16488,
+   "model": 16488,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 8,
+   "mode": "INT32",
+   "tiles": 32,
+   "asm_lines": 128,
+   "imem_depth": 256,
+   "cycles": 8296,
+   "model": 8296,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 8,
+   "mode": "INT8",
+   "tiles": 32,
+   "asm_lines": 128,
+   "imem_depth": 256,
+   "cycles": 32872,
+   "model": 32872,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 9,
+   "mode": "INT16",
+   "tiles": 29,
+   "asm_lines": 116,
+   "imem_depth": 128,
+   "cycles": 14943,
+   "model": 14943,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 9,
+   "mode": "INT32",
+   "tiles": 29,
+   "asm_lines": 116,
+   "imem_depth": 128,
+   "cycles": 7519,
+   "model": 7519,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 9,
+   "mode": "INT8",
+   "tiles": 29,
+   "asm_lines": 116,
+   "imem_depth": 128,
+   "cycles": 29791,
+   "model": 29791,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 10,
+   "mode": "INT16",
+   "tiles": 26,
+   "asm_lines": 104,
+   "imem_depth": 128,
+   "cycles": 13398,
+   "model": 13398,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 10,
+   "mode": "INT32",
+   "tiles": 26,
+   "asm_lines": 104,
+   "imem_depth": 128,
+   "cycles": 6742,
+   "model": 6742,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 10,
+   "mode": "INT8",
+   "tiles": 26,
+   "asm_lines": 104,
+   "imem_depth": 128,
+   "cycles": 26710,
+   "model": 26710,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 11,
+   "mode": "INT16",
+   "tiles": 24,
+   "asm_lines": 96,
+   "imem_depth": 128,
+   "cycles": 12368,
+   "model": 12368,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 11,
+   "mode": "INT32",
+   "tiles": 24,
+   "asm_lines": 96,
+   "imem_depth": 128,
+   "cycles": 6224,
+   "model": 6224,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 11,
+   "mode": "INT8",
+   "tiles": 24,
+   "asm_lines": 96,
+   "imem_depth": 128,
+   "cycles": 24656,
+   "model": 24656,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 12,
+   "mode": "INT16",
+   "tiles": 22,
+   "asm_lines": 88,
+   "imem_depth": 128,
+   "cycles": 11338,
+   "model": 11338,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 12,
+   "mode": "INT32",
+   "tiles": 22,
+   "asm_lines": 88,
+   "imem_depth": 128,
+   "cycles": 5706,
+   "model": 5706,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 12,
+   "mode": "INT8",
+   "tiles": 22,
+   "asm_lines": 88,
+   "imem_depth": 128,
+   "cycles": 22602,
+   "model": 22602,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 13,
+   "mode": "INT16",
+   "tiles": 20,
+   "asm_lines": 80,
+   "imem_depth": 128,
+   "cycles": 10308,
+   "model": 10308,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 13,
+   "mode": "INT32",
+   "tiles": 20,
+   "asm_lines": 80,
+   "imem_depth": 128,
+   "cycles": 5188,
+   "model": 5188,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 13,
+   "mode": "INT8",
+   "tiles": 20,
+   "asm_lines": 80,
+   "imem_depth": 128,
+   "cycles": 20548,
+   "model": 20548,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 16,
+   "mode": "INT16",
+   "tiles": 16,
+   "asm_lines": 64,
+   "imem_depth": 128,
+   "cycles": 8248,
+   "model": 8248,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 16,
+   "mode": "INT32",
+   "tiles": 16,
+   "asm_lines": 64,
+   "imem_depth": 128,
+   "cycles": 4152,
+   "model": 4152,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 16,
+   "mode": "INT8",
+   "tiles": 16,
+   "asm_lines": 64,
+   "imem_depth": 128,
+   "cycles": 16440,
+   "model": 16440,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 20,
+   "mode": "INT16",
+   "tiles": 13,
+   "asm_lines": 52,
+   "imem_depth": 128,
+   "cycles": 6703,
+   "model": 6703,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 20,
+   "mode": "INT32",
+   "tiles": 13,
+   "asm_lines": 52,
+   "imem_depth": 128,
+   "cycles": 3375,
+   "model": 3375,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 20,
+   "mode": "INT8",
+   "tiles": 13,
+   "asm_lines": 52,
+   "imem_depth": 128,
+   "cycles": 13359,
+   "model": 13359,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 24,
+   "mode": "INT16",
+   "tiles": 11,
+   "asm_lines": 44,
+   "imem_depth": 128,
+   "cycles": 5673,
+   "model": 5673,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 24,
+   "mode": "INT32",
+   "tiles": 11,
+   "asm_lines": 44,
+   "imem_depth": 128,
+   "cycles": 2857,
+   "model": 2857,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 24,
+   "mode": "INT8",
+   "tiles": 11,
+   "asm_lines": 44,
+   "imem_depth": 128,
+   "cycles": 11305,
+   "model": 11305,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 32,
+   "mode": "INT16",
+   "tiles": 8,
+   "asm_lines": 32,
+   "imem_depth": 128,
+   "cycles": 4128,
+   "model": 4128,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 32,
+   "mode": "INT32",
+   "tiles": 8,
+   "asm_lines": 32,
+   "imem_depth": 128,
+   "cycles": 2080,
+   "model": 2080,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 32,
+   "mode": "INT8",
+   "tiles": 8,
+   "asm_lines": 32,
+   "imem_depth": 128,
+   "cycles": 8224,
+   "model": 8224,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 43,
+   "mode": "INT16",
+   "tiles": 6,
+   "asm_lines": 24,
+   "imem_depth": 128,
+   "cycles": 3098,
+   "model": 3098,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 43,
+   "mode": "INT32",
+   "tiles": 6,
+   "asm_lines": 24,
+   "imem_depth": 128,
+   "cycles": 1562,
+   "model": 1562,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 43,
+   "mode": "INT8",
+   "tiles": 6,
+   "asm_lines": 24,
+   "imem_depth": 128,
+   "cycles": 6170,
+   "model": 6170,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 48,
+   "mode": "INT16",
+   "tiles": 6,
+   "asm_lines": 24,
+   "imem_depth": 128,
+   "cycles": 3098,
+   "model": 3098,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 48,
+   "mode": "INT32",
+   "tiles": 6,
+   "asm_lines": 24,
+   "imem_depth": 128,
+   "cycles": 1562,
+   "model": 1562,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 48,
+   "mode": "INT8",
+   "tiles": 6,
+   "asm_lines": 24,
+   "imem_depth": 128,
+   "cycles": 6170,
+   "model": 6170,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 64,
+   "mode": "INT16",
+   "tiles": 4,
+   "asm_lines": 16,
+   "imem_depth": 128,
+   "cycles": 2068,
+   "model": 2068,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 64,
+   "mode": "INT32",
+   "tiles": 4,
+   "asm_lines": 16,
+   "imem_depth": 128,
+   "cycles": 1044,
+   "model": 1044,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 64,
+   "mode": "INT8",
+   "tiles": 4,
+   "asm_lines": 16,
+   "imem_depth": 128,
+   "cycles": 4116,
+   "model": 4116,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 86,
+   "mode": "INT16",
+   "tiles": 3,
+   "asm_lines": 12,
+   "imem_depth": 128,
+   "cycles": 1553,
+   "model": 1553,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 86,
+   "mode": "INT32",
+   "tiles": 3,
+   "asm_lines": 12,
+   "imem_depth": 128,
+   "cycles": 785,
+   "model": 785,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 86,
+   "mode": "INT8",
+   "tiles": 3,
+   "asm_lines": 12,
+   "imem_depth": 128,
+   "cycles": 3089,
+   "model": 3089,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 96,
+   "mode": "INT16",
+   "tiles": 3,
+   "asm_lines": 12,
+   "imem_depth": 128,
+   "cycles": 1553,
+   "model": 1553,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 96,
+   "mode": "INT32",
+   "tiles": 3,
+   "asm_lines": 12,
+   "imem_depth": 128,
+   "cycles": 785,
+   "model": 785,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 96,
+   "mode": "INT8",
+   "tiles": 3,
+   "asm_lines": 12,
+   "imem_depth": 128,
+   "cycles": 3089,
+   "model": 3089,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 128,
+   "mode": "INT16",
+   "tiles": 2,
+   "asm_lines": 8,
+   "imem_depth": 128,
+   "cycles": 1038,
+   "model": 1038,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 128,
+   "mode": "INT32",
+   "tiles": 2,
+   "asm_lines": 8,
+   "imem_depth": 128,
+   "cycles": 526,
+   "model": 526,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  },
+  {
+   "P": 128,
+   "mode": "INT8",
+   "tiles": 2,
+   "asm_lines": 8,
+   "imem_depth": 128,
+   "cycles": 2062,
+   "model": 2062,
+   "icarus": "EQUIVALENT",
+   "verilator": "EQUIVALENT"
+  }
+ ],
+ "variants": [
+  {
+   "kind": "bubble",
+   "sim": "icarus",
+   "P": 16,
+   "mode": "INT32",
+   "cycles": 4215,
+   "model": 4216,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "icarus",
+   "P": 16,
+   "mode": "INT16",
+   "cycles": 8311,
+   "model": 8312,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "icarus",
+   "P": 24,
+   "mode": "INT16",
+   "cycles": 5717,
+   "model": 5717,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "icarus",
+   "P": 24,
+   "mode": "INT32",
+   "cycles": 2901,
+   "model": 2901,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "icarus",
+   "P": 16,
+   "mode": "INT8",
+   "cycles": 16503,
+   "model": 16504,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "icarus",
+   "P": 24,
+   "mode": "INT8",
+   "cycles": 11349,
+   "model": 11349,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "verilator",
+   "P": 16,
+   "mode": "INT32",
+   "cycles": 4216,
+   "model": 4216,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "verilator",
+   "P": 16,
+   "mode": "INT16",
+   "cycles": 8312,
+   "model": 8312,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "verilator",
+   "P": 16,
+   "mode": "INT8",
+   "cycles": 16504,
+   "model": 16504,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "verilator",
+   "P": 24,
+   "mode": "INT16",
+   "cycles": 5717,
+   "model": 5717,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "verilator",
+   "P": 24,
+   "mode": "INT32",
+   "cycles": 2901,
+   "model": 2901,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "bubble",
+   "sim": "verilator",
+   "P": 24,
+   "mode": "INT8",
+   "cycles": 11349,
+   "model": 11349,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "icarus",
+   "P": 16,
+   "mode": "INT32",
+   "cycles": 8296,
+   "model": 8296,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "icarus",
+   "P": 16,
+   "mode": "INT16",
+   "cycles": 16488,
+   "model": 16488,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "icarus",
+   "P": 24,
+   "mode": "INT16",
+   "cycles": 11338,
+   "model": 11338,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "icarus",
+   "P": 24,
+   "mode": "INT32",
+   "cycles": 5706,
+   "model": 5706,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "icarus",
+   "P": 16,
+   "mode": "INT8",
+   "cycles": 32872,
+   "model": 32872,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "icarus",
+   "P": 24,
+   "mode": "INT8",
+   "cycles": 22602,
+   "model": 22602,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "verilator",
+   "P": 16,
+   "mode": "INT32",
+   "cycles": 8296,
+   "model": 8296,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "verilator",
+   "P": 16,
+   "mode": "INT16",
+   "cycles": 16488,
+   "model": 16488,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "verilator",
+   "P": 16,
+   "mode": "INT8",
+   "cycles": 32872,
+   "model": 32872,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "verilator",
+   "P": 24,
+   "mode": "INT16",
+   "cycles": 11338,
+   "model": 11338,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "verilator",
+   "P": 24,
+   "mode": "INT8",
+   "cycles": 22602,
+   "model": 22602,
+   "result": "EQUIVALENT"
+  },
+  {
+   "kind": "tworep",
+   "sim": "verilator",
+   "P": 24,
+   "mode": "INT32",
+   "cycles": 5706,
+   "model": 5706,
+   "result": "EQUIVALENT"
+  }
+ ],
+ "odd": [
+  {
+   "P": 16,
+   "mode": "INT8",
+   "rows": 100,
+   "cols": 37,
+   "cycles": 88,
+   "cycles_verilator": 88,
+   "model": 88,
+   "verilator": "EQUIVALENT",
+   "icarus": "EQUIVALENT"
+  },
+  {
+   "P": 24,
+   "mode": "INT32",
+   "rows": 300,
+   "cols": 50,
+   "cycles": 697,
+   "cycles_verilator": 697,
+   "model": 697,
+   "verilator": "EQUIVALENT",
+   "icarus": "EQUIVALENT"
+  },
+  {
+   "P": 12,
+   "mode": "INT16",
+   "rows": 77,
+   "cols": 129,
+   "cycles": 536,
+   "cycles_verilator": 536,
+   "model": 536,
+   "verilator": "EQUIVALENT",
+   "icarus": "EQUIVALENT"
+  },
+  {
+   "P": 48,
+   "mode": "INT8",
+   "rows": 1000,
+   "cols": 3,
+   "cycles": 44,
+   "cycles_verilator": 44,
+   "model": 44,
+   "verilator": "EQUIVALENT",
+   "icarus": "EQUIVALENT"
+  }
+ ],
+ "trunc": [
+  {
+   "P": 6,
+   "mode": "INT8",
+   "imem_depth": 128,
+   "asm_lines": 172,
+   "inst_bits_lines": 128,
+   "inst_count_passed": 173,
+   "imem_addr_width": 7,
+   "inst_count_seen": 45,
+   "icarus": {
+    "cycles": 11305,
+    "result": "MISMATCH",
+    "rtl_rows": 11,
+    "python_rows": 32
+   },
+   "verilator": {
+    "cycles": 11305,
+    "result": "MISMATCH",
+    "rtl_rows": 11,
+    "python_rows": 32
+   },
+   "rows_needed": 43
+  },
+  {
+   "P": 8,
+   "mode": "INT8",
+   "imem_depth": 128,
+   "asm_lines": 128,
+   "inst_bits_lines": 128,
+   "inst_count_passed": 129,
+   "imem_addr_width": 7,
+   "inst_count_seen": 1,
+   "icarus": {
+    "cycles": 7,
+    "result": "MISMATCH",
+    "rtl_rows": 0,
+    "python_rows": 32
+   },
+   "verilator": {
+    "cycles": 8,
+    "result": "MISMATCH",
+    "rtl_rows": 0,
+    "python_rows": 32
+   },
+   "rows_needed": 32
+  }
+ ]
+}
