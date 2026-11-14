@@ -76,6 +76,29 @@ class Accelerator:
 
     def execute_instruction(self, instruction : Instruction):
         # START IMPLEMENTATION
-        # Your Code Here
+        mi = instruction.get_mem_instruction()
+        pi = instruction.get_pe_instruction()
+        count = instruction.get_count().uint
+        inc_a = instruction.get_mema_inc().uint
+        inc_b = instruction.get_memb_inc().uint
+        base_a = mi.get_mema_offset().uint
+        base_b = mi.get_memb_offset().uint
+        in_width = self._controller_config.PE_CONFIG.INPUT_BITWIDTH
+        
+        for i in range(count + 1):
+            mi_i = MemoryInstruction(mi._memory_config)
+            mi_i.set_instruction(mi.get_instruction())
+            mi_i.set_mema_offset(base_a + i * inc_a)
+            mi_i.set_memb_offset(base_b + i * inc_b)
+            self._main_buffer.execute_instruction(mi_i)
+            
+            mem0_slices = self._main_buffer.read_mem0_output().cut(in_width)
+            mem1_word = self._main_buffer.read_mem1_output()
+            for pe, mem0_slice in zip(self._pe_array, mem0_slices):
+                pe.input_a(mem1_word)
+                pe.input_b(mem0_slice)
+                pe.execute_instruction(pi)
+            
+            self._main_buffer.write_mem2_input(Bits().join([pe.get_output() for pe in self._pe_array]))
         # END IMPLEMENTATION
         return 0
