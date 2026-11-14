@@ -43,3 +43,27 @@ Template:
   Python primer.
 - Not done by AI: still no code in the three `src` files. The notes for those say what the code must do, not the code.
 - Worked / didn't: (fill in after using it)
+
+## 2026-11-14 (overnight): Ryan, Claude Code (Claude Opus 5.5, several parallel agents)
+- Asked for: pull Parts 2 and 3 from Canvas, architect how a pair should tackle them, explainers like Part 1's but about
+  going from the Python model down to RTL, gates and PPA, and a work split designed around the individual oral exam.
+- Got: the Part 2 starter imported as `part2/` (subtree, like Part 1); text copies of both handouts; `docs/PLAN.md`
+  (timing contract, split, calendar, questions for staff); a local simulation flow (`scripts/rtl/`: equivalence tests in
+  Icarus/Verilator with a mismatch explainer, stress tests, staff testbenches with waveforms, lint); per-module checks
+  against the staff's Python reference (`verif/`: PE, controller, buffer); caddy wrappers for VCS and Design Compiler;
+  an FoM calculator; experiment/decision/report templates; four explainer pages and oral-exam question banks
+  (`docs/part2-rtl.html`, `synthesis.html`, `part3-ppa.html`, `oral-prep.html`).
+- How the tooling was checked: the AI wrote a throwaway reference RTL **outside the repo** (in its session scratch
+  space) only to prove the flow end to end. It passes all official and stress tests in both simulators. Deliberately
+  broken copies (truncating OUT, early WRITE, live-mode lane select, controller bubbles, Count instead of Count+1)
+  each make the right check fail with the right message.
+- Found along the way: bitstring 5 breaks the staff `ivd-as`; a simulation race in the staff SRAM model that makes
+  Verilator skip the first instruction; blind spots in the official tests; `ivd-as` silently truncating long programs.
+  All are in `docs/spec-notes.md`.
+- AI mistakes we caught: a first "fix" for the SRAM race (a non-blocking copy of `array.sv`) broke cen-gated designs,
+  and two testbench sampling-point bugs hid real failures. Each was caught by cross-checking two simulators and
+  testing the checks against known-bad designs. The lesson: test the tests.
+- Not done by AI: none of `processing_element.sv`, `buffer.sv`, `controller.sv`, `top.sv` is written. The pages
+  describe behavior and timing with diagrams and recorded waveforms, not solution code. The recorded waveforms and the
+  cycle-level "timing contract" are effectively a reference for the timing (flagged on the pages).
+- Worked / didn't: (fill in after using it)

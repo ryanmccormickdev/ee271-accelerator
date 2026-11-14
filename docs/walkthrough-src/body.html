@@ -369,7 +369,7 @@
       <li><code>Bits</code> objects are immutable. You can't assign into a slice. Build a new one and reassign the attribute.</li>
       <li>Never do the math on the whole 64-bit accumulator as one number in INT8 or INT16. A carry out of one lane would land in its neighbor.</li>
       <li>PASS copies A (Data0, the MEM1 word), not B.</li>
-      <li>The three CLR public tests pass on the empty skeleton, because a fresh PE is already all zeros, so they prove nothing. The TODO list in <code>test/test_ours.py</code> has better checks, and every example in this page's menu is a ready-made test case.</li>
+      <li>The three CLR public tests pass on the empty skeleton, because a fresh PE is already all zeros, so passing them there proves nothing. (Once MAC and OUT work they do check CLR: they run MAC, OUT, CLR and then check both registers.) The TODO list in <code>test/test_ours.py</code> has better checks, and every example in this page's menu is a ready-made test case.</li>
     </ul>
   </div>
 </section>

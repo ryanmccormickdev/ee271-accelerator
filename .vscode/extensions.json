@@ -1,1 +1,12 @@
-{ "recommendations": ["ms-python.python", "ms-python.debugpy"] }
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    // SystemVerilog syntax highlighting (Part 2/3 RTL)
+    "mshr-h.veriloghdl",
+    // waveform viewer inside VS Code for build/**/waves.vcd (or use the Surfer app: make waves)
+    "surfer-project.surfer",
+    // edit and run on caddy over SSH
+    "ms-vscode-remote.remote-ssh"
+  ]
+}

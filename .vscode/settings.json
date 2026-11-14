@@ -5,5 +5,7 @@
   "python.analysis.extraPaths": ["${workspaceFolder}/part1"],
   // Hide the ~150 MB environment and Python byproducts from the file tree and search.
   "files.exclude": { "**/__pycache__": true, "**/ee271-conda-env": true },
-  "search.exclude": { "**/ee271-conda-env": true }
+  "search.exclude": { "**/ee271-conda-env": true, "build/**": true, "part2/**/synth/lib/**": true },
+  // the staff RTL uses .sv everywhere; defines.sv is generated (make lint / make eq write one under build/)
+  "files.associations": { "*.sv": "systemverilog", "*.f": "plaintext", "*.asm": "plaintext" }
 }

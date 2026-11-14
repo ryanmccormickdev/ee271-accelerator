@@ -95,3 +95,105 @@ edge cases as ready-made examples, with the expected register values.
 - **#224** The EDA tools for later parts are on the old caddy cluster (`caddyXX.stanford.edu`), reached over ssh. Staff
   recommend connecting from a Farmshare OnDemand desktop so the GUI tools work without X-forwarding.
 - **#219** The Gradescope submission for part 1 isn't open yet; staff say it will open soon.
+
+---
+
+# Parts 2 and 3: spec, rulings, and what we found in the starter
+
+`handouts/Project_Part_2.pdf` / `Project_Part_3.pdf` (text copies `.md` next to them) are the authority; `docs/PLAN.md`
+has our design and schedule. Everything below marked *measured* was checked on Nov 14 by running the staff tools,
+a throwaway reference RTL (kept outside the repo) and deliberately broken copies of it.
+
+## Part 2 grading criteria (handout 2.4)
+
+1. The RTL satisfies the **updated Part 1 arithmetic specification** and passes `int8_test`, `int16_test`, `int32_test`.
+   "Updated" = the Part 1 handout as revised on Canvas (Nov 12). Our `handouts/Project_Part_1.pdf` already has that
+   text (checked word for word against the Canvas version): signed clamping on OUT, ties-to-even RND, sign-extending
+   PASS, full-width MAC without saturation. The equivalence tests only exercise CLR, MAC, OUT and NOP, so PASS and RND
+   correctness rests on us (`make pe-unit` covers them).
+2. `compile.log` has no errors (warnings are fine).
+
+## Ed rulings that carry over from Part 1 (as of Nov 14; no Part 2/3 posts yet)
+
+- **#226** MAC overflow is not tested; OUT must use signed per-lane **clamping**, not truncation.
+- **#248** Clamping is graded at the instruction level; the end-to-end tests also expect clamped outputs.
+- **#221** READ feeds its paired PE op; WRITE is paired with a PE NOP; WRITE+OUT in one instruction is not graded; no out-of-range addresses.
+- **#238** All instructions valid, addresses in range, intermediate arithmetic fits the lanes; undocumented behavior isn't graded.
+- **#249** Grading uses 32-bit inputs, 64-bit accumulator, 32-bit outputs only.
+- **#7** Design Compiler for Parts 2–3, Siemens Catapult for Part 4 (HLS). **#224** EDA tools on caddy over ssh.
+- **#207** One-page AI reflection in the final report "due on 12/1". **#217** Deliverables 25%, oral exam 25%.
+- **#208** Oral exam format (individual or pair) still being decided.
+
+## The starter, facts that matter
+
+- **Staff reference = a full Part 1 solution** in `part2/simulator/src`; the equivalence tests compare our RTL with it.
+  Two differences from our Part 1: its controller executes a WRITE *after* the PE op in a repetition (ours: memory
+  first; both are legal under #221), and its MAC raises an exception on accumulator overflow (ours wraps).
+- **Equivalence tests** (`part2/equivalence_testing/Makefile`): INT8 1024×1024, INT16 512×512, INT32 256×256, values
+  −5…4 (`ivd-mg … -5 5`), matrix seed 0, vector seed 12345, **16 PEs** (tool defaults), 16-bit counters, 128-entry IMEM.
+  The whole MEM2 (65,536 words) is dumped and diffed. `INST_COUNT` = program lines + 1. The extra word is all zeros,
+  which decodes as `READ INT8 0 0 | MAC INT8` count 0, so the RTL runs one harmless extra READ+MAC (the Python stops
+  at the first zero word).
+- **The testbench decides when we're done:** `program_counter == INST_COUNT && !pe_inst_valid && !buf_inst_valid`.
+  It then waits one cycle and dumps MEM2, and prints `Computation took N clock cycles` (= time / 10 ns, including 5
+  reset cycles). This is the cycle count for the Part 3 FoM. It's an `always @(posedge …)` on a combinational
+  signal, so a zero-width glitch can end the test (measured: a one-bubble variant reads 16,503 in Icarus, 16,504 in
+  Verilator).
+- **Names the testbenches require:** `dut.u_buffer.u_matrix_mem / u_vector_mem / u_output_mem`,
+  `dut.u_instruction_memory.program_counter`, `dut.pe_inst_valid`, `dut.buf_inst_valid`.
+- **SRAM model** (`array.sv`): synchronous read (data the cycle after the address), active-low `cen`/`gwen`, `wen` is a
+  per-bit write mask (active low). Synthesis replaces it with `synth/macros/array.sv`, an **empty black box**, so the
+  memories add no area and their pins aren't timed. Also, `top` has no output ports. Unverified risk: check
+  `reports/area_report_hier` after the first DC run to confirm every PE instance kept its logic.
+- **`vector_decoder`** (generated into `defines.sv`) has no `default` in `case (mode)` (a latch warning in synthesis). It
+  computes the MEM1 address from `addr_from_controller` (this cycle) and selects the lane with
+  `addr_from_controller_reg` (last cycle), using a single `mode` input. Feed it last cycle's mode for the data side
+  (see the trap below).
+- **Assembler:** NOP and WRITE leave the memory **mode field at 0 (INT8)**; only READ sets it.
+- **Synthesis defaults:** 2.0 ns clock, `TARGET_AREA=150000`, `compile_ultra -retime -timing_high_effort_script` with
+  `set_optimize_registers true` already in `dc_synth.tcl`, Nangate 45 nm + DesignWare. Part 3 area cap: 1,000,000 µm².
+
+## Staff-tool problems (measured)
+
+- **bitstring 5.0 breaks `ivd-as`** (`Bits.length` was removed): `AttributeError: 'Bits' object has no attribute 'length'`.
+  `requirements.yml` doesn't pin it, so a fresh env (on caddy too) gets 5.0.0. Fix: `pip install "bitstring<5"`
+  (`make setup PART=part2` does it). Our Part 1 code works with either version. Worth reporting on Ed.
+- **`check_results.sh` always exits 0**, so `make int8_test` "succeeds" even when MEM2 differs: read the printed
+  `Test PASSED!` / `Test FAILED!` line, not the exit status (our `make vcs-eq` greps for it). It also uses `echo -e`
+  without a shebang, so under a plain POSIX `sh` it prints `-e \e[31m...` literally.
+- **The staff controller mutates the instruction it runs** (`simulator/src/accelerator.py`): it steps the offsets in place
+  and once more after the last repetition, which is why INT8 can't run below 5 PEs (next bullet but one).
+- **`ivd-as` silently truncates** programs longer than `--controller_imem_depth` (default 128). Below 16 PEs the INT8
+  program is longer than that. Our scripts size the IMEM automatically. If you edit the staff Makefiles for Part 3,
+  pass `--controller_imem_depth` to `ivd-gv` and `ivd-as` too, not only `--pe_count` to `ivd-gv`/`ivd-cc`/`ivd-sim`.
+- **INT8 1024×1024 can't run below 5 PEs:** `ivd-sim` increments MemAOffset past 16 bits after the last repetition
+  (`ValueError`, accelerator.py:113).
+- **Simulation race in the SRAM model:** `read_data` is updated with a blocking `=` in `always @(posedge clk)`, and `q`
+  comes from a separate latch block. Event-driven simulators (Icarus, and VCS, which grades us) let every posedge
+  block run first, so `q` acts like a normal synchronous SRAM. **Verilator at default optimization doesn't:** it
+  inlines the instruction memory, so a controller that latches `inst` at the edge gets the *next* instruction. It
+  then **skips the first instruction of every program** and runs one extra zero word at the end. The official tests
+  can't see it (the first instruction is a redundant CLR after reset). The staff's `pe_test.asm` can: Verilator gives
+  `vector_output` 0, Icarus `0x0800f4f8`. `-fno-inline` fixes it in every case we tried. Our flow uses Icarus by default,
+  `-fno-inline` for `SIM=verilator`, and `make eq-both` to compare.
+
+## Smaller gotchas (measured)
+
+- **Verilator reads comments as pragmas** if they *begin* with the word "verilator" (any case, `//` or `/* */`):
+  `// Verilator is ...` fails the build with `BADVLTPRAGMA`; `// we use verilator` is fine.
+- **Yosys rejects the generated `vector_decoder`** (latch inferred in `always_comb`, since mode 3 has no default), so a
+  Yosys flow over the whole design needs a patched copy. Design Compiler only warns.
+- `instruction_count` is `IMEM_ADDR_WIDTH` = 7 bits with the default 128-entry IMEM: at most 127 instructions run.
+- The skeleton's FSM enum is `int`-based (2-state), so `state` starts at IDLE even before reset.
+- `array.sv`'s `loadaddr` task writes `data[i]` instead of `data[load_addr]` (no testbench calls it).
+- On the empty skeleton, `tb_pe` prints "Computation Complete": the undriven signals go to X and fire its `posedge` check.
+
+## Blind spots of the official tests (measured)
+
+- **Clamping in 16/32-bit lanes is never exercised:** INT16 results span −475…761 and INT32 −232…450. INT8 clamps
+  **78%** of its outputs (801/1024), so a truncating OUT fails int8_test immediately.
+- **The last MAC operand of every run is invisible in INT16 and INT32:** the INT16 vector ends in 0 and the INT32 vector
+  ends in −1 (0xFFFFFFFF, which byte replication reproduces). A buffer that selects MEM1 lanes with the live mode
+  passes all three tests and fails with another seed (`make eq-stress`).
+- **The first instruction is a redundant CLR:** a controller that skips it passes.
+- **Only CLR/MAC/OUT/NOP are used.** PASS, RND, mode switches and `pe_inst_valid` low are untested (`make pe-unit` covers them).

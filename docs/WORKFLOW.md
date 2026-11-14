@@ -12,7 +12,7 @@ about any of it).
 - **Pull request (PR)**: a GitHub page that says "please merge my branch into `main`". Your partner reads the diff there.
 - **Merge conflict**: both of you changed the same lines. Git stops and asks you to pick the result.
 
-## Splitting part 1
+## Splitting part 1 (done; kept for reference)
 
 The three files depend on each other in one direction only:
 
@@ -83,14 +83,41 @@ git push
 This merges the staff's changes into `part1/`. If they touched a file we've also edited,
 you get a normal merge conflict (above).
 
-## When part 2 is released
+## Parts 2 and 3
+
+The plan, the split and the calendar are in `docs/PLAN.md`. The git side:
+
+- `part2/` is the staff starter (imported Nov 14 from `simd-part2`, upstream `d19e793`). Pull staff fixes with
+  `make update-starter PART=part2` (commit or stash first). Don't edit files we don't own in `part2/`. Our code goes
+  only in `part2/unoptimized_verilog/logical/{processing_element,buffer,controller,top}.sv` (and, for Part 3,
+  `part2/optimized_verilog/`), so staff updates merge cleanly.
+- One branch per module or experiment: `p2/pe`, `p2/ctl`, `p2/buf`, `p2/top`; `p3/sizing`, `p3/mulshare`,
+  `p3/pipeline`, `p3/clockgate`. Open a PR; the PR template has an **Explain it** box. The reviewer explains the change
+  back to the author before approving.
+- `main` must always pass `make check`. Run `make eq-stress` too before merging anything that touches timing or arithmetic.
+- After submitting Part 2: `git tag part2-submitted && git push --tags`, then
+  `cp -R part2/unoptimized_verilog part2/optimized_verilog` (Part 3 works there; `RTL=optimized_verilog` on every `make`).
+- Synthesis results we cite go in `runs/<tag>/` (committed) and `docs/experiments.md`.
+
+## Working on caddy (VCS and Design Compiler)
+
+The Synopsys tools exist only on Stanford's caddy machines (Ed #224: reach them over ssh, ideally from a FarmShare
+OnDemand desktop so the GUIs work without X forwarding).
 
 ```sh
-make update-starter PART=part2   # imports code.stanford.edu/EE271/simd-part2 as part2/
-make setup PART=part2
+ssh <sunetid>@login.farmshare.stanford.edu          # or use the OnDemand desktop's terminal
+ssh -XY caddy.best.stanford.edu                      # (staff also wrote caddyXX.stanford.edu)
+git clone https://github.com/<owner>/ee271-project.git && cd ee271-project
+make setup PART=part2                                # Linux conda env, bitstring<5 pinned (once per machine)
+tcsh                                                 # the course's module setup is tcsh
+source part2/load_modules.sh                         # vcs/S-2021.09-SP1, dc_shell/S-2021.06-SP5-4, ivd-* on PATH
+make vcs-eq                                          # the graded tests, in VCS
+make synth                                           # Design Compiler; record in runs/<tag>/
+git add runs/<tag> && git commit -m "Synth: ..." && git push
 ```
 
-If staff name the repo differently, run
-`STARTER_URL=https://code.stanford.edu/EE271/<name>.git scripts/pull-starter.sh part2`.
-Part 2 needs the Synopsys tools on caddy (once Farmshare is back). Clone this repo there over HTTPS
-with a GitHub token, or add caddy's SSH key to GitHub.
+GitHub over HTTPS from caddy needs a personal access token as the password (GitHub → Settings → Developer settings
+→ Tokens, scope `repo`), or add an SSH key made on caddy to your GitHub account. If `make setup` can't find conda
+there, install Miniconda in your home directory (handout Part 1, section 2.2).
+`code.stanford.edu` needs its own SSH key per machine (Ed #220), but we never clone from there directly: the
+starter comes in over HTTPS through `make update-starter`.
