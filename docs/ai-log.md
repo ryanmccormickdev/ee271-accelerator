@@ -63,6 +63,8 @@ Template:
 - AI mistakes we caught: a first "fix" for the SRAM race (a non-blocking copy of `array.sv`) broke cen-gated designs,
   and two testbench sampling-point bugs hid real failures. Each was caught by cross-checking two simulators and
   testing the checks against known-bad designs. The lesson: test the tests.
+- Also wrong: the overnight run said the Part 2/3 PDFs had to be downloaded by hand. They didn't; the next morning
+  it fetched them through the Canvas API into `handouts/`.
 - Not done by AI: none of `processing_element.sv`, `buffer.sv`, `controller.sv`, `top.sv` is written. The pages
   describe behavior and timing with diagrams and recorded waveforms, not solution code. The recorded waveforms and the
   cycle-level "timing contract" are effectively a reference for the timing (flagged on the pages).

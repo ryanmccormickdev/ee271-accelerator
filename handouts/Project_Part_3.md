@@ -1,8 +1,8 @@
 # EE271 SIMD Accelerator: Assignment #3 (text transcription)
 
 > Transcribed from `Project_Part_3.pdf` on Canvas (uploaded Fri Nov 13 2026, 5:16 PM; updated Sat Nov 14, 12:59 AM):
-> https://canvas.stanford.edu/courses/232707/files/17974608. The PDF is the authority. This copy exists so the text
-> can be searched with grep. Formatting is ours; wording is the handout's.
+> https://canvas.stanford.edu/courses/232707/files/17974608. The PDF, saved next to this file, is the authority. This copy exists so the text
+> can be searched with grep. Formatting is ours; wording is the handout's (checked word for word on Nov 14).
 
 ## 1 Introduction
 
