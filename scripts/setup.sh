@@ -41,10 +41,17 @@ else
   "$CONDA" env create -p "$ENV" -f "$PART/requirements.yml"
 fi
 
+if [ "$PART" != part1 ]; then
+  # The staff's ivd-as calls Bits.length, which bitstring 5.0 removed; requirements.yml doesn't pin it, so a fresh
+  # env breaks with: AttributeError: 'Bits' object has no attribute 'length'. (Part 1's code works with either.)
+  echo ">> Pinning bitstring<5 for the staff ivd-* tools (see docs/spec-notes.md)"
+  "$ENV/bin/python" -m pip install -q "bitstring<5"
+fi
+
 echo ">> Checking the environment"
 "$ENV/bin/python" - <<'PY'
 import sys
 import bitstring, numpy, terminaltables
 print(f"OK: Python {sys.version.split()[0]}, bitstring {bitstring.__version__}, numpy {numpy.__version__}")
 PY
-echo ">> Done. Next: make test"
+if [ "$PART" = part1 ]; then echo ">> Done. Next: make test"; else echo ">> Done. Next: make check   (or make help-rtl)"; fi
