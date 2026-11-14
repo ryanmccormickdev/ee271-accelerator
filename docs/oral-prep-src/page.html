@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Oral exam practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap">
+<style>
+/*STYLE*/
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap titlebar">
+    <div>
+      <h1>Oral exam practice</h1>
+      <p class="sub" id="subline">EE271 Project Understanding Oral Exam: 15 minutes, 25% of the grade, Thu Dec 3. Drill one question at a time, run timed mock exams in pairs, or browse and print every question.</p>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#drill" data-view="drill">Drill</a>
+      <a href="#mock" data-view="mock">Mock exam</a>
+      <a href="#browse" data-view="browse">Browse</a>
+      <a href="#practise" data-view="practise">How to practise</a>
+      <button class="themebtn small" id="themebtn" type="button" title="Switch light / dark">Light / dark</button>
+    </nav>
+  </div>
+  <div class="wrap profilebar" id="profilebar">
+    <span class="pl" id="profilelabel">Practising as</span>
+    <span class="seg" id="profileseg" role="group" aria-labelledby="profilelabel"></span>
+    <button class="small" id="renamebtn" type="button">Rename</button>
+    <form id="renameform" hidden>
+      <label class="sr-only" for="renameinput">New name</label>
+      <input type="text" id="renameinput" maxlength="24" autocomplete="off">
+      <button class="small primary" type="submit">Save</button>
+      <button class="small" type="button" id="renamecancel">Cancel</button>
+    </form>
+    <span class="storage-note" id="storagenote" hidden>This browser blocks saved data, so progress lasts only until you close the page.</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- =================================================================== DRILL -->
+<section class="view" id="view-drill" aria-label="Drill">
+  <div class="drill-grid">
+    <aside class="filters board" aria-label="Which questions to drill">
+      <h3>Which questions</h3>
+      <div class="fgroup"><span class="flabel" id="fl-banks">Banks</span><div class="chips" id="f-banks" role="group" aria-labelledby="fl-banks"></div></div>
+      <div class="fgroup"><span class="flabel" id="fl-parts">Part</span><div class="chips" id="f-parts" role="group" aria-labelledby="fl-parts"></div></div>
+      <div class="fgroup"><span class="flabel" id="fl-levels">Level</span><div class="chips" id="f-levels" role="group" aria-labelledby="fl-levels"></div></div>
+      <div class="fgroup"><label class="flabel" for="f-tag">Tag</label><select id="f-tag"></select></div>
+      <div class="fgroup"><label class="flabel" for="f-status">Show</label>
+        <select id="f-status">
+          <option value="all">Everything, most urgent first</option>
+          <option value="due">Only due and unseen</option>
+          <option value="weak">Only missed or shaky</option>
+          <option value="missed">Only missed</option>
+          <option value="new">Only never seen</option>
+          <option value="review">The review list from the last mock exam</option>
+        </select>
+      </div>
+      <button class="small" id="f-reset" type="button">Reset filters</button>
+      <div id="poolstats"></div>
+    </aside>
+    <div class="drill-main">
+      <article class="qcard" id="drillcard"></article>
+      <p class="sessionline" id="sessionline"></p>
+      <p class="kbd-hint">Say your answer out loud before you reveal. Keys: Space reveals, 1 missed, 2 shaky, 3 got it, N next without grading.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== MOCK EXAM -->
+<section class="view" id="view-mock" aria-label="Mock exam" hidden>
+  <div id="mock-setup" class="mock-setup">
+    <div class="cols2">
+      <div class="board">
+        <h2>Set up a mock exam</h2>
+        <p>One of you examines and one answers. The examiner reads each question aloud and sees the model answer, the <b>Our design</b> prompt and suggested follow-ups. The examinee sees only the question and the clock. Questions mix parts and levels, and a core question is usually followed by a deeper one on the same tags.</p>
+        <div class="form">
+          <label>Examinee <select id="m-examinee"></select></label>
+          <label>Length <select id="m-minutes"><option value="10">10 minutes</option><option value="15" selected>15 minutes</option><option value="20">20 minutes</option></select></label>
+          <label>Questions <select id="m-count"><option>6</option><option selected>7</option><option>8</option></select></label>
+          <div class="fgroup"><span class="flabel" id="ml-banks">Banks</span><div class="chips" id="m-banks" role="group" aria-labelledby="ml-banks"></div></div>
+          <label class="check"><input type="checkbox" id="m-weak" checked> Favour the examinee's weak spots (missed, shaky, unseen)</label>
+          <label>Plan code <input type="text" id="m-code" inputmode="numeric" maxlength="6" placeholder="optional" autocomplete="off"></label>
+          <p class="cap">With "weak spots" off, the exam shows a plan code. Type the same code, with the same banks and number of questions, on a second screen to get the same questions there, for example when one of you is on Zoom.</p>
+          <button class="primary" id="m-start" type="button">Start the mock exam</button>
+          <p class="cap" id="m-setupmsg"></p>
+        </div>
+      </div>
+      <div class="board">
+        <h3 style="margin-top:0">Past mock exams</h3>
+        <div id="m-history"></div>
+      </div>
+    </div>
+  </div>
+  <div id="mock-run" hidden>
+    <div class="mockbar">
+      <div class="timer" id="m-timer" role="timer" aria-label="Time left">15:00</div>
+      <div class="mockctl">
+        <button id="m-pause" type="button">Pause</button>
+        <span class="seg" id="m-viewseg" role="group" aria-label="Whose screen">
+          <button type="button" data-v="examiner" aria-pressed="true">Examiner</button><button type="button" data-v="examinee" aria-pressed="false">Examinee</button>
+        </span>
+        <span class="mockpos" id="m-pos"></span>
+        <button id="m-end" type="button">End exam</button>
+      </div>
+      <div class="planstrip" id="m-strip" aria-label="Questions in this exam"></div>
+    </div>
+    <div id="m-card"></div>
+    <div class="sr-only" aria-live="polite" id="m-announce"></div>
+  </div>
+  <div id="mock-done" hidden></div>
+</section>
+
+<!-- =================================================================== BROWSE -->
+<section class="view" id="view-browse" aria-label="Browse" hidden>
+  <div class="bcontrols board noprint">
+    <label class="sr-only" for="b-search">Search</label>
+    <input type="search" id="b-search" placeholder="Search questions, answers and tags" autocomplete="off">
+    <div class="chips" id="b-levels" role="group" aria-label="Levels"></div>
+    <div class="chips" id="b-parts" role="group" aria-label="Parts"></div>
+    <label class="check"><input type="checkbox" id="b-ours"> Only with an Our design prompt</label>
+    <button class="small" id="b-expand" type="button">Expand all</button>
+    <button class="small" id="b-collapse" type="button">Collapse all</button>
+    <button class="small" id="b-print" type="button">Print</button>
+    <span class="bcount" id="b-count" aria-live="polite"></span>
+  </div>
+  <div id="b-list"></div>
+</section>
+
+<!-- =================================================================== HOW TO PRACTISE -->
+<section class="view practise prose" id="view-practise" aria-label="How to practise" hidden>
+  <h2 id="exam">The exam, as far as we know</h2>
+  <ul>
+    <li>A 15-minute oral quiz on the technical details of the project, Thu Dec 3, worth 25% of the course grade.</li>
+    <li>Staff: "make sure you can explain any AI-assisted work in your own words." Whether partners are examined separately or together hasn't been announced. Online students take it over Zoom.</li>
+    <li>With follow-ups, roughly 6 to 8 questions fit in 15 minutes, so plan on about two minutes per topic. The examiner will interrupt and redirect; that's normal, not a bad sign.</li>
+  </ul>
+
+  <h2 id="protocol">The pair protocol</h2>
+  <ol class="steps">
+    <li><b>Pick roles.</b> The examiner takes the screen (Mock exam, Examiner view). The examinee closes the code, the notes and this page.</li>
+    <li><b>Read the question aloud</b>, as written, and start the clock.</li>
+    <li><b>Answer out loud.</b> The answer in one sentence first, then how it works, then one concrete example (a number, a line of code, a clock cycle), then how you know it's right. Then stop and let the examiner ask.</li>
+    <li><b>Push.</b> The examiner asks at least one follow-up per question: "Why that way?", "What would happen if…?", "Where is that in your code?", "How did you check it?". Suggested follow-ups are under each model answer.</li>
+    <li><b>Grade honestly.</b> Got it: correct, complete, no help needed. Shaky: the right idea but a missing piece, or it needed a hint. Missed: wrong or stuck. Grades go into the examinee's progress, so missed and shaky questions come back sooner in Drill.</li>
+    <li><b>Swap roles</b> and run a second mock with a fresh plan.</li>
+    <li><b>Rotate topics.</b> Each of you defends the parts you did <em>not</em> write. If you wrote the PE, take the buffer and controller questions (Drill, Tag filter); the oral exam can ask either of you about anything.</li>
+    <li><b>The same day,</b> drill the review list from the summary (Drill, Show: the review list).</li>
+  </ol>
+  <p><b>No notes.</b> You won't have any in the exam, so practise the same way. When you don't know, say what you do know and how you would find out. Don't bluff: the follow-up question will find it.</p>
+
+  <h2 id="alone">Drilling alone</h2>
+  <ul>
+    <li>Ten minutes a day beats an hour once. Say each answer out loud before you press Reveal, then grade yourself against the model answer.</li>
+    <li>Spaced repetition: a missed question comes back after 2 others, a shaky one after 5, and a known one after 12, then 25, 50 and 100 graded questions. Unseen questions are mixed in, core ones first.</li>
+    <li>Aim with the filters: one bank, one tag (for example <code>rnd</code> or <code>timing</code>), or only missed or shaky.</li>
+    <li>Each person has their own progress. Switch with the names at the top; rename them with Rename. Progress is saved in this browser only.</li>
+  </ul>
+
+  <h2 id="ours">Filling in the Our design fields</h2>
+  <p>Many questions end with a yellow <b>Fill in from your design</b> prompt. The model answer covers the general case, but the examiner will ask about <em>your</em> design: your cycle, your file and line, your numbers. Write your answer into the bank file, on that question's <code>Our design</code> line, after the word <code>Ours:</code>. Before:</p>
+  <pre>- **Our design:** Which PE count did you choose, and what stopped you going higher?</pre>
+  <p>After:</p>
+  <pre>- **Our design:** Which PE count did you choose, and what stopped you going higher? Ours: &lt;what you chose&gt;, because &lt;the number that decided it&gt; (&lt;the report or file it comes from&gt;).</pre>
+  <p>Then rebuild the page: <code>python3 docs/oral-prep-src/build.py</code>. Your answer appears in green under the prompt, Browse counts how many prompts each bank has filled in, and each yellow box names the file to edit and the line where its question starts. Commit the <code>.md</code> file so your partner gets it too. Update them:</p>
+  <ul>
+    <li>after each module passes its testbench: what it does, in which cycle, in which file and line;</li>
+    <li>after each synthesis run: area, worst slack, the clock period;</li>
+    <li>after each Part 3 experiment: the FoM before and after, and why it moved.</li>
+  </ul>
+  <p>The numbers will change as the design changes. Keep only the latest, and say which version they come from.</p>
+
+  <h2 id="schedule">A schedule</h2>
+  <div class="tscroll">
+  <table class="ref">
+    <thead><tr><th>When</th><th>Session</th><th>Banks</th><th>Focus</th></tr></thead>
+    <tbody>
+      <tr><td>Now to Tue Nov 17</td><td>10-minute drills, alone, most days</td><td>Part 1, General</td><td>Part 1 is done: get every core question to "got it" while the code is fresh, and fill in its Our design prompts. Whoever didn't write the Python starts here (the catch-up in <code>docs/PLAN.md</code>).</td></tr>
+      <tr><td>Wed Nov 18, end of Part 2</td><td>Mock exam 1, 15 minutes each way</td><td>Part 1, Part 2 RTL</td><td>Each of you is examined on the RTL modules you did not write. Fill in the RTL prompts (cycles, WRITE timing, slices) from the design you're about to submit.</td></tr>
+      <tr><td>Thu Nov 26 to Fri Nov 27, mid Part 3</td><td>Mock exam 2</td><td>Everything so far, including Synthesis and Part 3</td><td>Defend the synthesis numbers and the optimizations so far. Put the current FoM table into the Our design prompts.</td></tr>
+      <tr><td>Tue Dec 1, after the Part 3 report</td><td>Mock exam 3, two rounds each</td><td>All banks</td><td>Full realism: no notes, a strict 15:00, the examiner pushes on every answer. Fill in the last prompts with final numbers.</td></tr>
+      <tr><td>Wed Dec 2</td><td>Mock exam 4, then a drill</td><td>All banks; Show: only missed or shaky</td><td>Close the gaps from mock 3 and make sure every Our design prompt is filled in. Do one round over Zoom with screens off if either of you is online, and practise sketching a timing diagram on a shared whiteboard.</td></tr>
+      <tr><td>Thu Dec 3, before the exam</td><td>10-minute warm-up</td><td>Level: core only</td><td>Out loud and quick. Nothing new today.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="adding">Adding questions</h2>
+  <p>After you finish a module, add the questions you'd ask your partner about it: the ones that made you think. A pull request's "Explain it" box (the teach-back) is already an oral answer; turn it into a question. Each bank is a Markdown file in <code>docs/oral-prep/</code>; the format and the rules are in <a class="ref" href="oral-prep/README.md">docs/oral-prep/README.md</a>. Rebuild with <code>python3 docs/oral-prep-src/build.py</code>; it prints a warning for every entry it had to skip, and saved progress survives as long as a question's wording doesn't change.</p>
+
+  <h2 id="words">Words this page uses</h2>
+  <dl class="words">
+    <dt>Bank</dt><dd>One Markdown file of questions in <code>docs/oral-prep/</code>, such as <code>part1.md</code>.</dd>
+    <dt>Core, deeper, stretch</dt><dd>Must know cold; a likely follow-up; a hard follow-up.</dd>
+    <dt>Our design</dt><dd>A prompt for the part of an answer that only your design can supply.</dd>
+    <dt>Spaced repetition</dt><dd>Showing a question again after a gap that grows each time you get it right and shrinks when you miss it.</dd>
+    <dt>Due</dt><dd>A question whose gap has run out. Drill shows due questions first.</dd>
+    <dt>Examiner, examinee</dt><dd>The one asking, who sees the answers, and the one answering, who sees only the question.</dd>
+    <dt>Follow-up</dt><dd>A deeper question on the same tags, asked straight after a core one.</dd>
+    <dt>Plan code</dt><dd>A number that recreates the same mock exam on a second screen.</dd>
+  </dl>
+</section>
+
+</main>
+<footer class="wrap" id="footer"></footer>
+
+<script type="application/json" id="qdata">/*DATA*/</script>
+<script>
+/*APP*/
+</script>
+</body>
+</html>
