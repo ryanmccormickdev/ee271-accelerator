@@ -1,0 +1,9 @@
+# ILLUSTRATIVE SAMPLE, NOT REAL DC OUTPUT. Written by docs/synthesis-src/make_samples.py to show
+# the layout of this report. The numbers are invented (but add up). Your own report is the authority.
+2.000
+  slack (MET)                                                    0.3500
+Total Dynamic Power    =  14.5871 mW  (100%)
+                 Internal         Switching           Leakage            Total
+Total          1.0969e+04 uW     3.6184e+03 uW     3.2595e+06 nW     1.7847e+04 uW
+Cell Leakage Power     =   3.2595 mW
+Total cell area:               138579.129000

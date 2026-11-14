@@ -1,0 +1,1563 @@
+{
+ "all_areas": {
+  "AND2_X1": 1.064,
+  "AND2_X2": 1.33,
+  "AND2_X4": 2.394,
+  "AND3_X1": 1.33,
+  "AND3_X2": 1.596,
+  "AND3_X4": 2.926,
+  "AND4_X1": 1.596,
+  "AND4_X2": 1.862,
+  "AND4_X4": 3.458,
+  "ANTENNA_X1": 0.266,
+  "AOI211_X1": 1.33,
+  "AOI211_X2": 2.394,
+  "AOI211_X4": 2.926,
+  "AOI21_X1": 1.064,
+  "AOI21_X2": 1.862,
+  "AOI21_X4": 3.458,
+  "AOI221_X1": 1.596,
+  "AOI221_X2": 2.926,
+  "AOI221_X4": 3.458,
+  "AOI222_X1": 2.128,
+  "AOI222_X2": 3.724,
+  "AOI222_X4": 3.724,
+  "AOI22_X1": 1.33,
+  "AOI22_X2": 2.394,
+  "AOI22_X4": 4.522,
+  "BUF_X1": 0.798,
+  "BUF_X16": 6.65,
+  "BUF_X2": 1.064,
+  "BUF_X32": 13.034,
+  "BUF_X4": 1.862,
+  "BUF_X8": 3.458,
+  "CLKBUF_X1": 0.798,
+  "CLKBUF_X2": 1.064,
+  "CLKBUF_X3": 1.33,
+  "CLKGATETST_X1": 3.99,
+  "CLKGATETST_X2": 4.256,
+  "CLKGATETST_X4": 5.32,
+  "CLKGATETST_X8": 7.714,
+  "CLKGATE_X1": 3.458,
+  "CLKGATE_X2": 3.724,
+  "CLKGATE_X4": 4.522,
+  "CLKGATE_X8": 6.916,
+  "DFFRS_X1": 6.384,
+  "DFFRS_X2": 6.916,
+  "DFFR_X1": 5.32,
+  "DFFR_X2": 5.852,
+  "DFFS_X1": 5.32,
+  "DFFS_X2": 5.586,
+  "DFF_X1": 4.522,
+  "DFF_X2": 5.054,
+  "DLH_X1": 2.66,
+  "DLH_X2": 2.926,
+  "DLL_X1": 2.66,
+  "DLL_X2": 2.926,
+  "FA_X1": 4.256,
+  "FILLCELL_X1": 0.266,
+  "FILLCELL_X16": 4.256,
+  "FILLCELL_X2": 0.266,
+  "FILLCELL_X32": 8.512,
+  "FILLCELL_X4": 1.064,
+  "FILLCELL_X8": 2.128,
+  "HA_X1": 2.66,
+  "INV_X1": 0.532,
+  "INV_X16": 4.522,
+  "INV_X2": 0.798,
+  "INV_X32": 8.778,
+  "INV_X4": 1.33,
+  "INV_X8": 2.394,
+  "LOGIC0_X1": 0.532,
+  "LOGIC1_X1": 0.532,
+  "MUX2_X1": 1.862,
+  "MUX2_X2": 2.394,
+  "NAND2_X1": 0.798,
+  "NAND2_X2": 1.33,
+  "NAND2_X4": 2.394,
+  "NAND3_X1": 1.064,
+  "NAND3_X2": 1.862,
+  "NAND3_X4": 3.458,
+  "NAND4_X1": 1.33,
+  "NAND4_X2": 2.394,
+  "NAND4_X4": 4.788,
+  "NOR2_X1": 0.798,
+  "NOR2_X2": 1.33,
+  "NOR2_X4": 2.394,
+  "NOR3_X1": 1.064,
+  "NOR3_X2": 1.862,
+  "NOR3_X4": 3.724,
+  "NOR4_X1": 1.33,
+  "NOR4_X2": 2.394,
+  "NOR4_X4": 4.788,
+  "OAI211_X1": 1.33,
+  "OAI211_X2": 2.394,
+  "OAI211_X4": 4.522,
+  "OAI21_X1": 1.064,
+  "OAI21_X2": 1.862,
+  "OAI21_X4": 3.458,
+  "OAI221_X1": 1.596,
+  "OAI221_X2": 2.926,
+  "OAI221_X4": 3.458,
+  "OAI222_X1": 2.128,
+  "OAI222_X2": 3.724,
+  "OAI222_X4": 3.724,
+  "OAI22_X1": 1.33,
+  "OAI22_X2": 2.394,
+  "OAI22_X4": 4.522,
+  "OAI33_X1": 1.862,
+  "OR2_X1": 1.064,
+  "OR2_X2": 1.33,
+  "OR2_X4": 2.394,
+  "OR3_X1": 1.33,
+  "OR3_X2": 1.596,
+  "OR3_X4": 2.926,
+  "OR4_X1": 1.596,
+  "OR4_X2": 1.862,
+  "OR4_X4": 3.458,
+  "SDFFRS_X1": 7.714,
+  "SDFFRS_X2": 8.246,
+  "SDFFR_X1": 6.65,
+  "SDFFR_X2": 6.916,
+  "SDFFS_X1": 6.65,
+  "SDFFS_X2": 7.182,
+  "SDFF_X1": 6.118,
+  "SDFF_X2": 6.384,
+  "TAPCELL_X1": 0.266,
+  "TBUF_X1": 2.128,
+  "TBUF_X16": 6.916,
+  "TBUF_X2": 2.394,
+  "TBUF_X4": 2.926,
+  "TBUF_X8": 4.788,
+  "TINV_X1": 1.064,
+  "TLAT_X1": 3.458,
+  "XNOR2_X1": 1.596,
+  "XNOR2_X2": 2.66,
+  "XOR2_X1": 1.596,
+  "XOR2_X2": 2.394
+ },
+ "all_leak_nW": {
+  "AND2_X1": 25.07,
+  "AND2_X2": 50.35,
+  "AND2_X4": 100.7,
+  "AND3_X1": 26.48,
+  "AND3_X2": 53.19,
+  "AND3_X4": 106.4,
+  "AND4_X1": 27.02,
+  "AND4_X2": 54.27,
+  "AND4_X4": 108.5,
+  "ANTENNA_X1": 0.0,
+  "AOI211_X1": 34.57,
+  "AOI211_X2": 69.13,
+  "AOI211_X4": 126.0,
+  "AOI21_X1": 27.86,
+  "AOI21_X2": 55.72,
+  "AOI21_X4": 111.4,
+  "AOI221_X1": 41.74,
+  "AOI221_X2": 83.48,
+  "AOI221_X4": 131.6,
+  "AOI222_X1": 47.4,
+  "AOI222_X2": 94.8,
+  "AOI222_X4": 134.9,
+  "AOI22_X1": 32.61,
+  "AOI22_X2": 65.22,
+  "AOI22_X4": 130.4,
+  "BUF_X1": 21.44,
+  "BUF_X16": 344.5,
+  "BUF_X2": 43.06,
+  "BUF_X32": 689.0,
+  "BUF_X4": 86.12,
+  "BUF_X8": 172.2,
+  "CLKBUF_X1": 11.21,
+  "CLKBUF_X2": 22.92,
+  "CLKBUF_X3": 30.56,
+  "CLKGATETST_X1": 59.14,
+  "CLKGATETST_X2": 78.03,
+  "CLKGATETST_X4": 126.6,
+  "CLKGATETST_X8": 220.3,
+  "CLKGATE_X1": 48.65,
+  "CLKGATE_X2": 66.64,
+  "CLKGATE_X4": 109.7,
+  "CLKGATE_X8": 197.7,
+  "DFFRS_X1": 100.2,
+  "DFFRS_X2": 142.3,
+  "DFFR_X1": 86.21,
+  "DFFR_X2": 126.0,
+  "DFFS_X1": 84.4,
+  "DFFS_X2": 121.1,
+  "DFF_X1": 79.11,
+  "DFF_X2": 115.1,
+  "DLH_X1": 40.86,
+  "DLH_X2": 57.43,
+  "DLL_X1": 40.86,
+  "DLL_X2": 57.43,
+  "FA_X1": 75.76,
+  "HA_X1": 61.23,
+  "INV_X1": 14.35,
+  "INV_X16": 229.7,
+  "INV_X2": 28.71,
+  "INV_X32": 459.3,
+  "INV_X4": 57.41,
+  "INV_X8": 114.8,
+  "MUX2_X1": 35.93,
+  "MUX2_X2": 68.65,
+  "NAND2_X1": 17.39,
+  "NAND2_X2": 34.79,
+  "NAND2_X4": 69.57,
+  "NAND3_X1": 18.1,
+  "NAND3_X2": 36.21,
+  "NAND3_X4": 72.42,
+  "NAND4_X1": 18.13,
+  "NAND4_X2": 36.25,
+  "NAND4_X4": 72.51,
+  "NOR2_X1": 21.2,
+  "NOR2_X2": 42.4,
+  "NOR2_X4": 84.8,
+  "NOR3_X1": 26.83,
+  "NOR3_X2": 53.66,
+  "NOR3_X4": 107.3,
+  "NOR4_X1": 32.6,
+  "NOR4_X2": 65.2,
+  "NOR4_X4": 130.4,
+  "OAI211_X1": 22.04,
+  "OAI211_X2": 44.08,
+  "OAI211_X4": 88.16,
+  "OAI21_X1": 22.62,
+  "OAI21_X2": 45.24,
+  "OAI21_X4": 90.48,
+  "OAI221_X1": 33.94,
+  "OAI221_X2": 67.88,
+  "OAI221_X4": 116.3,
+  "OAI222_X1": 43.18,
+  "OAI222_X2": 86.36,
+  "OAI222_X4": 128.0,
+  "OAI22_X1": 34.03,
+  "OAI22_X2": 68.05,
+  "OAI22_X4": 136.1,
+  "OAI33_X1": 48.31,
+  "OR2_X1": 22.69,
+  "OR2_X2": 45.66,
+  "OR2_X4": 91.31,
+  "OR3_X1": 24.41,
+  "OR3_X2": 49.16,
+  "OR3_X4": 98.33,
+  "OR4_X1": 26.73,
+  "OR4_X2": 53.87,
+  "OR4_X4": 107.7,
+  "SDFFRS_X1": 122.7,
+  "SDFFRS_X2": 162.3,
+  "SDFFR_X1": 105.3,
+  "SDFFR_X2": 142.0,
+  "SDFFS_X1": 107.7,
+  "SDFFS_X2": 140.6,
+  "SDFF_X1": 100.7,
+  "SDFF_X2": 136.7,
+  "TBUF_X1": 32.75,
+  "TBUF_X16": 197.3,
+  "TBUF_X2": 58.9,
+  "TBUF_X4": 72.12,
+  "TBUF_X8": 144.4,
+  "TINV_X1": 17.89,
+  "TLAT_X1": 48.0,
+  "XNOR2_X1": 36.44,
+  "XNOR2_X2": 73.1,
+  "XOR2_X1": 36.16,
+  "XOR2_X2": 72.59
+ },
+ "cap_unit": [
+  "1",
+  "ff"
+ ],
+ "cell_count": 135,
+ "cells": {
+  "AND2_X1": {
+   "area": 1.064,
+   "leak_nW": 25.07,
+   "pins": {
+    "A1": {
+     "cap": 0.9181,
+     "dir": "input"
+    },
+    "A2": {
+     "cap": 0.9746,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "(A1 & A2)"
+    }
+   }
+  },
+  "AOI21_X1": {
+   "area": 1.064,
+   "leak_nW": 27.86,
+   "pins": {
+    "A": {
+     "cap": 1.626,
+     "dir": "input"
+    },
+    "B1": {
+     "cap": 1.647,
+     "dir": "input"
+    },
+    "B2": {
+     "cap": 1.677,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!(A | (B1 & B2))"
+    }
+   }
+  },
+  "AOI22_X1": {
+   "area": 1.33,
+   "leak_nW": 32.61,
+   "pins": {
+    "A1": {
+     "cap": 1.688,
+     "dir": "input"
+    },
+    "A2": {
+     "cap": 1.69,
+     "dir": "input"
+    },
+    "B1": {
+     "cap": 1.584,
+     "dir": "input"
+    },
+    "B2": {
+     "cap": 1.623,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!((A1 & A2) | (B1 & B2))"
+    }
+   }
+  },
+  "BUF_X1": {
+   "area": 0.798,
+   "leak_nW": 21.44,
+   "pins": {
+    "A": {
+     "cap": 0.9747,
+     "dir": "input"
+    },
+    "Z": {
+     "dir": "output",
+     "fn": "A"
+    }
+   }
+  },
+  "BUF_X16": {
+   "area": 6.65,
+   "leak_nW": 344.5,
+   "pins": {
+    "A": {
+     "cap": 12.41,
+     "dir": "input"
+    },
+    "Z": {
+     "dir": "output",
+     "fn": "A"
+    }
+   }
+  },
+  "BUF_X2": {
+   "area": 1.064,
+   "leak_nW": 43.06,
+   "pins": {
+    "A": {
+     "cap": 1.779,
+     "dir": "input"
+    },
+    "Z": {
+     "dir": "output",
+     "fn": "A"
+    }
+   }
+  },
+  "BUF_X32": {
+   "area": 13.034,
+   "leak_nW": 689.0,
+   "pins": {
+    "A": {
+     "cap": 26.7,
+     "dir": "input"
+    },
+    "Z": {
+     "dir": "output",
+     "fn": "A"
+    }
+   }
+  },
+  "BUF_X4": {
+   "area": 1.862,
+   "leak_nW": 86.12,
+   "pins": {
+    "A": {
+     "cap": 3.402,
+     "dir": "input"
+    },
+    "Z": {
+     "dir": "output",
+     "fn": "A"
+    }
+   }
+  },
+  "BUF_X8": {
+   "area": 3.458,
+   "leak_nW": 172.2,
+   "pins": {
+    "A": {
+     "cap": 6.585,
+     "dir": "input"
+    },
+    "Z": {
+     "dir": "output",
+     "fn": "A"
+    }
+   }
+  },
+  "CLKGATETST_X1": {
+   "area": 3.99,
+   "leak_nW": 59.14,
+   "pins": {
+    "CK": {
+     "cap": 1.812,
+     "dir": "input"
+    },
+    "E": {
+     "cap": 0.878,
+     "dir": "input"
+    },
+    "GCK": {
+     "dir": "output"
+    },
+    "IQ": {
+     "dir": "internal"
+    },
+    "SE": {
+     "cap": 0.7768,
+     "dir": "input"
+    }
+   }
+  },
+  "CLKGATE_X1": {
+   "area": 3.458,
+   "leak_nW": 48.65,
+   "pins": {
+    "CK": {
+     "cap": 1.838,
+     "dir": "input"
+    },
+    "E": {
+     "cap": 0.9152,
+     "dir": "input"
+    },
+    "GCK": {
+     "dir": "output"
+    },
+    "IQ": {
+     "dir": "internal"
+    }
+   }
+  },
+  "DFFRS_X1": {
+   "area": 6.384,
+   "leak_nW": 100.2,
+   "pins": {
+    "CK": {
+     "cap": 0.9633,
+     "clock": true,
+     "dir": "input"
+    },
+    "D": {
+     "cap": 1.148,
+     "dir": "input"
+    },
+    "Q": {
+     "dir": "output",
+     "fn": "IQ"
+    },
+    "QN": {
+     "dir": "output",
+     "fn": "IQN"
+    },
+    "RN": {
+     "cap": 1.407,
+     "dir": "input"
+    },
+    "SN": {
+     "cap": 2.212,
+     "dir": "input"
+    }
+   }
+  },
+  "DFFR_X1": {
+   "area": 5.32,
+   "leak_nW": 86.21,
+   "pins": {
+    "CK": {
+     "cap": 0.9766,
+     "clock": true,
+     "dir": "input"
+    },
+    "D": {
+     "cap": 1.128,
+     "dir": "input"
+    },
+    "Q": {
+     "dir": "output",
+     "fn": "IQ"
+    },
+    "QN": {
+     "dir": "output",
+     "fn": "IQN"
+    },
+    "RN": {
+     "cap": 1.779,
+     "dir": "input"
+    }
+   }
+  },
+  "DFFS_X1": {
+   "area": 5.32,
+   "leak_nW": 84.4,
+   "pins": {
+    "CK": {
+     "cap": 0.9652,
+     "clock": true,
+     "dir": "input"
+    },
+    "D": {
+     "cap": 1.164,
+     "dir": "input"
+    },
+    "Q": {
+     "dir": "output",
+     "fn": "IQ"
+    },
+    "QN": {
+     "dir": "output",
+     "fn": "IQN"
+    },
+    "SN": {
+     "cap": 1.356,
+     "dir": "input"
+    }
+   }
+  },
+  "DFF_X1": {
+   "area": 4.522,
+   "leak_nW": 79.11,
+   "pins": {
+    "CK": {
+     "cap": 0.9497,
+     "clock": true,
+     "dir": "input"
+    },
+    "D": {
+     "cap": 1.14,
+     "dir": "input"
+    },
+    "Q": {
+     "dir": "output",
+     "fn": "IQ"
+    },
+    "QN": {
+     "dir": "output",
+     "fn": "IQN"
+    }
+   }
+  },
+  "DFF_X2": {
+   "area": 5.054,
+   "leak_nW": 115.1,
+   "pins": {
+    "CK": {
+     "cap": 0.9305,
+     "clock": true,
+     "dir": "input"
+    },
+    "D": {
+     "cap": 1.128,
+     "dir": "input"
+    },
+    "Q": {
+     "dir": "output",
+     "fn": "IQ"
+    },
+    "QN": {
+     "dir": "output",
+     "fn": "IQN"
+    }
+   }
+  },
+  "DLH_X1": {
+   "area": 2.66,
+   "leak_nW": 40.86,
+   "pins": {
+    "D": {
+     "cap": 0.9141,
+     "dir": "input"
+    },
+    "G": {
+     "cap": 0.9855,
+     "clock": true,
+     "dir": "input"
+    },
+    "Q": {
+     "dir": "output",
+     "fn": "IQ"
+    }
+   }
+  },
+  "DLL_X1": {
+   "area": 2.66,
+   "leak_nW": 40.86,
+   "pins": {
+    "D": {
+     "cap": 0.883,
+     "dir": "input"
+    },
+    "GN": {
+     "cap": 0.9891,
+     "clock": true,
+     "dir": "input"
+    },
+    "Q": {
+     "dir": "output",
+     "fn": "IQ"
+    }
+   }
+  },
+  "FA_X1": {
+   "area": 4.256,
+   "leak_nW": 75.76,
+   "pins": {
+    "A": {
+     "cap": 3.746,
+     "dir": "input"
+    },
+    "B": {
+     "cap": 3.472,
+     "dir": "input"
+    },
+    "CI": {
+     "cap": 2.762,
+     "dir": "input"
+    },
+    "CO": {
+     "dir": "output",
+     "fn": "((A & B) | (CI & (A | B)))"
+    },
+    "S": {
+     "dir": "output",
+     "fn": "(CI ^ (A ^ B))"
+    }
+   }
+  },
+  "FILLCELL_X1": {
+   "area": 0.266,
+   "leak_nW": null,
+   "pins": {}
+  },
+  "HA_X1": {
+   "area": 2.66,
+   "leak_nW": 61.23,
+   "pins": {
+    "A": {
+     "cap": 3.186,
+     "dir": "input"
+    },
+    "B": {
+     "cap": 3.448,
+     "dir": "input"
+    },
+    "CO": {
+     "dir": "output",
+     "fn": "(A & B)"
+    },
+    "S": {
+     "dir": "output",
+     "fn": "(A ^ B)"
+    }
+   }
+  },
+  "INV_X1": {
+   "area": 0.532,
+   "leak_nW": 14.35,
+   "pins": {
+    "A": {
+     "cap": 1.7,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!A"
+    }
+   }
+  },
+  "INV_X16": {
+   "area": 4.522,
+   "leak_nW": 229.7,
+   "pins": {
+    "A": {
+     "cap": 25.23,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!A"
+    }
+   }
+  },
+  "INV_X2": {
+   "area": 0.798,
+   "leak_nW": 28.71,
+   "pins": {
+    "A": {
+     "cap": 3.251,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!A"
+    }
+   }
+  },
+  "INV_X32": {
+   "area": 8.778,
+   "leak_nW": 459.3,
+   "pins": {
+    "A": {
+     "cap": 49.19,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!A"
+    }
+   }
+  },
+  "INV_X4": {
+   "area": 1.33,
+   "leak_nW": 57.41,
+   "pins": {
+    "A": {
+     "cap": 6.258,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!A"
+    }
+   }
+  },
+  "INV_X8": {
+   "area": 2.394,
+   "leak_nW": 114.8,
+   "pins": {
+    "A": {
+     "cap": 11.81,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!A"
+    }
+   }
+  },
+  "LOGIC0_X1": {
+   "area": 0.532,
+   "leak_nW": null,
+   "pins": {
+    "Z": {
+     "dir": "output",
+     "fn": "0"
+    }
+   }
+  },
+  "LOGIC1_X1": {
+   "area": 0.532,
+   "leak_nW": null,
+   "pins": {
+    "Z": {
+     "dir": "output",
+     "fn": "1"
+    }
+   }
+  },
+  "MUX2_X1": {
+   "area": 1.862,
+   "leak_nW": 35.93,
+   "pins": {
+    "A": {
+     "cap": 0.9464,
+     "dir": "input"
+    },
+    "B": {
+     "cap": 0.9448,
+     "dir": "input"
+    },
+    "S": {
+     "cap": 1.92,
+     "dir": "input"
+    },
+    "Z": {
+     "dir": "output",
+     "fn": "((S & B) | (A & !S))"
+    }
+   }
+  },
+  "NAND2_X1": {
+   "area": 0.798,
+   "leak_nW": 17.39,
+   "pins": {
+    "A1": {
+     "cap": 1.599,
+     "dir": "input"
+    },
+    "A2": {
+     "cap": 1.664,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!(A1 & A2)"
+    }
+   }
+  },
+  "NAND2_X2": {
+   "area": 1.33,
+   "leak_nW": 34.79,
+   "pins": {
+    "A1": {
+     "cap": 3.053,
+     "dir": "input"
+    },
+    "A2": {
+     "cap": 3.451,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!(A1 & A2)"
+    }
+   }
+  },
+  "NAND2_X4": {
+   "area": 2.394,
+   "leak_nW": 69.57,
+   "pins": {
+    "A1": {
+     "cap": 5.955,
+     "dir": "input"
+    },
+    "A2": {
+     "cap": 6.202,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!(A1 & A2)"
+    }
+   }
+  },
+  "NOR2_X1": {
+   "area": 0.798,
+   "leak_nW": 21.2,
+   "pins": {
+    "A1": {
+     "cap": 1.714,
+     "dir": "input"
+    },
+    "A2": {
+     "cap": 1.651,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!(A1 | A2)"
+    }
+   }
+  },
+  "OAI21_X1": {
+   "area": 1.064,
+   "leak_nW": 22.62,
+   "pins": {
+    "A": {
+     "cap": 1.671,
+     "dir": "input"
+    },
+    "B1": {
+     "cap": 1.662,
+     "dir": "input"
+    },
+    "B2": {
+     "cap": 1.572,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!(A & (B1 | B2))"
+    }
+   }
+  },
+  "OR2_X1": {
+   "area": 1.064,
+   "leak_nW": 22.69,
+   "pins": {
+    "A1": {
+     "cap": 0.9468,
+     "dir": "input"
+    },
+    "A2": {
+     "cap": 0.9419,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "(A1 | A2)"
+    }
+   }
+  },
+  "SDFF_X1": {
+   "area": 6.118,
+   "leak_nW": 100.7,
+   "pins": {
+    "CK": {
+     "cap": 0.9589,
+     "clock": true,
+     "dir": "input"
+    },
+    "D": {
+     "cap": 1.12,
+     "dir": "input"
+    },
+    "Q": {
+     "dir": "output",
+     "fn": "IQ"
+    },
+    "QN": {
+     "dir": "output",
+     "fn": "IQN"
+    },
+    "SE": {
+     "cap": 1.89,
+     "dir": "input"
+    },
+    "SI": {
+     "cap": 0.9188,
+     "dir": "input"
+    }
+   }
+  },
+  "TAPCELL_X1": {
+   "area": 0.266,
+   "leak_nW": null,
+   "pins": {}
+  },
+  "TBUF_X1": {
+   "area": 2.128,
+   "leak_nW": 32.75,
+   "pins": {
+    "A": {
+     "cap": 1.879,
+     "dir": "input"
+    },
+    "EN": {
+     "cap": 1.727,
+     "dir": "input"
+    },
+    "Z": {
+     "cap": 1.054,
+     "dir": "output",
+     "fn": "A"
+    }
+   }
+  },
+  "XNOR2_X1": {
+   "area": 1.596,
+   "leak_nW": 36.44,
+   "pins": {
+    "A": {
+     "cap": 2.233,
+     "dir": "input"
+    },
+    "B": {
+     "cap": 2.574,
+     "dir": "input"
+    },
+    "ZN": {
+     "dir": "output",
+     "fn": "!(A ^ B)"
+    }
+   }
+  },
+  "XOR2_X1": {
+   "area": 1.596,
+   "leak_nW": 36.16,
+   "pins": {
+    "A": {
+     "cap": 2.232,
+     "dir": "input"
+    },
+    "B": {
+     "cap": 2.411,
+     "dir": "input"
+    },
+    "Z": {
+     "dir": "output",
+     "fn": "(A ^ B)"
+    }
+   }
+  }
+ },
+ "clock_pin_energy": {
+  "DFFR_X1": {
+   "energy_per_cycle_fJ": 9.64,
+   "states": 6
+  },
+  "DFF_X1": {
+   "energy_per_cycle_fJ": 7.231,
+   "states": 4
+  }
+ },
+ "corner": {
+  "operating_conditions": "typical",
+  "process": "1.00",
+  "temperature": "25.00",
+  "voltage": "1.10"
+ },
+ "default_fanout_load": 1.0,
+ "default_max_transition": 0.198535,
+ "default_wire_load": "5K_hvratio_1_1",
+ "drive": {
+  "AOI21_X1": {
+   "R_avg_kohm": 3.169,
+   "R_fall_kohm": 1.253,
+   "R_rise_kohm": 5.085,
+   "area": 1.064,
+   "cin_fF": 1.626,
+   "d0_ps": 23.05,
+   "g": 1.661,
+   "leak_nW": 27.86,
+   "p_tau": 7.429,
+   "pin": "A"
+  },
+  "INV_X1": {
+   "R_avg_kohm": 1.825,
+   "R_fall_kohm": 1.252,
+   "R_rise_kohm": 2.398,
+   "area": 0.532,
+   "cin_fF": 1.7,
+   "d0_ps": 7.801,
+   "g": 1.0,
+   "leak_nW": 14.35,
+   "p_tau": 2.514,
+   "pin": "A"
+  },
+  "INV_X16": {
+   "R_avg_kohm": 0.2092,
+   "R_fall_kohm": 0.1766,
+   "R_rise_kohm": 0.2418,
+   "area": 4.522,
+   "cin_fF": 25.23,
+   "d0_ps": 7.986,
+   "g": 1.701,
+   "leak_nW": 229.7,
+   "p_tau": 2.574,
+   "pin": "A"
+  },
+  "INV_X2": {
+   "R_avg_kohm": 0.9697,
+   "R_fall_kohm": 0.7268,
+   "R_rise_kohm": 1.213,
+   "area": 0.798,
+   "cin_fF": 3.251,
+   "d0_ps": 7.956,
+   "g": 1.016,
+   "leak_nW": 28.71,
+   "p_tau": 2.564,
+   "pin": "A"
+  },
+  "INV_X32": {
+   "R_avg_kohm": 0.1062,
+   "R_fall_kohm": 0.08926,
+   "R_rise_kohm": 0.1231,
+   "area": 8.778,
+   "cin_fF": 49.19,
+   "d0_ps": 8.232,
+   "g": 1.684,
+   "leak_nW": 459.3,
+   "p_tau": 2.653,
+   "pin": "A"
+  },
+  "INV_X4": {
+   "R_avg_kohm": 0.5612,
+   "R_fall_kohm": 0.4628,
+   "R_rise_kohm": 0.6596,
+   "area": 1.33,
+   "cin_fF": 6.258,
+   "d0_ps": 8.001,
+   "g": 1.132,
+   "leak_nW": 57.41,
+   "p_tau": 2.579,
+   "pin": "A"
+  },
+  "INV_X8": {
+   "R_avg_kohm": 0.3589,
+   "R_fall_kohm": 0.3023,
+   "R_rise_kohm": 0.4155,
+   "area": 2.394,
+   "cin_fF": 11.81,
+   "d0_ps": 8.713,
+   "g": 1.366,
+   "leak_nW": 114.8,
+   "p_tau": 2.808,
+   "pin": "A"
+  },
+  "NAND2_X1": {
+   "R_avg_kohm": 2.247,
+   "R_fall_kohm": 2.089,
+   "R_rise_kohm": 2.405,
+   "area": 0.798,
+   "cin_fF": 1.599,
+   "d0_ps": 11.86,
+   "g": 1.158,
+   "leak_nW": 17.39,
+   "p_tau": 3.823,
+   "pin": "A1"
+  },
+  "NOR2_X1": {
+   "R_avg_kohm": 3.154,
+   "R_fall_kohm": 1.251,
+   "R_rise_kohm": 5.058,
+   "area": 0.798,
+   "cin_fF": 1.714,
+   "d0_ps": 12.57,
+   "g": 1.742,
+   "leak_nW": 21.2,
+   "p_tau": 4.052,
+   "pin": "A1"
+  },
+  "XOR2_X1": {
+   "R_avg_kohm": 3.204,
+   "R_fall_kohm": 1.396,
+   "R_rise_kohm": 5.013,
+   "area": 1.596,
+   "cin_fF": 2.232,
+   "d0_ps": 45.87,
+   "g": 2.305,
+   "leak_nW": 36.16,
+   "p_tau": 14.78,
+   "pin": "A"
+  }
+ },
+ "fo4_ps": {
+  "avg": 22.11,
+  "fall": 16.57,
+  "per_2ns": 90.48,
+  "rise": 27.64,
+  "slew": 13.77
+ },
+ "gate_delays_ps": {
+  "AND2_X1 A1->ZN": {
+   "cell_fall": 42.64,
+   "cell_rise": 47.89,
+   "fall_transition": 10.99,
+   "rise_transition": 19.31
+  },
+  "AOI21_X1 A->ZN": {
+   "cell_fall": 22.51,
+   "cell_rise": 70.18,
+   "fall_transition": 13.38,
+   "rise_transition": 45.38
+  },
+  "AOI21_X1 B1->ZN": {
+   "cell_fall": 28.7,
+   "cell_rise": 56.6,
+   "fall_transition": 16.83,
+   "rise_transition": 42.38
+  },
+  "BUF_X1 A->Z": {
+   "cell_fall": 40.81,
+   "cell_rise": 38.27,
+   "fall_transition": 10.69,
+   "rise_transition": 18.39
+  },
+  "FA_X1 A->CO": {
+   "cell_fall": 89.52,
+   "cell_rise": 59.54,
+   "fall_transition": 18.81,
+   "rise_transition": 21.24
+  },
+  "FA_X1 A->S": {
+   "cell_fall": 100.1,
+   "cell_rise": 128.3,
+   "fall_transition": 18.08,
+   "rise_transition": 20.46
+  },
+  "FA_X1 CI->CO": {
+   "cell_fall": 83.56,
+   "cell_rise": 58.95,
+   "fall_transition": 18.48,
+   "rise_transition": 21.32
+  },
+  "FA_X1 CI->S": {
+   "cell_fall": 97.22,
+   "cell_rise": 126.3,
+   "fall_transition": 16.12,
+   "rise_transition": 20.61
+  },
+  "HA_X1 A->CO": {
+   "cell_fall": 41.99,
+   "cell_rise": 47.22,
+   "fall_transition": 10.86,
+   "rise_transition": 19.19
+  },
+  "HA_X1 A->S": {
+   "cell_fall": 63.98,
+   "cell_rise": 75.54,
+   "fall_transition": 16.78,
+   "rise_transition": 45.6
+  },
+  "INV_X1 A->ZN": {
+   "cell_fall": 18.6,
+   "cell_rise": 30.79,
+   "fall_transition": 10.61,
+   "rise_transition": 18.68
+  },
+  "INV_X4 A->ZN": {
+   "cell_fall": 9.575,
+   "cell_rise": 17.65,
+   "fall_transition": 6.529,
+   "rise_transition": 9.427
+  },
+  "MUX2_X1 A->Z": {
+   "cell_fall": 73.95,
+   "cell_rise": 53.1,
+   "fall_transition": 15.5,
+   "rise_transition": 19.67
+  },
+  "MUX2_X1 S->Z": {
+   "cell_fall": 71.82,
+   "cell_rise": 68.3,
+   "fall_transition": 15.49,
+   "rise_transition": 19.66
+  },
+  "NAND2_X1 A1->ZN": {
+   "cell_fall": 27.57,
+   "cell_rise": 32.45,
+   "fall_transition": 16.25,
+   "rise_transition": 20.05
+  },
+  "NAND2_X1 A2->ZN": {
+   "cell_fall": 27.69,
+   "cell_rise": 34.72,
+   "fall_transition": 15.79,
+   "rise_transition": 21.3
+  },
+  "NOR2_X1 A1->ZN": {
+   "cell_fall": 19.52,
+   "cell_rise": 53.9,
+   "fall_transition": 10.87,
+   "rise_transition": 39.2
+  },
+  "NOR2_X1 A2->ZN": {
+   "cell_fall": 20.95,
+   "cell_rise": 58.68,
+   "fall_transition": 11.56,
+   "rise_transition": 39.17
+  },
+  "OAI21_X1 A->ZN": {
+   "cell_fall": 26.5,
+   "cell_rise": 38.11,
+   "fall_transition": 13.21,
+   "rise_transition": 23.35
+  },
+  "OAI21_X1 B1->ZN": {
+   "cell_fall": 28.57,
+   "cell_rise": 57.26,
+   "fall_transition": 16.86,
+   "rise_transition": 42.04
+  },
+  "XOR2_X1 A->Z": {
+   "cell_fall": 63.79,
+   "cell_rise": 75.01,
+   "fall_transition": 16.72,
+   "rise_transition": 45.42
+  },
+  "XOR2_X1 B->Z": {
+   "cell_fall": 68.57,
+   "cell_rise": 73.69,
+   "fall_transition": 16.62,
+   "rise_transition": 42.44
+  }
+ },
+ "inv_sweep": {
+  "INV_X1": [
+   11.02,
+   14.17,
+   21.03,
+   30.73,
+   48.98,
+   85.11,
+   121.2
+  ],
+  "INV_X2": [
+   9.583,
+   11.21,
+   15.6,
+   21.21,
+   30.9,
+   49.15,
+   67.24
+  ],
+  "INV_X4": [
+   8.826,
+   9.652,
+   12.13,
+   15.74,
+   21.35,
+   31.05,
+   40.26
+  ],
+  "INV_X8": [
+   9.124,
+   9.535,
+   10.77,
+   12.82,
+   16.41,
+   22.0,
+   27.08
+  ]
+ },
+ "inv_sweep_loads": [
+  1,
+  2,
+  5,
+  10,
+  20,
+  40,
+  60
+ ],
+ "library": "NangateOpenCellLibrary",
+ "op": {
+  "load_fF": 6.801,
+  "note": "input slew 20 ps, load = 4 x INV_X1 input capacitance",
+  "slew_ns": 0.02
+ },
+ "seq": {
+  "DFFR_X1": {
+   "CK->Q": {
+    "cell_fall": 100.7,
+    "cell_rise": 119.0,
+    "fall_transition": 11.65,
+    "rise_transition": 20.08
+   },
+   "CK_cap": 0.976605,
+   "D_cap": 1.128277,
+   "RN->Q": {
+    "cell_fall": 47.58,
+    "fall_transition": 11.67
+   },
+   "hold": {
+    "fall_constraint": 6.217,
+    "rise_constraint": 14.41
+   },
+   "recovery": {
+    "rise_constraint": -58.98
+   },
+   "removal": {
+    "rise_constraint": 210.6
+   },
+   "setup": {
+    "fall_constraint": 38.78,
+    "rise_constraint": 33.91
+   }
+  },
+  "DFF_X1": {
+   "CK->Q": {
+    "cell_fall": 95.09,
+    "cell_rise": 103.8,
+    "fall_transition": 11.18,
+    "rise_transition": 18.61
+   },
+   "CK_cap": 0.949653,
+   "D_cap": 1.14029,
+   "hold": {
+    "fall_constraint": 6.227,
+    "rise_constraint": 14.8
+   },
+   "setup": {
+    "fall_constraint": 38.16,
+    "rise_constraint": 32.0
+   }
+  },
+  "DLH_X1": {
+   "D->Q (transparent)": {
+    "cell_fall": 75.91,
+    "cell_rise": 53.56,
+    "fall_transition": 16.04,
+    "rise_transition": 19.7
+   },
+   "G->Q": {
+    "cell_fall": 74.58,
+    "cell_rise": 73.33,
+    "fall_transition": 16.0,
+    "rise_transition": 19.68
+   },
+   "setup_falling": {
+    "fall_constraint": 52.77,
+    "rise_constraint": 9.889
+   }
+  }
+ },
+ "source": "NangateOpenCellLibrary_typical.lib",
+ "tau_ps": 3.103,
+ "units": {
+  "current_unit": "1mA",
+  "leakage_power_unit": "1nW",
+  "pulling_resistance_unit": "1kohm",
+  "time_unit": "1ns",
+  "voltage_unit": "1V"
+ },
+ "wlm": {
+  "all_names": [
+   "1K_hvratio_1_4",
+   "1K_hvratio_1_2",
+   "1K_hvratio_1_1",
+   "3K_hvratio_1_4",
+   "3K_hvratio_1_2",
+   "3K_hvratio_1_1",
+   "5K_hvratio_1_4",
+   "5K_hvratio_1_2",
+   "5K_hvratio_1_1"
+  ],
+  "cap_per_len_fF": 0.1774,
+  "fanout_length": [
+   [
+    1,
+    1.3207
+   ],
+   [
+    2,
+    2.9813
+   ],
+   [
+    3,
+    5.1135
+   ],
+   [
+    4,
+    7.6639
+   ],
+   [
+    5,
+    10.0334
+   ],
+   [
+    6,
+    12.2296
+   ],
+   [
+    8,
+    19.3185
+   ]
+  ],
+  "has_area": false,
+  "name": "1K_hvratio_1_4",
+  "res_per_len_kohm": 0.003571429,
+  "rows": [
+   {
+    "C_fF": 0.2343,
+    "R_ohm": 4.717,
+    "fanout": 1,
+    "from_table": true,
+    "length": 1.321
+   },
+   {
+    "C_fF": 0.5289,
+    "R_ohm": 10.65,
+    "fanout": 2,
+    "from_table": true,
+    "length": 2.981
+   },
+   {
+    "C_fF": 0.9071,
+    "R_ohm": 18.26,
+    "fanout": 3,
+    "from_table": true,
+    "length": 5.114
+   },
+   {
+    "C_fF": 1.36,
+    "R_ohm": 27.37,
+    "fanout": 4,
+    "from_table": true,
+    "length": 7.664
+   },
+   {
+    "C_fF": 1.78,
+    "R_ohm": 35.83,
+    "fanout": 5,
+    "from_table": true,
+    "length": 10.03
+   },
+   {
+    "C_fF": 2.17,
+    "R_ohm": 43.68,
+    "fanout": 6,
+    "from_table": true,
+    "length": 12.23
+   },
+   {
+    "C_fF": 2.798,
+    "R_ohm": 56.34,
+    "fanout": 7,
+    "from_table": false,
+    "length": 15.77
+   },
+   {
+    "C_fF": 3.427,
+    "R_ohm": 68.99,
+    "fanout": 8,
+    "from_table": true,
+    "length": 19.32
+   },
+   {
+    "C_fF": 4.314,
+    "R_ohm": 86.85,
+    "fanout": 9,
+    "from_table": false,
+    "length": 24.32
+   },
+   {
+    "C_fF": 5.201,
+    "R_ohm": 104.7,
+    "fanout": 10,
+    "from_table": false,
+    "length": 29.32
+   },
+   {
+    "C_fF": 6.088,
+    "R_ohm": 122.6,
+    "fanout": 11,
+    "from_table": false,
+    "length": 34.32
+   },
+   {
+    "C_fF": 6.975,
+    "R_ohm": 140.4,
+    "fanout": 12,
+    "from_table": false,
+    "length": 39.32
+   }
+  ],
+  "slope": 5.0
+ }
+}

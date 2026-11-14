@@ -1,0 +1,55 @@
+# ILLUSTRATIVE SAMPLE, NOT REAL DC OUTPUT. Written by docs/synthesis-src/make_samples.py to show
+# the layout of this report. The numbers are invented (but add up). Your own report is the authority.
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -max_paths 1
+        -sort_by group
+Design : top
+Version: S-2021.06-SP5-4
+Date   : Thu Nov 19 14:02:11 2026
+****************************************
+
+
+Operating Conditions: typical   Library: NangateOpenCellLibrary
+Wire Load Model Mode: top
+
+  Startpoint: u_controller/count_reg[2]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: u_controller/count_reg[15]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  top                1K_hvratio_1_4        NangateOpenCellLibrary
+
+  Point                                                 Incr       Path
+  ----------------------------------------------------------------------
+  clock clk (rise edge)                               0.0000     0.0000
+  clock network delay (ideal)                         0.0000     0.0000
+  u_controller/count_reg[2]/CK (DFFR_X1)              0.0000     0.0000 r
+  u_controller/count_reg[2]/Q (DFFR_X1)               0.1105     0.1105 r
+  u_controller/U301/ZN (XNOR2_X1)                     0.0633     0.1738 r
+  u_controller/U305/ZN (NAND4_X1)                     0.0458     0.2196 f
+  u_controller/U306/ZN (NOR4_X1)                      0.0911     0.3107 r
+  u_controller/U310/ZN (NAND2_X1)                     0.0302     0.3409 f
+  u_controller/U311/ZN (OAI21_X1)                     0.0545     0.3954 r
+  u_controller/count_reg[15]/D (DFFR_X1)              0.0000     0.3954 r
+  data arrival time                                              0.3954
+
+  clock clk (rise edge)                               0.3500     0.3500
+  clock network delay (ideal)                         0.0000     0.3500
+  u_controller/count_reg[15]/CK (DFFR_X1)             0.0000     0.3500 r
+  library setup time                                 -0.0352     0.3148
+  data required time                                             0.3148
+  ----------------------------------------------------------------------
+  data required time                                             0.3148
+  data arrival time                                             -0.3954
+  ----------------------------------------------------------------------
+  slack (VIOLATED)                                              -0.0806
+
+
+1

@@ -1,0 +1,35 @@
+{
+ "timing_met": {
+  "arrival": 1.6109,
+  "slack": 0.35,
+  "period": 2.0,
+  "setup": -0.0391,
+  "cells": 30
+ },
+ "timing_violated": {
+  "slack": -0.0806,
+  "period": 0.35
+ },
+ "area": {
+  "totalCell": 138579.129,
+  "combinational": 128971.121,
+  "noncombinational": 9608.008,
+  "bufinv": 9502.392009,
+  "cells": 110412,
+  "hier_rows": 24
+ },
+ "power": {
+  "internal": 10.9687,
+  "switching": 3.6184,
+  "dynamic": 14.5871,
+  "leakage": 3.2595,
+  "total_uW": 17847.0,
+  "register_pct": 50.25,
+  "groups": 7
+ },
+ "qor": {
+  "length": 1.61,
+  "slack": 0.35,
+  "levels": 27
+ }
+}

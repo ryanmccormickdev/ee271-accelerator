@@ -1,0 +1,54 @@
+# ILLUSTRATIVE SAMPLE, NOT REAL DC OUTPUT. Written by docs/synthesis-src/make_samples.py to show
+# the layout of this report. The numbers are invented (but add up). Your own report is the authority.
+****************************************
+Report : power
+        -analysis_effort high
+Design : top
+Version: S-2021.06-SP5-4
+Date   : Thu Nov 19 14:02:11 2026
+****************************************
+
+
+Library(s) Used:
+
+    NangateOpenCellLibrary (File: /home/you/ee271/part2/unoptimized_verilog/synth/lib/NangateOpenCellLibrary.db)
+
+
+Operating Conditions: typical   Library: NangateOpenCellLibrary
+Wire Load Model Mode: top
+
+Design        Wire Load Model            Library
+------------------------------------------------
+top                    1K_hvratio_1_4    NangateOpenCellLibrary
+
+
+Global Operating Voltage = 1.1  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000ff
+    Time Units = 1ns
+    Dynamic Power Units = 1uW    (derived from V,C,T units)
+    Leakage Power Units = 1nW
+
+
+  Cell Internal Power  =  10.9687 mW   (75%)
+  Net Switching Power  =   3.6184 mW   (25%)
+                         ---------
+Total Dynamic Power    =  14.5871 mW  (100%)
+
+Cell Leakage Power     =   3.2595 mW
+
+
+                 Internal         Switching           Leakage            Total
+Power Group      Power            Power               Power              Power   (   %    )  Attrs
+--------------------------------------------------------------------------------------------------
+io_pad             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+memory             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+black_box          0.0000            0.0000            0.0000            0.0000  (   0.00%)
+clock_network      0.0000            0.0000            0.0000            0.0000  (   0.00%)
+register       8.6021e+03          210.5532        1.5560e+05        8.9683e+03  (  50.25%)
+sequential        55.2101            2.1020        3.4123e+03           60.7244  (   0.34%)
+combinational  2.3114e+03        3.4057e+03        3.1005e+06        8.8176e+03  (  49.41%)
+--------------------------------------------------------------------------------------------------
+Total          1.0969e+04 uW     3.6184e+03 uW     3.2595e+06 nW     1.7847e+04 uW
+1

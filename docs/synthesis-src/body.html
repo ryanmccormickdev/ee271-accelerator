@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RTL to gates: synthesis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap">
+<style>
+/*STYLE*/
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap titlebar">
+    <div>
+      <h1>From RTL to gates</h1>
+      <p class="sub">What Design Compiler does to your design: the course script line by line, what <code>compile_ultra</code> does inside, the same steps run for real on small examples, and how to read every report it writes. Part 2 needs an error-free <code>compile.log</code>. Part 3's figure of merit is built from these numbers.</p>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#big-picture" data-view="big-picture">Big picture</a>
+      <a href="#script" data-view="script">The script</a>
+      <a href="#compile-ultra" data-view="compile-ultra">Inside compile_ultra</a>
+      <a href="#see-it" data-view="see-it">See it happen</a>
+      <a href="#reports" data-view="reports">Reading reports</a>
+      <a href="#black-boxes" data-view="black-boxes">Black boxes</a>
+      <a href="#clean-log" data-view="clean-log">Clean log, clean RTL</a>
+      <a href="#caddy" data-view="caddy">On caddy</a>
+      <a href="#lectures" data-view="lectures">Lectures and words</a>
+      <button class="themebtn small" id="themebtn" title="Switch light / dark">Light / dark</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- =================================================================== BIG PICTURE -->
+<section class="view" id="view-big-picture" aria-label="Big picture">
+  <div class="stage">
+    <div>
+      <div class="board">
+        <div class="flow" id="flow" role="group" aria-label="The steps of make synth"></div>
+        <div class="fview" id="fl-view" aria-live="polite"></div>
+      </div>
+      <div class="controls">
+        <button class="primary" id="fl-play">Play the flow</button>
+        <button id="fl-prev">Back</button>
+        <button id="fl-next">Next step</button>
+      </div>
+    </div>
+    <aside class="panel">
+      <div aria-live="polite">
+        <h2 id="fl-title"></h2>
+        <div class="prose" id="fl-body"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="section memsec">
+    <h3 id="bp-evidence">Three kinds of evidence on this page</h3>
+    <p>Nobody has run Design Compiler (DC) on this design yet, and DC only runs on Stanford's caddy cluster. So every claim here carries a tag that says where it comes from:</p>
+    <div class="cards">
+      <div class="card"><h4><span class="ev file">from the files</span></h4><p>Read straight from the course files: <code>synth/Makefile</code>, <code>synth/dc_synth.tcl</code>, the handouts, <code>load_modules.sh</code>. Some were checked with a dry run (<code>make -n</code>).</p></div>
+      <div class="card"><h4><span class="ev local">Yosys + open Nangate45</span> <span class="ev lib">.lib</span></h4><p>Real runs on a laptop with Yosys {{V:yosys}} and the open-source Liberty file of the same Nangate 45 nm library (byte-identical to the copy OpenROAD ships). Same cells and areas as the course's <code>.db</code>; timing may differ a little. These are <b>Yosys's numbers, not DC's</b>. Use them for intuition and orders of magnitude.</p></div>
+      <div class="card"><h4><span class="ev docs">DC docs</span> <span class="ev illus">illustrative</span></h4><p>How DC behaves according to Synopsys documentation and public course material, not run here. Sample reports in DC's format are invented (their numbers add up, but they're not from your design). Your own run is the authority.</p></div>
+    </div>
+
+    <h3 id="bp-outputs">What one run gives you</h3>
+    <div class="tscroll"><table class="ref">
+      <tr><th>File (in <code>unoptimized_verilog/synth/</code>)</th><th>What it is</th><th>Who needs it</th></tr>
+      <tr><td><code>compile.log</code></td><td>everything DC printed, with each script command echoed before its output</td><td>Part 2 submits it; it must contain no errors (handout 2.3, 2.4)</td></tr>
+      <tr><td><code>results.txt</code></td><td>six greps from the reports: period, error check, slack, power, leakage, cell area</td><td>Part 3's figure of merit</td></tr>
+      <tr><td><code>reports/timing_report_maxsm</code></td><td>the worst setup path, 4 decimals</td><td>"does it meet timing?"</td></tr>
+      <tr><td><code>reports/area_report</code>, <code>area_report_hier</code></td><td>flat and per-instance area</td><td>the FoM's area; the black-box check</td></tr>
+      <tr><td><code>reports/power_report</code></td><td>internal, switching, leakage power at high analysis effort</td><td>the FoM's power</td></tr>
+      <tr><td><code>reports/qor_report</code>, <code>design_check</code>, <code>design_report</code>, <code>error_checking_report</code></td><td>summary, lint, settings used, error status</td><td>you, when something looks off</td></tr>
+      <tr><td><code>netlist/top.mapped.v</code></td><td>the gate-level netlist: your design as Nangate cells</td><td>curiosity; the oral exam ("what did your MAC become?")</td></tr>
+      <tr><td><code>defines.sv</code>, <code>FreePDK_45nm/</code>, <code>alib-52/</code>, <code>default.svf</code></td><td>generated defines, DC's work library, its library cache, and a record of the transformations for formal checking</td><td>DC; <code>make clean</code> removes them</td></tr>
+    </table></div>
+
+    <h3 id="bp-fom">What the course takes from it</h3>
+    <ul class="prose">
+      <li><b>Part 2:</b> "make sure that the compile.log file is free of errors, warnings are fine" (Part 2 handout §2.3). <code>make generate_submission</code> zips <code>logical/</code> and <code>synth/compile.log</code>.</li>
+      <li><b>Part 3:</b> FoM = (T<sub>int8</sub> + T<sub>int16</sub> + T<sub>int32</sub>)<sup>2.3</sup> × Area (µm²) × Power (mW) × 10<sup>−15</sup>, where each T = cycles × clock period, and "you must be able to actually synthesize your design at the clock period you use ... without any timing violations" (Part 3 handout §2.1). Area and power come from DC. The cycle counts come from simulation (<code>make eq</code>), not from DC. The handout doesn't say whether Power means dynamic or total (with leakage); this page assumes total and suggests you confirm on Ed.</li>
+    </ul>
+    <p>The exponent 2.3 on time is the big lever. Halving the period with area and power unchanged divides the FoM by 2<sup>2.3</sup> ≈ 4.9. But a shorter period makes DC build bigger, faster gates, and power grows with frequency. The <button class="link" data-goto="reports/results">results.txt parser</button> computes a FoM from your numbers; the <a href="part3-ppa.html#fom">Part 3 page</a> goes much further.</p>
+
+    <h3 id="bp-howto">How to use this page</h3>
+    <ol class="prose">
+      <li>Press <b>Play the flow</b> above: one tiny design (a registered adder) goes through every step, ending as real Nangate cells.</li>
+      <li><button class="link" data-goto="script">The script</button>: click any line of the course <code>Makefile</code> and <code>dc_synth.tcl</code> to see what it does and which report it changes.</li>
+      <li><button class="link" data-goto="compile-ultra">Inside compile_ultra</button>, then <button class="link" data-goto="see-it">See it happen</button>: what the optimizer does, and the same kinds of steps run for real in Yosys.</li>
+      <li><button class="link" data-goto="reports">Reading reports</button>: every line of each report explained, and a parser for your own.</li>
+      <li>Before you submit: <button class="link" data-goto="black-boxes">Black boxes</button> (the one check that could save you), <button class="link" data-goto="clean-log">Clean log, clean RTL</button>, <button class="link" data-goto="caddy">On caddy</button>.</li>
+    </ol>
+    <p class="cap">Related pages: <a href="walkthrough.html">the Part 1 walkthrough</a> · <a href="part2-rtl.html">the Part 2 RTL and its timing</a> · <a href="part3-ppa.html">Part 3: power, performance, area</a> · <a href="oral-prep.html">oral-exam practice</a> (this page's questions are the "synthesis" bank).</p>
+    <div class="quiz" id="q-big"><h3>Quiz yourself</h3>
+      <details><summary>Which two programs does <code>make synthesize</code> run, and why the first one?</summary><div><p><code>ivd-gv</code> generates <code>defines.sv</code> (widths, PE count, the instruction structs, the <code>vector_decoder</code> module) with all defaults, then <code>dc_shell-t</code> runs <code>dc_synth.tcl</code>. Every RTL file <code>`include</code>s <code>defines.sv</code>, so it has to exist first.</p></div></details>
+      <details><summary>Which <code>results.txt</code> numbers go into the Part 3 FoM, and which FoM input doesn't come from DC at all?</summary><div><p>The slack line (must be MET at the period), the total power and the total cell area. The cycle counts come from simulation; DC never runs your design.</p></div></details>
+      <details><summary>Why does this page keep saying "not DC"?</summary><div><p>DC isn't available off caddy and nobody has run it on this design. The local numbers come from Yosys, an open-source synthesizer using the same Nangate cells. It shows the same kinds of effects, but with its own algorithms and numbers.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== THE SCRIPT -->
+<section class="view" id="view-script" aria-label="The script, line by line" hidden>
+  <div class="section" style="padding-top:16px">
+    <h2>The script, line by line</h2>
+    <p><code>make synth</code> in this repo (or <code>make synthesize</code> in <code>part2/unoptimized_verilog/synth/</code>) runs the two files below. They're pasted here from <code>part2/</code> as they are. Click a line to see what it does, how sure we are (<span class="ev file">file</span> <span class="ev local">checked locally</span> <span class="ev lib">.lib</span> <span class="ev docs">DC docs</span>), and which report or number it changes. Arrow keys move between blocks.</p>
+    <div class="sfilter" id="sfilter" role="group" aria-label="Highlight the lines that affect">
+      <span class="lbl">Highlight lines that change:</span>
+      <!--AFFECT-CHIPS-->
+      <span class="cap" id="sfilter-count" style="margin:0"></span>
+      <button class="small" id="snotes-all" aria-pressed="false" style="margin-left:auto">Show every note inline</button>
+    </div>
+  </div>
+  <div class="sreader" id="sreader">
+    <div><!--SCRIPT-READER--></div>
+    <div id="snote-home"><div class="snote" id="snote" aria-live="polite"></div></div>
+  </div>
+  <div class="section memsec">
+    <h3 id="sc-order">Why the order matters</h3>
+    <ul class="prose">
+      <li><b>Read, then constrain, then compile.</b> The constraints name ports (<code>clk</code>, <code>rst_n</code>, <code>instruction_count</code>), so the design must exist first. Constraints set after <code>compile_ultra</code> would only change the reports, not the gates.</li>
+      <li><b>Every report comes after compile</b>, so it describes the mapped Nangate netlist, not your RTL.</li>
+      <li><b>Each run starts from scratch</b> (<code>remove_design -all</code>), but <code>results.txt</code> doesn't: it's appended to.</li>
+      <li><b>Nothing in the script reads your testbenches or the real memory model.</b> Synthesis only sees <code>logical/*.sv</code> (minus <code>logical/array.sv</code>), <code>defines.sv</code> and the empty <code>macros/array.sv</code>.</li>
+    </ul>
+    <div class="quiz" id="q-script"><h3>Quiz yourself</h3>
+      <details><summary>The script sets a 1.5 ns input delay on all inputs except clk and rst_n. Why does that have no effect in this design?</summary><div><p><code>top</code>'s only other input is <code>instruction_count</code>, and the next <code>set_input_delay</code> sets it back to 0. A later input delay on the same port and clock replaces the earlier one.</p></div></details>
+      <details><summary>What does <code>set_dont_touch_network rst_n</code> buy you, and what does it cost?</summary><div><p>DC won't buffer or resize the reset net that fans out to every flop's reset pin. That saves area and keeps DC from "fixing" a net a real flow would build as a tree later. The cost: the reset net isn't fixed for transition or fanout, and paths from <code>rst_n</code> aren't timed (it has no input delay).</p></div></details>
+      <details><summary>Make says the run succeeded. Is <code>compile.log</code> clean?</summary><div><p>Not necessarily. The recipe pipes DC into <code>tee</code>, so make sees tee's exit status. Grep the log for lines starting with <code>Error</code>, and check that it ends with DC's exit statistics.</p></div></details>
+      <details><summary>You rerun synthesis at 1.8 ns without <code>make clean</code>. What does <code>results.txt</code> look like?</summary><div><p>Two blocks: the old 2.000 run's lines, then the 1.8 run's, because every <code>echo</code>/<code>grep</code> appends with <code>&gt;&gt;</code>. The reports and <code>compile.log</code> are overwritten, so only <code>results.txt</code> mixes runs.</p></div></details>
+      <details><summary>Where does DesignWare come in?</summary><div><p><code>dw_foundation.sldb</code> is the synthetic library: DesignWare's implementations of operators like <code>+</code> and <code>*</code>, in several architectures each. Elaborate turns your operators into synthetic operators; compile picks an implementation for each one based on timing and area.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== INSIDE COMPILE_ULTRA -->
+<section class="view" id="view-compile-ultra" aria-label="Inside compile_ultra" hidden>
+  <div class="section" style="padding-top:16px">
+    <h2>Inside compile_ultra</h2>
+    <p><code>compile_ultra</code> is DC's highest-effort optimization command. Synopsys documents <i>what</i> each phase does; <i>how</i> is proprietary. So each part below says what DC does <span class="ev docs">DC docs</span>, what that means for your design, and where you can watch a different tool do the same kind of step for real <span class="ev local">Yosys</span>.</p>
+    <div class="tscroll"><table class="ref">
+      <tr><th>Phase</th><th>Works on</th><th>Decides</th><th>You see it in</th></tr>
+      <tr><td>1. High-level optimization</td><td>the GTECH netlist plus operators</td><td>what arithmetic to build: shared or not, merged trees, which DesignWare architecture</td><td>area of multipliers and adders</td></tr>
+      <tr><td>2. Logic optimization</td><td>generic logic</td><td>how to factor the Boolean equations (structuring and flattening)</td><td>gate counts, levels of logic</td></tr>
+      <tr><td>3. Technology mapping</td><td>the optimized logic</td><td>which Nangate cell implements each piece</td><td>cell names in the netlist</td></tr>
+      <tr><td>4. Timing and design-rule optimization</td><td>the mapped netlist</td><td>gate sizes (X1 … X32), buffers, local restructuring</td><td>slack, buf/inv area</td></tr>
+      <tr><td>5. Retiming (<code>-retime</code>)</td><td>registers and the logic between them</td><td>where each flop sits along a path</td><td>register count and names, slack</td></tr>
+      <tr><td>6. Area recovery</td><td>non-critical paths</td><td>downsizing and removing anything not needed for timing</td><td>total cell area</td></tr>
+    </table></div>
+    <p class="cap">Throughout, <b>auto-ungrouping</b> and <b>boundary optimization</b> let DC optimize across module boundaries (below).</p>
+
+    <h3 id="cu-hlo">1 · High-level optimization: deciding what to build</h3>
+    <p><b>Resource sharing.</b> If two operations can never be needed in the same cycle, one piece of hardware can do both, with muxes on its inputs. DC's high-level optimization looks for this <span class="ev docs">DC docs</span>. Yosys has a sharing pass too, and the result depends on its internals <span class="ev local">Yosys</span>: written as <code>sel ? a*b : a*c</code>, Yosys's default flow built two 16 × 16 multipliers ({{Y:share_two_muls:area:0}} µm²). With one of its earlier passes skipped, its sharing pass merged them ({{Y:share_two_muls_noalumacc:area:0}} µm²). Written as <code>a * (sel ? b : c)</code>, you get one multiplier by construction ({{Y:share_one_mul:area:0}} µm²). <button class="link" data-goto="see-it/x-share_one_mul">See the cells</button>. This is the same idea as Part 3's "hardware reuse", where the question is how to share multipliers across modes.</p>
+    <p><b>Datapath extraction.</b> DC Ultra can merge a cluster of arithmetic (say <code>acc + a*b</code>) into one carry-save adder tree with a single carry-propagate adder at the end, instead of a multiplier followed by a separate 64-bit adder <span class="ev docs">DC docs</span>. A multiplier is already "add up the partial products", so adding one more operand to its tree is nearly free. Yosys does the same with its <code>$macc</code> cell <span class="ev local">Yosys</span>.</p>
+    <p><b>DesignWare architecture choice.</b> For each operator DC picks an implementation from DesignWare (an adder can be a ripple chain or one of several parallel-prefix trees; a multiplier can be Booth-encoded or not) based on the timing constraint <span class="ev docs">DC docs</span>. Here is one 64-bit <code>a + b</code> built five ways in Yosys <span class="ev local">Yosys + open Nangate45, not DC</span>. Dots are the plain mappings; arrows show what gate sizing did afterward:</p>
+    <div class="board"><div class="chart" id="adder-chart"></div></div>
+    <div class="tscroll"><table class="ref" id="adder-table"></table></div>
+    <p>The ripple-like adder is the smallest and about {{R:add64_area:add64_ks:delay:1}}× slower than Kogge-Stone; Kogge-Stone is about {{R:add64_ks:add64_area:area:1}}× the area. The "ripple-like" one came from Yosys's default flow, whose generic ABC pass restructures for area and turns the prefix tree back into a {{Y:add64_area:gates}}-gate chain. That's what a synthesizer does when nothing tells it to be fast. Give DC a tight clock and it does the opposite: it chooses the faster architecture. That's why the same RTL can be bigger at a shorter clock period.</p>
+
+    <h3 id="cu-logic">2 · Logic optimization: structuring and flattening</h3>
+    <p>DC rewrites the Boolean logic <span class="ev docs">DC docs</span>. <b>Structuring</b> factors out shared subexpressions into a multi-level network: smaller, more levels. <b>Flattening</b> collapses logic toward two-level sum-of-products: fewer levels, often bigger. compile_ultra decides per region based on timing. What it can't do is use facts you never told it. An <code>if / else if</code> chain over eight requests became a chain of {{Y:prio_chain:cells}} cells and {{Y:prio_chain:delay:0}} ps. The same selection written as an AND-OR, valid only when the requests are one-hot, took {{Y:onehot_andor:cells}} cells and {{Y:onehot_andor:delay:0}} ps <span class="ev local">Yosys</span>. Lecture 05 p47 says it: tools are better than you at gates; you're better at the problem.</p>
+
+    <h3 id="cu-map">3 · Technology mapping: picking Nangate cells</h3>
+    <p>The open .lib has {{L:cell_count}} cells <span class="ev lib">.lib</span>; the course's own Milkyway folder (<code>synth/lib/NangateOpenCellLibrary/CEL/</code>) lists the same ones except the <code>TAPCELL_X1</code> tap cell: inverters and buffers in drive strengths X1 to X32, NAND/NOR/AND/OR with 2 to 4 inputs, AOI/OAI complex gates, XOR/XNOR, MUX2, full and half adders (<code>FA_X1</code>, <code>HA_X1</code>), flip-flops (<code>DFF</code>, with reset <code>DFFR</code>, with set <code>DFFS</code>, both <code>DFFRS</code>, scan <code>SDFF</code>), latches (<code>DLH</code>, <code>DLL</code>), clock-gating cells (<code>CLKGATE</code>, <code>CLKGATETST</code>), tie cells (<code>LOGIC0</code>, <code>LOGIC1</code>) and fillers. Every cell is 1.4 µm tall and a whole number of 0.19 µm sites wide (the technology file's unit tile), so area = 0.266 µm² × sites: an <code>INV_X1</code> is 2 sites ({{L:cells|INV_X1|area:3}} µm²), a <code>DFF_X1</code> 17 sites ({{L:cells|DFF_X1|area:3}} µm²).</p>
+    <p>The mapper covers your logic with these cells to minimize delay on critical paths and area elsewhere. One concrete difference you'll see: DC can use <code>FA_X1</code> (two outputs, S and CO); Yosys's mapper ABC can't use multi-output cells and says so in its log ("Detected 2 multi-output cells"), so its adders come out as XOR/AOI/OAI gates.</p>
+    <p class="cap"><span class="ev lib">.lib</span> The cells, their areas and delays are tabulated in <button class="link" data-goto="see-it/lib-cells">See it happen → numbers from the .lib</button>.</p>
+
+    <h3 id="cu-size">4 · Gate sizing and buffering: logical effort, automated</h3>
+    <p>Lecture 05 p3: a gate's delay is R<sub>gate</sub> × (load + parasitic C). A bigger gate has a smaller R but a bigger input capacitance, which loads the gate before it. Here are real Nangate inverters, read from the .lib's delay tables at a 20 ps input slope <span class="ev lib">.lib</span>:</p>
+    <div class="board"><div class="chart" id="inv-chart"></div></div>
+    <p><code>INV_X4</code> drives a load about {{RL:drive|INV_X1|R_avg_kohm:drive|INV_X4|R_avg_kohm:1}}× faster than <code>INV_X1</code> (effective drive resistance {{L:drive|INV_X4|R_avg_kohm:2}} kΩ, vs {{L:drive|INV_X1|R_avg_kohm:2}} kΩ for <code>INV_X1</code>), and it presents {{RL:drive|INV_X4|cin_fF:drive|INV_X1|cin_fF:1}}× the input capacitance ({{L:drive|INV_X4|cin_fF:2}} vs {{L:drive|INV_X1|cin_fF:2}} fF) and {{RL:cells|INV_X4|area:cells|INV_X1|area:1}}× the area. A fanout-of-4 inverter delay (FO4, lecture 05 p14) in this library is {{L:fo4_ps|avg:0}} ps, so 2 ns is about {{L:fo4_ps|per_2ns:0}} FO4: a relaxed clock by industry standards.</p>
+    <p>The same numbers give each gate's <b>logical effort</b> the way lecture 05 p28 defines it: the product of its resistance ratio and its capacitance ratio relative to an inverter. From the .lib, at this operating point:</p>
+    <div class="tscroll"><table class="ref" id="drive-table"></table></div>
+    <p class="cap">Real cells aren't sized to match an inverter's drive, so "g from the .lib" folds in how Nangate sized each cell; NOR2 lands near the textbook value. The rise and fall resistances differ because the PMOS is weaker.</p>
+    <p>During compile DC does this sizing for every gate on a failing path: it upsizes drivers of heavy loads, inserts buffer trees for big fanouts, and picks cells by drive strength <span class="ev docs">DC docs</span>. ABC does the same kind of thing with <code>buffer</code>/<code>upsize</code>/<code>dnsize</code> <span class="ev local">Yosys</span>: on the 64-bit Sklansky adder, whose prefix tree has nodes driving many loads, sizing and buffering cut the delay from {{Y:add64_sk:delay:0}} to {{Y:add64_sk_sized:delayN:0}} ps for {{Y:add64_sk_sized:area:0}} µm² instead of {{Y:add64_sk:area:0}}. On Brent-Kung, which has little fanout to fix, it bought less ({{Y:add64_bk:delay:0}} → {{Y:add64_bk_sized:delayN:0}} ps).</p>
+    <p><b>Design rules come first.</b> DC also fixes design-rule violations: the library's <code>default_max_transition</code> ({{L:default_max_transition:3}} ns) and per-pin <code>max_capacitance</code>, and the script's max fanout of 4 on input ports. In DC's cost function, design rules outrank timing, and timing outranks area (<code>set_max_area</code>) <span class="ev docs">DC docs</span>.</p>
+
+    <h3 id="cu-retime">5 · Retiming</h3>
+    <div class="cols2">
+      <div>
+        <p>Retiming moves flip-flops across combinational logic without changing what the circuit computes cycle by cycle at its boundaries <span class="ev docs">DC docs</span>. If one stage has 2.4 ns of logic and the next 0.6 ns, moving the register between them by 0.9 ns of logic gives two 1.5 ns stages. The clock period drops from 2.4 to 1.5 ns, and the latency in cycles doesn't change.</p>
+        <p><code>set_optimize_registers true -design top</code> plus <code>compile_ultra -retime</code> lets DC do this anywhere. It's already in the script, even though the Part 3 handout (§2.2.2) tells you to add <code>-retime</code>.</p>
+      </div>
+      <div class="board" style="padding:8px">
+        <svg class="diagram" viewBox="0 0 420 210" role="img" aria-label="Retiming: a register between a long and a short stage moves into the long stage so both stages take 1.5 ns">
+          <text class="sm" x="10" y="16">before: 2.4 ns + 0.6 ns, so the clock needs 2.4 ns</text>
+          <rect class="reg" x="10" y="30" width="16" height="50" rx="2"/><rect class="box" x="40" y="35" width="210" height="40" rx="6" style="stroke: var(--m0)"/><text class="sm" x="145" y="60" text-anchor="middle">logic 2.4 ns</text>
+          <rect class="reg" x="264" y="30" width="16" height="50" rx="2"/><rect class="box" x="294" y="35" width="70" height="40" rx="6" style="stroke: var(--m0)"/><text class="sm" x="329" y="60" text-anchor="middle">0.6 ns</text>
+          <rect class="reg" x="378" y="30" width="16" height="50" rx="2"/>
+          <text class="sm" x="10" y="122">after retiming: 1.5 ns + 1.5 ns, so 1.5 ns is enough</text>
+          <rect class="reg" x="10" y="136" width="16" height="50" rx="2"/><rect class="box" x="40" y="141" width="130" height="40" rx="6" style="stroke: var(--m0)"/><text class="sm" x="105" y="166" text-anchor="middle">1.5 ns</text>
+          <rect class="reg" x="184" y="136" width="16" height="50" rx="2" style="stroke: var(--ctl)"/><rect class="box" x="214" y="141" width="150" height="40" rx="6" style="stroke: var(--m0)"/><text class="sm" x="289" y="166" text-anchor="middle">0.9 + 0.6 = 1.5 ns</text>
+          <rect class="reg" x="378" y="136" width="16" height="50" rx="2"/>
+          <path d="M272 86 C 260 110, 210 112, 192 130" fill="none" stroke="var(--ctl)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        </svg>
+      </div>
+    </div>
+    <p><b>What retiming needs from your RTL:</b></p>
+    <ul class="prose">
+      <li><b>Registers to move.</b> Retiming never adds pipeline stages; it only moves the ones you wrote. To split a long multiply into two cycles, the RTL has to have the extra register, and your controller has to expect the extra cycle of latency, keeping the valid signals high until the last WRITE commits.</li>
+      <li><b>Movable registers</b>: the same clock, compatible reset and enable conditions, and not marked dont_touch. Registers whose reset values can't be recomputed after a move, or that are observed directly by something like a black-box pin, may be left in place <span class="ev docs">DC docs</span>.</li>
+      <li><b>Expect new names.</b> Retimed flops get generated names, and their number can change. A testbench that peeks at an internal register by name only works on the RTL, which is fine because the course flow never simulates the netlist.</li>
+    </ul>
+
+    <h3 id="cu-boundary">6 · Boundary optimization and auto-ungrouping</h3>
+    <p><b>Boundary optimization</b> pushes constants, unconnected pins and inverters across module boundaries <span class="ev docs">DC docs</span>. If <code>top</code> always ties a port of a sub-module to 0, the logic inside that depends on it can be simplified, and if an output is never used, the logic that drives it can go. <b>Auto-ungrouping</b>: compile_ultra dissolves small modules (or ones on critical paths) into their parent so it can optimize across the boundary. Two consequences for you:</p>
+    <ul class="prose">
+      <li>Small modules, like a <code>vector_decoder</code> instance, may vanish from <code>area_report_hier</code>. That's expected.</li>
+      <li>Optimizing across boundaries is exactly what could remove logic whose only loads are the pins of an <b>empty</b> memory module. Whether DC does that with <code>macros/array.sv</code> is unverified. <button class="link" data-goto="black-boxes">Black boxes</button> shows the risk and the check.</li>
+    </ul>
+
+    <h3 id="cu-effort">7 · -timing_high_effort_script</h3>
+    <p>A Synopsys-supplied recipe that makes compile_ultra spend more run time on timing: more optimization passes on critical paths <span class="ev docs">DC docs</span>. The exact contents depend on the DC version and aren't listed here. It doesn't change what's legal; it changes how hard DC tries.</p>
+
+    <h3 id="cu-part3">Part 3 hooks you'll meet later</h3>
+    <ul class="prose">
+      <li><b>Clock gating:</b> the Part 3 handout §2.2.4 says DC can insert it automatically. Nangate has the cells for it (<code>CLKGATETST_X1</code>, {{L:cells|CLKGATETST_X1|area:2}} µm²). The <button class="link" data-goto="see-it/x-reg_en">enable register</button> example shows what it replaces: a mux in front of every flop that still clocks every cycle.</li>
+      <li><b>Period sweeps:</b> <code>make synthesize CLK_PERIOD=1.8</code>, with a <code>make clean</code> between runs.</li>
+    </ul>
+
+    <div class="quiz" id="q-cu"><h3>Quiz yourself</h3>
+      <details><summary>Why can the same RTL give a bigger area at a shorter clock period?</summary><div><p>With more timing pressure DC picks faster DesignWare architectures (prefix adders instead of ripple), upsizes gates and adds buffers. The 64-bit adder above spans about 2× in area between its slow and fast versions.</p></div></details>
+      <details><summary>What does logical effort have to do with synthesis?</summary><div><p>Gate sizing is logical-effort optimization done automatically: DC trades a gate's drive (lower R) against its input capacitance (load on the previous stage) along critical paths, and inserts buffers for big fanouts (lecture 05 p3, p30). Lecture 05 p48 says this delay estimation is what synthesis uses to judge a gate implementation.</p></div></details>
+      <details><summary>What does <code>compile_ultra -retime</code> need from your RTL?</summary><div><p>Extra register stages to move (it never adds latency), on the same clock with compatible reset and enable and no dont_touch. Your controller must already account for the latency those stages add.</p></div></details>
+      <details><summary>Will DC turn a priority if/else chain into an AND-OR for you?</summary><div><p>Only if it can prove the conditions are mutually exclusive, and from your RTL it usually can't. If you know a signal is one-hot, write the logic that way (or use a case on it). Yosys's chain was about {{R:prio_chain:onehot_andor:delay:0}}× slower than the AND-OR.</p></div></details>
+      <details><summary>What is datapath extraction, and why does it matter for a MAC?</summary><div><p>DC merges connected arithmetic into one carry-save tree with a single final adder. For <code>acc + a*b</code>, the accumulator becomes one more row of the multiplier's partial-product tree, so you don't pay for a separate full-width adder after the multiplier.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== SEE IT HAPPEN -->
+<section class="view" id="view-see-it" aria-label="See it happen" hidden>
+  <div class="section" style="padding-top:16px">
+    <h2>See it happen (real, local)</h2>
+    <p>Each example below is a few lines of SystemVerilog synthesized for real with Yosys onto the open Nangate 45 nm Liberty file, then timed with ABC's static timing engine against the same library tables. <span class="ev local">Yosys + open Nangate45, not DC</span>. Cell names and areas are the library's; the choice of cells and the delays are Yosys's. They're written in the SystemVerilog subset Yosys's frontend accepts.</p>
+    <p class="cap">Two flows: Yosys's <b>default</b> flow (its internal ABC pass restructures for area, like a synthesizer with no timing pressure) and <b>structure kept</b> (that pass skipped, so the architecture the techmap built survives). Delays are ABC's: ideal input slopes, no wire loads, no clock-to-Q or setup. That's optimistic next to DC. Scripts: <code>docs/synthesis-src/run_yosys.py</code>.</p>
+  </div>
+  <div class="xgrid" style="margin-top:10px">
+    <nav class="xlist" id="xlist" aria-label="Examples"></nav>
+    <div class="board xbody" id="xbody" aria-live="polite"></div>
+  </div>
+  <!--EX-ANCHORS-->
+  <div class="section memsec">
+    <h3 id="si-regs">Registers four ways</h3>
+    <div class="tscroll"><table class="ref" id="reg-table"></table></div>
+    <p class="cap">An async reset lives inside the flop (<code>DFFR_X1</code>). A sync reset or an enable is logic on the D input. In Part 2 your RTL style decides which cells you pay for, 96 times per PE.</p>
+
+    <h3 id="si-mult">Multipliers</h3>
+    <div class="tscroll"><table class="ref" id="mul-table"></table></div>
+    <ul class="prose">
+      <li><b>Signed vs unsigned is an architecture question.</b> In Yosys's plain array multiplier, signed 8 × 8 cost {{Y:mul8_signed:area:0}} µm² vs {{Y:mul8_unsigned:area:0}} unsigned: sign-extending the operands adds work. Booth encoding handles signed numbers natively ({{Y:mul8_signed_booth:area:0}} µm²). DC's DesignWare multipliers handle two's complement directly, so don't read Yosys's signed penalty as DC's.</li>
+      <li><b>Area grows about with the square of the width:</b> Booth 8, 16, 32 bits: {{Y:mul8_signed_booth_keep:area:0}}, {{Y:mul16_signed_booth_keep:area:0}}, {{Y:mul32_signed_booth_keep:area:0}} µm² (structure kept). Double the width, about 4× the area.</li>
+      <li><b>A 32 × 32 multiply is a long path.</b> ABC's estimate for the structure-kept versions is {{Y:mul32_signed_keep:delay:0}}–{{Y:mul32_signed_booth_keep:delay:0}} ps before any clock-to-Q, setup or wire load: close to the whole 2 ns cycle. DC's Booth-Wallace trees with fast final adders do better, but this is the path to watch, if it's timed at all (<button class="link" data-goto="black-boxes">Black boxes</button>).</li>
+    </ul>
+
+    <h3 id="lib-cells">Numbers from the .lib <span class="ev lib">.lib</span></h3>
+    <p>Read from <code>NangateOpenCellLibrary_typical.lib</code> (typical corner, {{L:corner|voltage:2}} V, {{L:corner|temperature:0}} °C) by <code>lib_facts.py</code>, which interpolates the NLDM delay tables the way an STA tool does. The operating point is a 20 ps input slope and a load of four X1 inverter inputs ({{L:op|load_fF:2}} fF). Delays grow with load and slope, so these are typical values, not constants.</p>
+    <div class="tscroll"><table class="ref" id="lib-table"></table></div>
+    <div class="tscroll"><table class="ref" id="seq-table"></table></div>
+    <p class="cap">The flip-flop numbers are exactly the terms of lecture 06 p11 and p28: t<sub>pcq</sub> (CK→Q) at the start of every path and t<sub>setup</sub> at the end. Together they take about {{SUMSEQ}} ps of every cycle before any logic.</p>
+    <h4 id="si-wlm">The wire-load table the script picks (1K_hvratio_1_4)</h4>
+    <div class="cols2">
+      <div class="tscroll"><table class="ref" id="wlm-table"></table></div>
+      <div><p>Length is in the library's own units. C = length × {{L:wlm|cap_per_len_fF:4}} fF and R = length × {{L:wlm|res_per_len_kohm:6}} kΩ. Past fanout 8, DC extrapolates with the slope ({{L:wlm|slope:1}} units per extra fanout). A fanout-4 net gets {{WLM4C}} fF: less than one X1 inverter input. So with this model, gate input capacitance dominates the load, not wires. The table has no <code>area</code> field, which is why the area report says "Net Interconnect area: undefined".</p></div>
+    </div>
+
+    <h3 id="si-pe">What a PE might cost, roughly</h3>
+    <div class="note warn"><p><b>Ballpark only.</b> Built from the Yosys runs above (<span class="ev local">Yosys + open Nangate45, not DC</span>) and the .lib. It counts only the parts named here: multipliers, 64-bit adders and register bits. It leaves out your muxes, clamping, rounding, decode, the buffer and the controller. DC's numbers will differ, often by tens of percent. Use it to see which parts matter, not to predict your report.</p></div>
+    <div class="calc" id="pe-calc">
+      <label>PEs <input type="number" id="pc-pes" min="1" max="256" value="16"></label>
+      <label>Multiplier style <select id="pc-mul"><option value="array">array, default flow</option><option value="booth" selected>Booth, default flow</option><option value="array_keep">array, structure kept</option><option value="booth_keep">Booth, structure kept</option></select></label>
+      <label>8 × 8 multipliers per PE <input type="number" id="pc-n8" min="0" max="64" value="4"></label>
+      <label>16 × 16 per PE <input type="number" id="pc-n16" min="0" max="64" value="2"></label>
+      <label>32 × 32 per PE <input type="number" id="pc-n32" min="0" max="64" value="1"></label>
+      <label>64-bit adders per PE <input type="number" id="pc-adds" min="0" max="16" value="1"></label>
+      <label>Adder architecture <select id="pc-add"><option value="add64_area">ripple-like</option><option value="add64_bk" selected>Brent-Kung</option><option value="add64_ks">Kogge-Stone</option></select></label>
+      <label>Register bits per PE (DFFR_X1) <input type="number" id="pc-regs" min="0" max="4096" value="96"></label>
+      <label>Clock period (ns) <input type="number" id="pc-period" min="0.1" max="20" step="0.1" value="2.0"></label>
+    </div>
+    <div class="controls" style="margin-top:4px"><button class="small" id="pc-reset">Back to the defaults</button></div>
+    <dl class="stats" id="pc-out"></dl>
+    <p class="cap">Defaults: the "typical design" of the Part 3 handout §2.2.1 (4 eight-bit, 2 sixteen-bit and 1 thirty-two-bit multipliers), one 64-bit adder, and the 96 bits of the 64-bit accumulator plus the 32-bit output register. The clock-pin line uses {{L:clock_pin_energy|DFFR_X1|energy_per_cycle_fJ:1}} fJ per DFFR_X1 per cycle from the .lib's internal-power tables (P = E × f): the power flops burn even when no data changes. Compare the total with <code>set_max_area</code> 150,000 µm² and the Part 3 cap of 1,000,000 µm².</p>
+    <div class="quiz" id="q-see"><h3>Quiz yourself</h3>
+      <details><summary>Why does an async-reset register cost more area than a plain one, but no extra gates?</summary><div><p>The reset is built into the cell: <code>DFFR_X1</code> ({{L:cells|DFFR_X1|area:2}} µm²) vs <code>DFF_X1</code> ({{L:cells|DFF_X1|area:2}} µm²). A synchronous reset instead puts an AND gate in front of a plain flop, on the timed D path.</p></div></details>
+      <details><summary>Why did the staff <code>vector_decoder</code> make Yosys stop, and what would DC do?</summary><div><p><code>case (mode)</code> has no arm for mode 3, so the outputs must hold their value there: a latch. Yosys treats a latch in <code>always_comb</code> as an error. DC is known to print warning ELAB-974 ("Netlist for always_comb block contains a latch") and build it: {{Y:vd_star:ncell.DLL_X1}} latch bits in Yosys's version.</p></div></details>
+      <details><summary>In the empty-memory experiment, why did the black-box version also end up with 0 cells?</summary><div><p>Synthesis keeps only logic that can affect an output or a kept cell. <code>top</code> has no outputs, and the MAC only feeds the memory's <code>d</code>, so nothing outside the loop needs it. Marking the instance <code>keep</code> brought back {{Y:bb_keep:cells}} cells.</p></div></details>
+      <details><summary>Roughly how much of a 2 ns cycle do the flops themselves eat?</summary><div><p>About {{SUMSEQ}} ps: DFF_X1 clock-to-Q (about {{L:seq|DFF_X1|CK->Q|cell_rise:0}} ps) plus setup (about {{L:seq|DFF_X1|setup|fall_constraint:0}} ps), more with heavy loads. Lecture 06 p13 calls this the sequencing overhead.</p></div></details>
+      <details><summary>Why can't you trust Yosys's delay numbers as DC's?</summary><div><p>Different mapping algorithms, no wire-load model, ideal input slopes, no flop overhead, and no DesignWare. They're right in kind (which structure is faster) and in rough size (hundreds of ps, not ns or ps), not in detail.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== READING REPORTS -->
+<section class="view" id="view-reports" aria-label="Reading the reports" hidden>
+  <div class="section" style="padding-top:16px">
+    <h2 id="reports-anatomy">Reading the reports</h2>
+    <p>Below are <b>illustrative</b> reports in DC's layout <span class="ev illus">illustrative</span>. The layout follows Synopsys documentation and public course tutorials; the numbers are invented but consistent (the path increments add up, the power table adds up), sized like a 16-PE design. Click any coloured line.</p>
+    <div class="seg rtabs" role="group" aria-label="Which report">
+      <button data-k="timing">report_timing</button><button data-k="violated">a violated path</button><button data-k="area">report_area</button><button data-k="hier">area -hierarchy</button><button data-k="power">report_power</button><button data-k="qor">report_qor</button><button data-k="results">results.txt</button>
+    </div>
+  </div>
+  <div class="annogrid">
+    <pre class="anno" id="anno-view" aria-label="Annotated report"></pre>
+    <div class="anote"><div class="board" id="anno-note" aria-live="polite"></div><div id="anno-walk"></div></div>
+  </div>
+  <div class="section memsec">
+    <h3 id="rp-timing">report_timing in one paragraph</h3>
+    <p>A <b>timing path</b> starts at a launching register's clock pin (or an input port) and ends at a capturing register's D pin (or an output port). <b>Arrival</b> = the launch edge + clock-to-Q + every gate and wire on the way. <b>Required</b> = the capture edge − setup. <b>Slack</b> = required − arrival (lecture 06 p37–41). <b>MET</b> means slack ≥ 0. STA computes this for every path at once without simulating any data (lecture 06 p34), so it's conservative: it can flag a path that never actually happens (a false path, p44).</p>
+    <h4 id="rp-critical">What's probably critical in this design</h4>
+    <p>Think about which paths DC can actually see (<button class="link" data-goto="black-boxes">Black boxes</button>). Data from the SRAMs' <code>q</code> pins has no timed startpoint, so if your PE multiplies the operands the cycle they leave the memory, the multiplier's partial products aren't timed. The timed candidates are:</p>
+    <ul class="prose">
+      <li><b>The accumulator feedback:</b> accumulator register → (the bottom of the multiply-accumulate tree) → the final carry-propagate adder → the mode/opcode mux → accumulator register. A carry across up to 64 bits is the classic critical path, and the sample above is one.</li>
+      <li><b>RND and OUT logic</b> on the accumulator: a variable shift, a round-to-nearest-even increment, comparisons for clamping, then muxes.</li>
+      <li><b>The instruction fan-out:</b> the controller's PE-instruction register drives every PE's decode, a fanout of thousands. DC must build buffer trees for it (lecture 05's fanout problem).</li>
+      <li><b>An operand-select path:</b> a register that picks the MEM1 lane or the mode, driving the operand mux, then through the multiplier into the accumulator. It's timed even though the operand data isn't, as long as no latch sits in between. The <a href="part3-ppa.html">Part 3 page</a>'s illustrative path is of this kind.</li>
+    </ul>
+    <p>If your report's worst path is something else, don't panic. Read its startpoint and endpoint and ask why that path is long.</p>
+    <h4 id="rp-area">report_area in one paragraph</h4>
+    <p>Combinational area is all gates, including buffers and inverters (buf/inv is a subset, not extra). Noncombinational is flops and latches. Macro/black box is 0 here because the memories are empty. Net interconnect is undefined because the wire-load table has no area. <b>Total cell area is the FoM's area.</b> The hierarchical report repeats this per instance; use it to check that every PE has real area.</p>
+    <h4 id="rp-power">report_power, and where its activity comes from</h4>
+    <p>Dynamic power is P = ½ · α · C · V² · f per net (α = transitions per cycle, Review Session 2 p26; lecture 03 p48 writes the energy per gate as ½ α C V<sub>DD</sub><sup>2</sup>). Add the cells' internal power and the leakage of every cell. Lecture 03 p50 puts the catch plainly: total power is just the sum over gates; "only problem is to estimate transition probabilities, and wire capacitance if you don't have physical design".</p>
+    <p>The course flow gives DC <b>no simulation activity</b> (no SAIF file), so DC uses defaults <span class="ev docs">DC docs</span>: by default a toggle rate of 0.1 per clock period and a static probability of 0.5 on primary inputs and on black-box outputs, propagated through the logic. It knows the clock toggles every cycle. Three consequences for Part 3:</p>
+    <ul class="prose">
+      <li><b>Clock-related power is modeled well, data power only roughly.</b> Every flop's clock pin switches every cycle in the model, as in reality, so the register group tends to dominate. Fewer flops, or clock gating, show up clearly in the report.</li>
+      <li><b>Real data activity is ignored.</b> All operand bits come from SRAM black-box outputs, so they all get the same default activity, whatever your test data looks like. Tricks that only reduce data toggling (operand isolation, say) may barely move DC's number.</li>
+      <li><b>Leakage scales with area</b>, so area savings pay twice in the FoM.</li>
+    </ul>
+    <p>A <code>-analysis_effort hi</code> run propagates activity more carefully than the default, which is why <code>compile.log</code>'s copy can differ slightly from <code>power_report</code>.</p>
+  </div>
+
+  <div class="section memsec paste" id="paste">
+    <h3 id="rp-paste">Paste your report</h3>
+    <p>Paste a <code>report_timing</code>, <code>report_area</code> (with or without <code>-hierarchy</code>), <code>report_power</code>, <code>report_qor</code>, your <code>results.txt</code>, a whole <code>compile.log</code>, or several at once. The parser runs in this page; nothing is uploaded. It highlights the slack and the biggest steps on the critical path, area by category and by instance (flagging tiny PEs), power by component, and computes a FoM from <code>results.txt</code>.</p>
+    <textarea id="paste-in" spellcheck="false" aria-label="Report text" placeholder="Paste report text here, or open a file below."></textarea>
+    <div class="row">
+      <button class="primary" id="paste-go">Analyze</button>
+      <button id="paste-clear">Clear</button>
+      <label class="cap" style="margin:0">or open a file <input type="file" id="paste-file" accept=".txt,.log,.rpt,text/*"></label>
+    </div>
+    <div class="row" id="paste-samples"><span class="cap" style="margin:0">Try an illustrative sample:</span>
+      <button class="small" data-s="timing_met.txt">timing (met)</button><button class="small" data-s="timing_violated.txt">timing (violated)</button><button class="small" data-s="area_hier.txt">area -hierarchy</button><button class="small" data-s="power.txt">power</button><button class="small" data-s="qor.txt">qor</button><button class="small" data-s="results.txt">results.txt</button>
+    </div>
+    <div class="pout" id="paste-out" aria-live="polite"></div>
+    <div class="quiz" id="q-rep"><h3>Quiz yourself</h3>
+      <details><summary>What is slack, and how do you read it off your timing report?</summary><div><p>Required time − arrival time for the worst path. Required = capture edge (the clock period) − the capturing flop's setup; arrival = clock-to-Q + every gate and net. The last line, <code>slack (MET) x</code> or <code>slack (VIOLATED) −x</code>, gives it in ns.</p></div></details>
+      <details><summary>Your slack is +0.35 ns at 2.0 ns. Can you claim 1.65 ns in Part 3?</summary><div><p>Not without rerunning. At 1.65 ns DC re-optimizes (different architectures, sizes, retiming), so the new critical path and its slack are different. The rule is that synthesis at the claimed period must show no violation.</p></div></details>
+      <details><summary>Why is "Buf/Inv area" not added to the total?</summary><div><p>It's the part of the combinational area made of buffers and inverters, already included in combinational area.</p></div></details>
+      <details><summary>Why don't you see the SRAMs in your area or power report?</summary><div><p>Synthesis reads <code>macros/array.sv</code>, an empty module: no cells, so no area, no internal power and no leakage. Real SRAM macros would dominate both, which is why the FoM leaves memory out.</p></div></details>
+      <details><summary>What sets dynamic power, and how does DC estimate activity here?</summary><div><p>Switched capacitance, voltage squared, frequency and activity: P = ½ α C V² f per net, plus internal power. With no SAIF from simulation, DC applies default activity (0.1 toggles per cycle, probability 0.5) to inputs and black-box outputs and propagates it. The clock toggles every cycle, so flop clock pins dominate.</p></div></details>
+      <details><summary>What does "slack (VIOLATED: increase significant digits)" mean?</summary><div><p>The slack is negative but rounds to 0.00 at the printed precision. It's still a violation.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== BLACK BOXES -->
+<section class="view" id="view-black-boxes" aria-label="Black boxes" hidden>
+  <div class="stage">
+    <div>
+      <div class="board">
+        <div class="dscroll">
+        <svg id="bb-svg" class="diagram" viewBox="0 0 900 470" role="img" aria-label="Top level during synthesis: the four memories are empty boxes. Green solid paths are timed, red dashed paths are not.">
+          <text class="sm" x="12" y="18" style="font-weight:700;letter-spacing:.06em">TOP, AS DC SEES IT</text>
+          <!-- instruction memory and controller -->
+          <rect class="bb" x="14" y="40" width="160" height="62" rx="6"/><text class="lbl" x="26" y="62">instruction mem</text><text class="sm" x="26" y="80">array 128 × 63: empty</text><text class="sm" x="26" y="95">q = inst, no driver</text>
+          <rect class="box" x="14" y="140" width="160" height="132" rx="6" style="stroke: var(--ctl)"/>
+          <rect class="reg" x="26" y="150" width="58" height="26" rx="3"/><text class="sm" x="33" y="167">PC reg</text>
+          <rect class="reg" x="92" y="150" width="70" height="26" rx="3"/><text class="sm" x="98" y="167">FSM, count</text>
+          <rect class="reg" x="26" y="192" width="136" height="26" rx="3"/><text class="sm" x="33" y="209">pe_inst / buf_inst regs</text>
+          <text class="lbl" x="26" y="246" style="fill: var(--ctl)">controller + PC</text><text class="sm" x="26" y="262">registers: timed</text>
+          <text class="sm" x="28" y="300">input instruction_count</text><text class="sm" x="28" y="314">input delay 0: timed</text>
+          <!-- buffer and its memories -->
+          <rect class="box" x="210" y="30" width="250" height="410" rx="8" style="stroke: var(--line)"/><text class="lbl" x="222" y="52">buffer</text>
+          <rect class="bb" x="226" y="64" width="218" height="54" rx="6"/><text class="lbl" x="238" y="86" style="fill: var(--m1)">MEM1 (vector)</text><text class="sm" x="238" y="104">array 16,384 × 32: empty</text>
+          <rect class="bb" x="226" y="134" width="218" height="54" rx="6"/><text class="lbl" x="238" y="156" style="fill: var(--m0)">MEM0 (matrix)</text><text class="sm" x="238" y="174">array 65,536 × 512: empty</text>
+          <rect class="box" x="226" y="206" width="218" height="46" rx="6" style="stroke: var(--warn)"/><text class="sm" x="238" y="226" style="fill: var(--ink)">vector_decoder</text><text class="sm" x="238" y="242">latches (mode 3 not covered)</text>
+          <rect class="reg" x="226" y="268" width="100" height="26" rx="3"/><text class="sm" x="233" y="285">address regs</text>
+          <text class="sm" x="232" y="316" style="fill: var(--warn)">→ SRAM a, cen, wen, gwen:</text><text class="sm" x="232" y="330" style="fill: var(--warn)">no setup check</text>
+          <rect class="bb" x="226" y="370" width="218" height="54" rx="6"/><text class="lbl" x="238" y="392" style="fill: var(--m2)">MEM2 (results)</text><text class="sm" x="238" y="410">array 65,536 × 512: empty</text>
+          <!-- one PE -->
+          <rect class="box" x="496" y="30" width="392" height="410" rx="8" style="stroke: var(--pe)"/><text class="lbl" x="508" y="52" style="fill: var(--pe)">PE (× 16)</text>
+          <g data-show="reg"><rect class="reg" x="512" y="96" width="48" height="96" rx="3" style="stroke: var(--ctl)"/><text class="sm" x="516" y="140">operand</text><text class="sm" x="516" y="154">regs</text></g>
+          <rect class="box" x="578" y="90" width="120" height="108" rx="6" style="stroke: var(--m0)"/><text class="lbl" x="590" y="114">multiply</text><text class="sm" x="590" y="132">partial products,</text><text class="sm" x="590" y="146">adder tree</text>
+          <rect class="box" x="716" y="110" width="78" height="68" rx="6" style="stroke: var(--m0)"/><text class="lbl" x="726" y="136">add,</text><text class="sm" x="726" y="154">mode mux</text>
+          <rect class="reg" x="812" y="100" width="62" height="88" rx="3"/><text class="sm" x="820" y="140">acc</text><text class="sm" x="820" y="154">64 b</text>
+          <rect class="box" x="578" y="236" width="120" height="52" rx="6" style="stroke: var(--ctl)"/><text class="sm" x="590" y="258">decode pe_inst</text><text class="sm" x="590" y="274">fanout: all PEs</text>
+          <rect class="box" x="716" y="300" width="78" height="60" rx="6" style="stroke: var(--m0)"/><text class="sm" x="724" y="326">clamp,</text><text class="sm" x="724" y="340">RND, OUT</text>
+          <rect class="reg" x="812" y="300" width="62" height="60" rx="3"/><text class="sm" x="820" y="326">out</text><text class="sm" x="820" y="340">32 b</text>
+          <text class="sm" x="506" y="384" style="fill: var(--warn)">q has no driver, so the operands</text><text class="sm" x="506" y="398" style="fill: var(--warn)">have no timed start</text>
+          <!-- timed (green, solid) -->
+          <path class="timed" d="M20 290 V 163 H 26"/>
+          <path class="timed" d="M162 205 H 192 V 456 H 480 V 262 H 578"/>
+          <path class="timed" d="M192 281 H 226"/>
+          <path class="timed" d="M698 262 H 740 V 178"/>
+          <path class="timed" d="M830 188 V 210 H 760 V 178"/>
+          <path class="timed" d="M794 144 H 812"/>
+          <path class="timed" d="M860 188 V 286 H 755 V 300"/>
+          <path class="timed" d="M794 330 H 812"/>
+          <!-- not timed (red, dashed) -->
+          <path class="untimed" d="M120 102 V 150"/>
+          <path class="untimed" d="M55 150 V 102"/>
+          <path class="untimed" d="M326 281 H 410"/>
+          <path class="untimed" d="M444 91 H 452 V 220 H 444"/>
+          <path class="untimed" d="M444 161 H 486"/>
+          <path class="untimed" d="M444 238 H 470 V 180 H 486"/>
+          <g data-show="direct"><path class="untimed" d="M486 161 H 578"/><path class="untimed" d="M486 180 H 578"/><path class="untimed" d="M698 144 H 716"/></g>
+          <g data-show="reg"><path class="untimed" d="M486 161 H 512"/><path class="untimed" d="M486 180 H 512"/><path class="timed" d="M560 144 H 578"/><path class="timed" d="M698 144 H 716"/></g>
+          <path class="untimed" d="M843 360 V 438 H 452 V 397 H 444"/>
+          <text class="sm" x="520" y="432" style="fill: var(--warn)">PE out → MEM2 d: no setup check</text>
+        </svg>
+        </div>
+        <div class="legend"><span class="chip"><span class="sw" style="background:none;border:0;border-top:3px solid var(--ok);height:0;width:18px"></span>timed by STA</span><span class="chip"><span class="sw" style="background:none;border:0;border-top:3px dashed var(--warn);height:0;width:18px"></span>not timed</span><span class="chip">dashed boxes: empty memory modules</span></div>
+      </div>
+      <div class="controls"><span class="seg" id="bb-seg"><button data-v="direct">operands straight from q</button><button data-v="reg">operands registered first</button></span></div>
+      <p class="cap" id="bb-cap"></p>
+    </div>
+    <aside class="panel">
+      <h2>The memories are empty boxes</h2>
+      <div class="prose">
+        <p>For simulation, <code>logical/array.sv</code> models each SRAM. For synthesis the script reads <code>synth/macros/array.sv</code> instead: the same ports and <b>nothing inside</b>. All four memories (MEM0, MEM1, MEM2 and the instruction memory) become empty boxes. <span class="ev file">from the files</span></p>
+        <p>So DC never sees an SRAM. The real ones would be dense custom arrays (lecture 07 p4–5), not standard cells. Built from flops, MEM0 alone would be {{MEM0MM2}} mm² of <code>DFF_X1</code>, about 150 times the Part 3 area cap.</p>
+        <p>The diagram is a sketch of one way a design can be wired; your blocks will differ. What matters is which arrows are green.</p>
+      </div>
+    </aside>
+  </div>
+  <div class="section memsec">
+    <h3 id="bb-means">What that means</h3>
+    <div class="cards">
+      <div class="card"><h4>No area, no power</h4><p>The arrays contribute 0 µm² and 0 mW. Area, leakage and power in your reports are logic and flops only. That's intended: the FoM compares logic.</p></div>
+      <div class="card"><h4>Their pins aren't timed</h4><p>An empty module has no timing arcs. Paths <b>from</b> a memory's <code>q</code> have no launching clock, and paths <b>into</b> its <code>a</code>, <code>d</code>, <code>wen</code>, <code>cen</code>, <code>gwen</code> have no setup check. <span class="ev docs">standard STA, unverified here</span></p></div>
+      <div class="card"><h4>top has no outputs</h4><p><code>top</code>'s only ports are <code>clk</code>, <code>rst_n</code> and <code>instruction_count</code>. Every result your design computes ends at a memory's <code>d</code> pin. Those empty-module pins are the only thing that makes your logic "used".</p></div>
+      <div class="card"><h4>Default activity at q</h4><p>Black-box outputs get DC's default switching activity, so every operand bit looks equally busy to the power estimate, whatever the data. <span class="ev docs">DC docs</span></p></div>
+    </div>
+
+    <h3 id="bb-see">What report_timing can and can't see</h3>
+    <div class="tscroll"><table class="ref">
+      <tr><th>Path</th><th>Timed?</th><th>Why</th></tr>
+      <tr><td>accumulator register → adder / RND / clamp → accumulator or output register</td><td><span class="badge ok">yes</span></td><td>register to register, same clock</td></tr>
+      <tr><td>controller registers → instruction decode in every PE → PE registers</td><td><span class="badge ok">yes</span></td><td>register to register, with a big fanout</td></tr>
+      <tr><td><code>instruction_count</code> → PC compare → PC register</td><td><span class="badge ok">yes</span></td><td>input with a 0 ns input delay</td></tr>
+      <tr><td>SRAM <code>q</code> → buffer → PE operands → multiplier → accumulator</td><td><span class="badge warn">no</span></td><td>no driver on <code>q</code>, so the data itself has no timed startpoint</td></tr>
+      <tr><td>a register that <i>steers</i> the operands (a lane-select or mode register driving the operand mux) → multiplier → accumulator</td><td><span class="badge ok">yes</span>, unless a latch is in the way</td><td>the mux select starts at a register, so this is register-to-register even though the data isn't. Through the <code>vector_decoder</code>'s latch it's probably cut (next rows).</td></tr>
+      <tr><td>instruction memory <code>q</code> (<code>inst</code>) → controller</td><td><span class="badge warn">no</span></td><td>same reason</td></tr>
+      <tr><td>PE output register → MEM2 <code>d</code>; address registers → SRAM <code>a</code></td><td><span class="badge warn">no</span></td><td>an empty module's input pin has no setup check</td></tr>
+      <tr><td>through the <code>vector_decoder</code> latches</td><td><span class="badge warn">probably not</span></td><td>a latch's enable is a clock pin; here it comes from logic, not from <code>clk</code>, so STA likely treats the latch as unclocked <span class="ev docs">unverified</span></td></tr>
+      <tr><td>from <code>rst_n</code></td><td><span class="badge warn">no</span></td><td>no input delay, and the net is dont_touch</td></tr>
+    </table></div>
+    <p><b>The consequence for Part 3:</b> if your PE feeds SRAM data straight into the multiplier, DC's "MET" covers the multiplier only along paths that start at a register, such as a lane-select or mode register steering the operand mux. The data paths themselves, through the biggest block you have, aren't checked. A real chip clocked that fast would fail. The FoM rule is about DC's report, so this isn't a grading problem. It is a fair question in an oral exam ("is your critical path really your critical path?"). And untimed logic gets optimized only for area, so it may be built small and slow. Registering the operands first makes that path visible (toggle the diagram), at the cost of a cycle of latency your controller has to absorb. That's a design decision, so talk it over and don't just copy it.</p>
+
+    <h3 id="bb-risk">The risk: logic whose only load is an empty box</h3>
+    <p>Synthesis tools delete logic that can't affect anything. Here, "anything" is only the memories' input pins. If DC decides those pins on an empty module don't count, for example after ungrouping the empty module or through boundary optimization, it could remove the PEs' logic as unused. <b>Unverified for DC:</b> we don't know what DC does with <code>macros/array.sv</code>, and nobody has run it yet.</p>
+    <p>Here is the mechanism in Yosys, on a tiny design shaped like <code>top</code> (no outputs; a MAC reads <code>q</code> and writes <code>d</code>) <span class="ev local">Yosys + open Nangate45, not DC</span>:</p>
+    <div class="tscroll"><table class="ref">
+      <tr><th>memory model</th><th class="num">cells left</th><th class="num">area µm²</th></tr>
+      <tr><td>empty module, like <code>macros/array.sv</code></td><td class="num">{{Y:bb_empty:cells}}</td><td class="num">{{Y:bb_empty:area:1}}</td></tr>
+      <tr><td>black-box cell <code>(* blackbox *)</code></td><td class="num">{{Y:bb_blackbox:cells}}</td><td class="num">{{Y:bb_blackbox:area:1}}</td></tr>
+      <tr><td>black-box cell marked <code>(* keep *)</code></td><td class="num">{{Y:bb_keep:cells}}</td><td class="num">{{Y:bb_keep:area:1}}</td></tr>
+    </table></div>
+    <p>Yosys removed everything unless told to keep the memory. DC has its own rules (black-box handling, dont_touch, boundary optimization) and may well keep your logic: the staff flow presumably works. But it's cheap to check.</p>
+
+    <h3 id="bb-check">The check (one minute, every run)</h3>
+    <ol class="steps">
+      <li><b>Open <code>reports/area_report_hier</code>.</b> Find the 16 PE instances; the names depend on your generate block, for example <code>g_pe[3].u_pe</code>. Each should have thousands of µm² and roughly the same area as the others. Rough floor: the 96 accumulator and output flops alone are 96 × {{L:cells|DFFR_X1|area:2}} = {{PEFLOPS}} µm² of <code>DFFR_X1</code> (if they have async reset), and the multipliers add several thousand more (<button class="link" data-goto="see-it/si-pe">ballpark</button>). Paste the report into the <button class="link" data-goto="reports/rp-paste">parser</button>, which flags PEs much smaller than the rest.</li>
+      <li><b>Check the totals.</b> Total cell area around 10<sup>5</sup> µm² for 16 PEs is plausible. Hundreds of µm² means logic is gone.</li>
+      <li><b>Count flops:</b> <code>grep -c DFFR_X1 netlist/top.mapped.v</code> (or <code>DFF_X1</code> if you use sync reset) should be at least 16 × 96 = 1,536 plus the controller's and buffer's registers.</li>
+      <li><b>Look for removal messages</b> in <code>compile.log</code>: <code>grep -n -i "removed\|unloaded\|constant" compile.log</code>. Removing a few constant or unused bits is normal; whole PEs is not.</li>
+      <li><b>Check the timing report has a real path:</b> a startpoint and endpoint inside your design, not "No paths".</li>
+    </ol>
+    <div class="note warn"><p><b>If a PE has almost no area:</b> post your <code>area_report_hier</code> on Ed and ask staff before changing their script. Changes to discuss with them, all untested here: <code>set_dont_touch</code> on the memory instances, <code>set_ungroup &lt;memory instances&gt; false</code>, <code>set_boundary_optimization &lt;instances&gt; false</code>, or <code>compile_ultra -no_autoungroup</code> <span class="ev docs">DC commands; effect unverified</span>. Then rerun and redo the check.</p></div>
+    <div class="quiz" id="q-bb"><h3>Quiz yourself</h3>
+      <details><summary>Why do you not see the SRAMs in your area report?</summary><div><p>Synthesis uses <code>macros/array.sv</code>, an empty module, so there are no cells to count. The memories' area and power are outside the FoM by design.</p></div></details>
+      <details><summary>Is the path from MEM0's output through your multiplier checked by report_timing?</summary><div><p>Not from <code>q</code> itself: <code>q</code> has no driver, so there's no timed startpoint. Parts of the multiplier are still timed along paths that start at a register: a register after <code>q</code>, or a lane- or mode-select register steering the operands. Logic that's on no timed path is optimized for area only.</p></div></details>
+      <details><summary>Your area report says 900 µm² total. What happened, and what do you do?</summary><div><p>Almost certainly the PE logic was optimized away: its only loads are pins of empty modules and <code>top</code> has no outputs. Check <code>area_report_hier</code> and the flop count, then ask on Ed with the report. Candidate fixes are dont_touch or no-ungroup on the memory instances.</p></div></details>
+      <details><summary>How does the vector_decoder's latch interact with timing?</summary><div><p>A latch's enable pin is a clock pin. Here it's driven by logic from <code>mode</code>, not by <code>clk</code>, so STA likely treats the latch as unclocked and doesn't time paths through it (unverified). In this design the data feeding it comes from an untimed SRAM output anyway.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== CLEAN LOG, CLEAN RTL -->
+<section class="view" id="view-clean-log" aria-label="compile.log hygiene and synthesizable RTL" hidden>
+  <div class="section" style="padding-top:16px">
+    <h2>Clean log, clean RTL</h2>
+    <p>Part 2's rule: <code>compile.log</code> must be free of errors; warnings are fine (handout §2.3). DC writes every message with a severity and an ID, like <code>Warning: ... (LINT-28)</code>. The examples below are <span class="ev illus">illustrative</span>: typical wording; the IDs ELAB-366, ELAB-974 and LINK-5 match public DC logs.</p>
+    <h3 id="cl-errors">Errors you must fix</h3>
+    <div class="tscroll"><table class="ref">
+      <tr><th>What you see</th><th>Means</th><th>Usually caused by</th></tr>
+      <tr><td><code>Error: ../logical/top.sv:40: Syntax error at or near token ...</code></td><td>analyze couldn't parse a file</td><td>a typo, a SystemVerilog construct DC doesn't support</td></tr>
+      <tr><td><code>Error: ... Net 'acc' or a directly connected net is driven by more than one source, and not all drivers are three-state. (ELAB-366)</code></td><td>two places drive one signal</td><td>assigning the same variable in two <code>always</code> blocks, or an <code>assign</code> plus an <code>always</code></td></tr>
+      <tr><td><code>Warning: Unable to resolve reference 'procesing_element' in 'top'. (LINK-5)</code></td><td>an instance names a module DC never read; it becomes an empty black box</td><td>a misspelled module name, a file not in <code>file_list</code>. Treat it as an error.</td></tr>
+      <tr><td><code>Error: ... is not a constant</code> or <code>... unsupported ...</code></td><td>something can't be turned into hardware</td><td>a loop bound that isn't a constant, <code>$random</code>, file I/O, real numbers in logic</td></tr>
+      <tr><td><code>Warning: Disabling timing arc ... to break a timing loop</code></td><td>a combinational loop: a signal depends on itself with no register in between</td><td>two <code>always_comb</code> blocks feeding each other. Not an error to DC, but almost always a bug.</td></tr>
+    </table></div>
+    <h3 id="cl-expected">Warnings you should expect in this design</h3>
+    <ul class="prose">
+      <li><b><code>Netlist for always_comb block contains a latch. (ELAB-974)</code></b> from <code>defines.sv</code>, line {{VDLINE}} (the staff <code>vector_decoder</code>, once per instance you use). It comes with an "Inferred memory devices" table showing <code>addr_to_mem_reg</code> / <code>data_to_pe_reg</code> as type <code>Latch</code>. That's staff code; you can't change it (<code>defines.sv</code> is regenerated every run), and the handout says warnings are fine. The same warning pointing at <i>your</i> file is a bug.</li>
+      <li><b>Unconnected ports on the arrays</b> (check_design, for example <code>port 'clk' is not connected to any nets (LINT-28)</code>), because <code>macros/array.sv</code> is empty, plus pins tied to constants (<code>.cen('0)</code>, <code>.wen('1)</code>, <code>.gwen('1)</code>, typically LINT-32 and LINT-33).</li>
+      <li><b>Constant or unused register bits removed</b>, for example the high bits of a counter that can't change. Fine in small numbers; see the Black boxes check if it's whole blocks.</li>
+    </ul>
+    <h3 id="cl-grep">A grep checklist</h3>
+    <div class="cmd" data-copy="1">grep -n "^Error" compile.log                 <span class="c"># must print nothing</span>
+grep -c "^Warning" compile.log               <span class="c"># how many warnings</span>
+grep -n "(LINK-5)\|Unable to resolve" compile.log   <span class="c"># must print nothing</span>
+grep -n "(ELAB-974)" compile.log             <span class="c"># latches: only defines.sv is OK</span>
+grep -n "(ELAB-366)\|more than one source" compile.log   <span class="c"># multiple drivers: fix</span>
+grep -n -i "timing loop" compile.log         <span class="c"># combinational loops: fix</span>
+grep -n "| Latch" compile.log                <span class="c"># every inferred latch, by register name</span>
+tail -5 compile.log                          <span class="c"># should end with DC's exit statistics</span>
+cat results.txt</div>
+    <p class="cap">Don't use <code>grep -i error</code>: the log echoes the script, which contains <code>check_error</code> and <code>error_checking_report</code>.</p>
+    <h3 id="cl-paste">Paste your compile.log</h3>
+    <div class="paste">
+      <textarea id="log-in" spellcheck="false" aria-label="compile.log text" placeholder="Paste compile.log here, or open the file below."></textarea>
+      <div class="row"><button class="primary" id="log-go">Count errors and warnings</button><label class="cap" style="margin:0">or open a file <input type="file" id="log-file" accept=".log,.txt,text/*"></label><button class="small" id="log-example">Try an illustrative log</button></div>
+      <div class="pout" id="log-out" aria-live="polite"></div>
+    </div>
+    <pre hidden id="log-example-text">Information: Building the design 'array' instantiated from design 'buffer' with
+	the parameters "DW=512,NW=65536,AW=16". (HDL-193)
+Warning:  ./defines.sv:95: Netlist for always_comb block contains a latch. (ELAB-974)
+
+Inferred memory devices in process
+	in routine vector_decoder line 95 in file
+		'./defines.sv'.
+===============================================================================
+|    Register Name    |   Type    | Width | Bus | MB | AR | AS | SR | SS | ST |
+===============================================================================
+|   addr_to_mem_reg   | Latch     |  14   |  Y  | N  | N  | N  | -  | -  | -  |
+|   data_to_pe_reg    | Latch     |  32   |  Y  | N  | N  | N  | -  | -  | -  |
+===============================================================================
+Warning: In design 'array_DW512_NW65536_AW16', port 'clk' is not connected to any nets. (LINT-28)
+Warning: In design 'array_DW512_NW65536_AW16', port 'cen' is not connected to any nets. (LINT-28)
+Warning: In design 'buffer', a pin on submodule 'u_matrix_mem' is connected to logic 1 or logic 0. (LINT-32)
+Warning: In design 'buffer', the same net is connected to more than one pin on submodule 'u_matrix_mem'. (LINT-33)</pre>
+
+    <h3 id="cl-rules">Writing RTL that synthesizes the way you intend</h3>
+    <div class="cards">
+      <div class="card"><h4><code>always_ff</code> for flops, <code>always_comb</code> for logic</h4><p>Lecture 09 p23 recommends both. In <code>always_ff</code> use only <code>&lt;=</code>; in <code>always_comb</code> only <code>=</code> (p24). Then a mistake shows up as a tool message instead of silent wrong hardware: a latch in <code>always_comb</code> is ELAB-974 in DC and an error in Yosys.</p></div>
+      <div class="card"><h4>Assign every output on every path</h4><p>Lecture 09 p21: in a combinational block, every variable must be assigned under all conditions, or you get a latch. Either give every <code>case</code> a <code>default</code>, or (simpler) start the block with default assignments:</p><pre class="code">always_comb begin
+  nxt = cur;            // default: hold
+  case (op)
+    OP_A: nxt = a;
+    OP_B: nxt = b;
+  endcase
+end</pre></div>
+      <div class="card"><h4>One driver per signal</h4><p>A <code>logic</code> can't have two drivers (lecture 09 p26). Two <code>always</code> blocks writing the same variable is ELAB-366 in DC, even if you "know" they never write at the same time.</p></div>
+      <div class="card"><h4>No <code>initial</code>, no <code>#delays</code>, no <code>$display</code> in logical/</h4><p>Synthesis ignores <code>initial</code> blocks and delays and can't build file I/O, so the netlist would differ from your simulation. Reset your registers instead. <code>logical/array.sv</code> is full of <code>initial</code> and tasks; that's fine only because synthesis never reads it (it reads <code>macros/array.sv</code>).</p></div>
+      <div class="card"><h4>Loop bounds must be constants</h4><p>A <code>for</code> loop is unrolled at elaboration: <code>for (i = 0; i &lt; 4; i++)</code> becomes four copies of the hardware. Bounds from parameters or <code>`define</code>s are fine; a bound from a signal is not hardware. Lecture 09 p34: "all genvars must disappear after static elaboration".</p></div>
+      <div class="card"><h4>Avoid accidental priority</h4><p>An <code>if / else if</code> chain builds a priority chain: one gate level per condition (<button class="link" data-goto="see-it/x-prio_chain">see it</button>). If the conditions are mutually exclusive, a <code>case</code> on one select signal says so. Use <code>unique</code>/<code>priority</code> only if you know what they promise the tool.</p></div>
+      <div class="card"><h4>Mind signedness and widths</h4><p>An expression is signed only if <i>every</i> operand is signed; one unsigned operand makes the whole expression unsigned and changes the hardware (an unsigned multiplier). Size intermediate results for their full width (a 32 × 32 product needs 64 bits).</p></div>
+      <div class="card"><h4>Keep the port names</h4><p>The script constrains ports named <code>clk</code> and <code>rst_n</code>, and the testbench reaches into fixed instance names (<code>dut.u_buffer.u_matrix_mem</code> ...). Don't rename them.</p></div>
+    </div>
+
+    <h3 id="cl-sim">Simulation semantics vs synthesis semantics</h3>
+    <p>A simulator executes your code as events in time; a synthesizer reads it as a description of hardware. They agree only for code written in the synthesizable style. The given memory model is a real example. <code>logical/array.sv</code> updates <code>read_data</code> with a <b>blocking</b> assignment in a clocked block and drives <code>q</code> from a separate latch-style block. That's a race against any flop that samples <code>q</code> on the same edge <span class="ev file">from the files</span>:</p>
+    <ul class="prose">
+      <li>Event-driven simulators (Icarus, and very likely VCS) run every posedge block before the latch block updates <code>q</code>, so consumers see the pre-edge value: a normal synchronous SRAM.</li>
+      <li>Verilator at default optimization inlines the instruction memory's array and makes <code>q</code> an alias of <code>read_data</code>, so a controller that latches <code>inst</code> at the edge gets the <i>next</i> instruction: it skips the first instruction of every program. <code>-fno-inline</code> fixes it <span class="ev local">checked locally</span>. That's why this repo's flow uses Icarus by default for pass/fail and <code>-O2 -fno-inline</code> when <code>SIM=verilator</code>; <code>make lint</code> uses Verilator for lint only.</li>
+      <li><b>Synthesis never sees this race:</b> it reads the empty <code>macros/array.sv</code>. The race lives only in simulation, and blocking assignments in clocked blocks are exactly the style that creates such races. Use <code>&lt;=</code> in your <code>always_ff</code> blocks (lecture 09 p24 and the quiz on p28).</li>
+    </ul>
+    <div class="quiz" id="q-cl"><h3>Quiz yourself</h3>
+      <details><summary>Why would a latch appear in your netlist?</summary><div><p>A combinational block didn't assign some output on some path (an <code>if</code> without <code>else</code>, a <code>case</code> without <code>default</code>), so the hardware must remember the old value. DC reports it as ELAB-974 for an <code>always_comb</code> and lists it as "Latch" in the inferred-memory table.</p></div></details>
+      <details><summary>The log has 300 warnings and no errors. Are you done for Part 2?</summary><div><p>For the requirement, yes. But skim the warning IDs: ELAB-974 pointing at your own file, LINK-5, or timing-loop messages mean real bugs that the equivalence tests might not catch.</p></div></details>
+      <details><summary>Why is it OK that <code>logical/array.sv</code> uses <code>initial</code> blocks and tasks?</summary><div><p>Synthesis never reads it; the script reads <code>macros/array.sv</code>. The simulation model only has to simulate, and its <code>loadmem</code>/<code>dumpmem</code> tasks exist for the testbench.</p></div></details>
+      <details><summary>Two <code>always_ff</code> blocks both write <code>out_reg</code>, in different opcodes. Why does DC refuse?</summary><div><p>Each block describes its own set of flops driving the same net: multiple drivers (ELAB-366). Hardware has no "only one of them runs" rule. Put all the writes in one block.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== ON CADDY -->
+<section class="view" id="view-caddy" aria-label="Running it on caddy" hidden>
+  <div class="section" style="padding-top:16px">
+    <h2>Running it on caddy</h2>
+    <p>DC (and VCS) exist only on Stanford's caddy machines. Staff recommend working from a FarmShare OnDemand desktop so the GUI tools display without X-forwarding (Ed #224). The steps below combine the Part 1 handout §2.1–2.2, <code>part2/load_modules.sh</code> and the synth <code>Makefile</code>. <span class="ev file">from the files</span></p>
+    <ol class="steps">
+      <li><b>Get a terminal on caddy.</b> Log in to OnDemand (or <code>ssh &lt;sunetid&gt;@login.farmshare.stanford.edu</code>), launch a <b>FarmShare Desktop</b> (Interactive Apps → FarmShare Desktop → Launch), right-click → Open in Terminal, then:
+        <div class="cmd" data-copy="1">ssh -XY caddy.best.stanford.edu</div></li>
+      <li><b>Get credentials and the right shell</b> (the Part 1 handout says to use tcsh):
+        <div class="cmd" data-copy="1">kinit
+aklog
+tcsh</div></li>
+      <li><b>Load the tools</b> from the <code>part2</code> directory of your clone:
+        <div class="cmd" data-copy="1">source load_modules.sh</div>
+        It runs <code>module purge</code>, loads <code>base</code>, <code>vcs/S-2021.09-SP1</code> and <code>dc_shell/S-2021.06-SP5-4</code>, and puts <code>simulator/bin</code> (the <code>ivd-*</code> tools) on your <code>PATH</code>. It's csh syntax (<code>set</code>, <code>setenv</code>), so it must be sourced from tcsh, not bash. Check it worked: <code>which dc_shell-t ivd-gv</code>.</li>
+      <li><b>Activate the Python environment</b>, the one with numpy and bitstring that <code>ivd-gv</code> needs:
+        <div class="cmd" data-copy="1">conda activate ./ee271-conda-env-p2
+pip install "bitstring<5"      <span class="c"># once: ivd-as breaks with bitstring 5 (it uses Bits.length)</span></div></li>
+      <li><b>Run synthesis:</b>
+        <div class="cmd" data-copy="1">cd unoptimized_verilog/synth
+make clean          <span class="c"># removes the old run, INCLUDING compile.log and results.txt</span>
+make synthesize     <span class="c"># or, from the repo root: make synth</span></div>
+        To try another clock: <code>make synthesize CLK_PERIOD=1.8</code>.</li>
+      <li><b>Look at the outputs</b> in <code>synth/</code>: <code>compile.log</code>, <code>results.txt</code>, <code>reports/</code>, <code>netlist/top.mapped.v</code>. Run the <button class="link" data-goto="clean-log/cl-grep">grep checklist</button> and the <button class="link" data-goto="black-boxes/bb-check">black-box check</button>.</li>
+    </ol>
+    <h3 id="cd-time">How long does it take?</h3>
+    <p>We don't know: nobody has run it on this design. <code>compile_ultra</code> with <code>-timing_high_effort_script</code> on a design with thousands of flops and 16 multiplier arrays is not a seconds-long job, and the first run also builds the <code>alib-52/</code> library cache. Time your first run (<code>time make synthesize</code>, or read "Overall Compile Wall Clock Time" in <code>reports/qor_report</code>) so you can plan Part 3 sweeps, and don't leave the first run for the night before the deadline.</p>
+    <h3 id="cd-gotchas">Gotchas</h3>
+    <ul class="prose">
+      <li><b><code>ivd-gv: Command not found</code></b>: <code>load_modules.sh</code> wasn't sourced in this shell, or the conda env isn't active.</li>
+      <li><b>make says OK but the log is full of errors</b>: the <code>| tee</code> hides DC's exit status. Always grep the log.</li>
+      <li><b>Two results in results.txt</b>: you reran without <code>make clean</code>; the script appends.</li>
+      <li><b>Changed the PE count?</b> The synth Makefile calls <code>ivd-gv</code> with defaults (16 PEs). Pass the same <code>--pe_count</code> there as in your tests, or you'll synthesize a different design.</li>
+      <li><b>License errors at startup</b>: DC needs a license. If they're all taken, wait and retry, or ask on Ed if it persists.</li>
+    </ul>
+    <h3 id="cd-gui">Optional: design_vision</h3>
+    <p><code>design_vision</code> is DC's GUI: schematics, path highlighting, and timing reports you can click through <span class="ev docs">DC docs</span>. It needs a display, so use the OnDemand desktop. The course script doesn't save a <code>.ddc</code> database, so to browse a result you'd run the script from inside <code>design_vision</code>, or read <code>netlist/top.mapped.v</code> back in with the same libraries. Nothing in the course requires it, so skip it if time is short.</p>
+    <div class="quiz" id="q-cd"><h3>Quiz yourself</h3>
+      <details><summary>What does <code>source load_modules.sh</code> change in your shell?</summary><div><p>It loads the VCS and DC modules (S-2021.09-SP1 and S-2021.06-SP5-4) and adds <code>part2/simulator/bin</code> to <code>PATH</code> so <code>make</code> can find <code>ivd-gv</code>.</p></div></details>
+      <details><summary>Where do the reports land, and which file do you submit for Part 2?</summary><div><p>In <code>unoptimized_verilog/synth/</code>: <code>reports/</code>, <code>netlist/</code>, <code>results.txt</code>, <code>compile.log</code>. Part 2's zip includes <code>logical/</code> and <code>synth/compile.log</code>.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== LECTURES AND WORDS -->
+<section class="view" id="view-lectures" aria-label="Lecture tie-ins and words" hidden>
+  <div class="section memsec" style="padding-top:16px">
+    <h2>Lecture tie-ins</h2>
+    <p>Where each idea on this page comes from in the EE271 Fall 2026 material on Canvas, for oral-exam review. Page numbers are the PDFs' own slide numbers.</p>
+    <div class="tscroll"><table class="ref lect">
+      <tr><th>Lecture (file, page)</th><th>What it says</th><th>Where it shows up here</th></tr>
+      <tr><td>01_introduction.pdf p44</td><td>Logic synthesis turns combinational functionality into standard cells from a fab library, chooses flops and latches for timing statements, and minimizes delay and area. p45–46: floorplanning and placement and routing come after, where wires become real.</td><td><button class="link" data-goto="big-picture">Big picture</button>, wire-load model</td></tr>
+      <tr><td>03_gate_delay_and_power.pdf p34, p42–45, p48, p50</td><td>Charging and discharging capacitance is the main power cost (p34); activity factor from input probabilities and correlations, plus extra transitions from glitching (p42–44); leakage (p45, p47); ½ α C V<sub>DD</sub><sup>2</sup> per gate (p48); "total power is simply the sum of all the gate power; only problem is to estimate transition probabilities, and wire capacitance if you don't have physical design" (p50).</td><td><button class="link" data-goto="reports/rp-power">report_power and activity</button></td></tr>
+      <tr><td>Review Session 2.pdf p26</td><td>P = 0.5 α C V<sub>DD</sub><sup>2</sup> f with α = transitions per clock cycle; static (leakage) power.</td><td>report_power</td></tr>
+      <tr><td>05_delay_optimization_and_logical_effort.pdf p3, p13–14, p27–28, p30, p34, p46–48</td><td>A big gate has lower R but more input C (p3); optimal stage effort near 4, the FO4 delay (p13–14); logical effort of NAND2 = 4/3 and NOR2 = 5/3, and LE as the product of resistance and capacitance ratios (p27–28); equalize LE × fanout along a path (p30); AOI/OAI reduce stages (p34); min-delay points are very inefficient for power (p46); tools beat you at gates, you beat tools at the problem (p47); synthesis uses this delay estimation (p48).</td><td><button class="link" data-goto="compile-ultra/cu-size">Gate sizing</button>, <button class="link" data-goto="compile-ultra/cu-logic">logic optimization</button></td></tr>
+      <tr><td>06_sequential_circuits_and_static_timing_analysis.pdf p8, p11, p13, p28, p32, p34, p37–41, p44, p50</td><td>Latches vs flip-flops (p8); t<sub>pcq</sub>, t<sub>setup</sub>, t<sub>hold</sub> (p11); sequencing overhead (p13); T<sub>d,max</sub> &lt; T<sub>cycle</sub> − T<sub>su</sub> − T<sub>skew</sub> (p28); critical path (p32); STA is fast and conservative (p34); arrival A(v), required R(v), slack = R − A (p37–41); false paths (p44); synthesis relies on STA (p50).</td><td><button class="link" data-goto="reports">Reading reports</button></td></tr>
+      <tr><td>07_memory_systems.pdf p4–5, p8–9, p11, p19</td><td>Memory arrays are dense because of their regular structure; memories are often over half a chip; a latch-based cell is large because wires dominate; the 6T SRAM; bitline capacitance makes reads slow without sense amps.</td><td><button class="link" data-goto="black-boxes">Black boxes</button></td></tr>
+      <tr><td>09_HDLs.pdf p2, p9–10, p19–21, p23–24, p26, p28, p34</td><td>HDLs describe RTL and synthesis turns them into gates (p2); a pre- and post-synthesis netlist (p9); standard cells have fixed height (p10); if/else and case become muxes (p19–20); avoid unintentional latches, assign everything under all conditions (p21); use always_comb and always_ff (p23); blocking for combinational, non-blocking for sequential (p24, quiz p28); logic can't have multiple drivers (p26); genvars disappear after elaboration (p34).</td><td><button class="link" data-goto="clean-log/cl-rules">RTL rules</button></td></tr>
+      <tr><td>L11 High Level Synthesis (Tue Oct 27, per the syllabus)</td><td>The slides aren't among the indexed Canvas files, so we can't cite pages. HLS ideas this page uses: scheduling operations into cycles, and resource sharing (binding several operations to one unit).</td><td><button class="link" data-goto="compile-ultra/cu-hlo">Resource sharing</button></td></tr>
+      <tr><td>Project Part 3 handout §2.2.1–2.2.5</td><td>Hardware reuse of multipliers, register retiming via <code>-retime</code>, manual timing optimization, clock gating by DC, design sizing within 1,000,000 µm².</td><td>Retiming, PE ballpark</td></tr>
+    </table></div>
+
+    <h2 id="words" style="margin-top:28px">Words this page uses</h2>
+    <dl class="words">
+      <div><dt>RTL (register-transfer level)</dt><dd>Hardware described as registers plus the logic between them, cycle by cycle. Your <code>.sv</code> files.</dd></div>
+      <div><dt>Logic synthesis</dt><dd>Turning RTL into a netlist of library cells that meets constraints. Here, DC with <code>compile_ultra</code>.</dd></div>
+      <div><dt>Netlist</dt><dd>A list of cell instances and the wires between them. <code>netlist/top.mapped.v</code>.</dd></div>
+      <div><dt>Standard cell</dt><dd>A pre-designed gate or flop of fixed height, with known area, delay and power. Nangate has about 135.</dd></div>
+      <div><dt>Liberty (.lib) / .db</dt><dd>The library description: cell functions, areas, pin capacitances, delay and power tables, design rules. .lib is text; .db is Synopsys's compiled form.</dd></div>
+      <div><dt>NLDM</dt><dd>Non-linear delay model: delay and output slope looked up in a table by input slope and output load.</dd></div>
+      <div><dt>GTECH</dt><dd>Synopsys's technology-independent generic gates, used between elaborate and compile.</dd></div>
+      <div><dt>DesignWare</dt><dd>Synopsys's library of operator implementations (adders, multipliers ...) in several architectures; <code>dw_foundation.sldb</code>.</dd></div>
+      <div><dt>Synthetic operator</dt><dd>An operator like <code>+</code> after elaboration, before DesignWare has picked an implementation.</dd></div>
+      <div><dt>analyze / elaborate / link</dt><dd>Parse the files / build the parameterized hierarchy into generic logic / resolve every instance to a design or cell.</dd></div>
+      <div><dt>Constraint</dt><dd>A goal or assumption for synthesis: the clock period, input delays, drive, wire loads, area goal.</dd></div>
+      <div><dt>Wire-load model</dt><dd>A table that guesses a net's capacitance and resistance from its fanout, before placement exists.</dd></div>
+      <div><dt>Fanout</dt><dd>How many gate inputs a net drives.</dd></div>
+      <div><dt>Drive strength (X1, X2, X4 ...)</dt><dd>Versions of one cell with lower output resistance, more input capacitance and more area.</dd></div>
+      <div><dt>FO4</dt><dd>The delay of an inverter driving four copies of itself: {{L:fo4_ps|avg:0}} ps in this library. A unit of gate delay.</dd></div>
+      <div><dt>Logical effort (g)</dt><dd>How much worse a gate is than an inverter at driving a load for the same input capacitance (lecture 05).</dd></div>
+      <div><dt>STA (static timing analysis)</dt><dd>Computing the worst arrival time at every point from the gate delays, without simulating any data.</dd></div>
+      <div><dt>Startpoint / endpoint</dt><dd>Where a timing path begins (a register clock pin or an input) and ends (a register data pin or an output).</dd></div>
+      <div><dt>Arrival / required time</dt><dd>When the data actually gets to a point / the latest it may get there.</dd></div>
+      <div><dt>Slack</dt><dd>Required − arrival. ≥ 0 is MET; negative is VIOLATED.</dd></div>
+      <div><dt>Setup / hold time</dt><dd>How long before / after the clock edge a flop's input must be stable.</dd></div>
+      <div><dt>Clock-to-Q (t<sub>pcq</sub>)</dt><dd>How long after the clock edge a flop's output changes.</dd></div>
+      <div><dt>Critical path</dt><dd>The path with the worst slack; it sets the minimum clock period.</dd></div>
+      <div><dt>Ideal clock</dt><dd>A clock with zero delay and skew, as in synthesis before a clock tree exists.</dd></div>
+      <div><dt>Path group</dt><dd>Timing paths grouped by capture clock; reports show the worst path per group.</dd></div>
+      <div><dt>WNS / TNS</dt><dd>Worst negative slack / total negative slack summed over failing endpoints.</dd></div>
+      <div><dt>Design rules (DRC)</dt><dd>Electrical limits from the library: max transition, max capacitance, max fanout. Fixed before timing.</dd></div>
+      <div><dt>Gate sizing / buffering</dt><dd>Swapping a cell for a stronger or weaker version / inserting buffers to split a big load.</dd></div>
+      <div><dt>Resource sharing</dt><dd>One hardware unit doing several operations that never happen in the same cycle, with muxes on its inputs.</dd></div>
+      <div><dt>Datapath extraction</dt><dd>Merging connected arithmetic into one carry-save tree with a single final adder.</dd></div>
+      <div><dt>Carry-save / prefix adder</dt><dd>An adder that defers carries (used inside multipliers) / a fast adder that computes all carries in log<sub>2</sub>(n) levels (Brent-Kung, Kogge-Stone ...).</dd></div>
+      <div><dt>Booth encoding</dt><dd>A way to recode one multiplier operand so there are about half as many partial products; handles two's complement naturally.</dd></div>
+      <div><dt>Retiming</dt><dd>Moving registers across logic to balance stage delays without changing behavior at the boundaries.</dd></div>
+      <div><dt>Boundary optimization</dt><dd>Optimizing across module boundaries (constants, unused pins, inversions).</dd></div>
+      <div><dt>Ungrouping</dt><dd>Dissolving a module instance into its parent so its logic can be optimized with the parent's.</dd></div>
+      <div><dt>Black box</dt><dd>A cell or module whose insides the tool doesn't know; here, the empty memory modules.</dd></div>
+      <div><dt>Macro</dt><dd>A large pre-built block like an SRAM, placed as one cell.</dd></div>
+      <div><dt>Latch</dt><dd>A level-sensitive storage element: transparent while enabled, holding otherwise. Inferred when combinational code forgets a case.</dd></div>
+      <div><dt>Dynamic / internal / switching / leakage power</dt><dd>Power from switching (internal power inside cells + switching power charging nets) / power drawn even when nothing switches.</dd></div>
+      <div><dt>Activity factor (α) / toggle rate</dt><dd>How often a net switches per clock cycle.</dd></div>
+      <div><dt>SAIF</dt><dd>A file of switching activity from simulation that a power tool can use instead of defaults; not used in this flow.</dd></div>
+      <div><dt>Clock gating</dt><dd>Stopping the clock to registers that don't need to change, so they don't burn clock power.</dd></div>
+      <div><dt>QoR</dt><dd>Quality of results: DC's summary report.</dd></div>
+      <div><dt>FoM</dt><dd>Part 3's figure of merit: (total test time)<sup>2.3</sup> × area × power × 10<sup>−15</sup>.</dd></div>
+    </dl>
+    <div class="quiz" id="q-lec"><h3>Quiz yourself (mixed)</h3>
+      <details><summary>What is GTECH and when does your design exist in that form?</summary><div><p>Synopsys's generic, technology-independent gates. Your design is GTECH plus synthetic operators between <code>elaborate</code> and <code>compile_ultra</code>; compile maps it to Nangate cells.</p></div></details>
+      <details><summary>What does a wire-load model approximate, and is the course's optimistic or pessimistic?</summary><div><p>The capacitance and resistance of each net before placement, from its fanout. <code>1K_hvratio_1_4</code> gives a fanout-4 net only {{WLM4C}} fF, less than one gate input, so it's likely optimistic for a block this size.</p></div></details>
+      <details><summary>Why does DC report a 2 ns clock as "relaxed"? Put a number on it.</summary><div><p>2 ns is about {{L:fo4_ps|per_2ns:0}} FO4 delays in this library (FO4 ≈ {{L:fo4_ps|avg:0}} ps). Aggressive processor pipelines run near 10–20 FO4 per cycle (lecture 06 p28 notes it's hard to go below 10–12 logic stages).</p></div></details>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="wrap">
+  <p>Built from <code>docs/synthesis-src/</code> by <code>build.py</code>. Yosys runs: {{V:yosys}} on <code>{{V:liberty}}</code> (sha256 starts {{V:libsha}}). Illustrative DC samples: <code>docs/synthesis-src/samples/</code>. Nothing here is a solution to Part 2 or Part 3: no module of the accelerator appears on this page.</p>
+</footer>
+
+<script type="application/json" id="synth-data"><!--DATA--></script>
+<script>
+/*PARSER*/
+</script>
+<script>
+/*ANNOTATIONS*/
+</script>
+<script>
+/*APP*/
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+# ILLUSTRATIVE SAMPLE, NOT REAL DC OUTPUT. Written by docs/synthesis-src/make_samples.py to show
+# the layout of this report. The numbers are invented (but add up). Your own report is the authority.
+****************************************
+Report : qor
+Design : top
+Version: S-2021.06-SP5-4
+Date   : Thu Nov 19 14:02:11 2026
+****************************************
+
+
+  Timing Path Group 'clk'
+  -----------------------------------
+  Levels of Logic:             27.00
+  Critical Path Length:         1.61
+  Critical Path Slack:          0.35
+  Critical Path Clk Period:     2.00
+  Total Negative Slack:         0.00
+  No. of Violating Paths:       0.00
+  Worst Hold Violation:         0.00
+  Total Hold Violation:         0.00
+  No. of Hold Violations:       0.00
+  -----------------------------------
+
+
+  Cell Count
+  -----------------------------------
+  Hierarchical Cell Count:         23
+  Hierarchical Port Count:      13104
+  Leaf Cell Count:             110412
+  Buf/Inv Cell Count:           16123
+  Buf Cell Count:                3450
+  Inv Cell Count:               12673
+  CT Buf/Inv Cell Count:            0
+  Combinational Cell Count:    108618
+  Sequential Cell Count:         1794
+  Macro Count:                      0
+  -----------------------------------
+
+
+  Area
+  -----------------------------------
+  Combinational Area:    128971.121000
+  Noncombinational Area:   9608.008000
+  Buf/Inv Area:            9502.392009
+  Macro/Black Box Area:       0.000000
+  Net Area:                   0.000000
+  -----------------------------------
+  Cell Area:             138579.129000
+  Design Area:           138579.129000
+
+
+  Design Rules
+  -----------------------------------
+  Total Number of Nets:        131207
+  Nets With Violations:             0
+  Max Trans Violations:             0
+  Max Cap Violations:               0
+  -----------------------------------
+
+  (a real report also has a Compile CPU Statistics block with your run time here)
+
+  --------------------------------------------------------------------
+
+  Design  WNS: 0.00  TNS: 0.00  Number of Violating Paths: 0
+
+
+  Design (Hold)  WNS: 0.00  TNS: 0.00  Number of Violating Paths: 0
+
+  --------------------------------------------------------------------
+
+1
