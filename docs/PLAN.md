@@ -21,7 +21,7 @@ split the work so that **both of us can defend every line in the oral exam**. Ed
 | Part 2: RTL + equivalence + synthesis | **Fri Nov 20 11:59 PM** per handout; syllabus says Thu Nov 19 | Target **Thu Nov 19** night. Staff enforced the handout date for Part 1 with no extensions (Ed #204, #236). Late days allowed (1 from each partner = 24 h). |
 | Part 3: optimization **report** | Fri Dec 4 per handout; **Dec 1** per Prof. Tambe on Ed (#207) | Target **Tue Dec 1**. **No late days on Part 3.** Report = each optimization, its % FoM change, why, final FoM, plus a 1-page AI reflection. |
 | Oral exam ("Project Understanding Oral Exam") | **Thu Dec 3** | 15 minutes, **25% of the course grade**. Individual vs. pair format not announced yet (Ed #208). Assume individual. |
-| Part 4 (HLS with Siemens Catapult) | with Part 3 | Optional, **+5% of the project component** (Ed #243). Not released yet; the Nov 20 review session covers HLS. |
+| Part 4 (HLS with Siemens Catapult) | **Tue Dec 1 11:59 PM** (handout) | Optional, **+5% of the project component** (Ed #243). Released Nov 16, starter in `part4/`. **No late days.** Runs on FarmShare, not caddy. See [Part 4 (optional)](#part-4-optional). |
 
 Course weights after Ed #217: midterm 35%, **project deliverables 25%, oral exam 25%**, homework 10%, participation 5%.
 Part 2 is close to pass/fail: "functional Verilog will get full points". Two criteria: the RTL satisfies the (updated)
@@ -207,6 +207,37 @@ Every experiment: one change, `make check` + `make eq-stress` green, `make synth
 | Wed 12/2 | Oral prep: `docs/oral-prep.html` mock mode, swap roles, fill every **Our design** field |
 | **Thu 12/3** | **Oral exam** |
 | Fri 12/4 | Handout's report date: backup only |
+
+## Part 4 (optional)
+
+Extra credit, worth +5% of the project component, due **Tue Dec 1 11:59 PM, with no late days**. The handout is
+`handouts/Project_Part_4.pdf`, and `part4/README.md` is the staff's own markdown copy of it. **Start it only after the
+Part 3 report is drafted.** Decide go/no-go at the Part 3 strategy session, or by Sat Nov 28 at the latest.
+
+**What it is.** The same accelerator again, this time in C++/SystemC, which Catapult HLS turns into RTL. Ports, reset,
+testbenches and HLS scripts are all given. There are three `TODO` blocks, and each one mirrors a piece of our Part 2 RTL:
+
+| File (under `part4/cmod/Accelerator/`) | Mirrors | Natural owner |
+|---|---|---|
+| `ProcessingElement/ProcessingElement.h` | `processing_element.sv`: the same ops, but operands arrive by `Pop()` and OUT leaves by `Push()` | Partner |
+| `MainBuffer/MainBuffer.h` | `buffer.sv`: READ/WRITE/NOP inside a loop that's already written | Ryan |
+| `Accelerator.h` | `controller.sv` + `top.sv`: pop an instruction, issue its Count+1 repetitions to the buffer and PEs | Ryan |
+
+The new idea is the Connections library: `Push`/`Pop` block, so a missing transfer deadlocks the simulation instead of
+giving a wrong answer. The write-up's question ("how is control different?") is good oral-exam material either way.
+
+**Where it runs.** On FarmShare only: not caddy, and not a laptop, because it needs Catapult's SystemC and Matchlib
+headers under `/cad`. Log in to FarmShare, run `/farmshare/home/classes/ee/admin/software/bin/rhel8.sh`, clone this
+repo, then `cd part4 && source setup.csh` (`setup.csh` is csh, so run `tcsh` first if your shell is bash). From there,
+the handout's commands work unchanged:
+- per module: `make clean; make sim_test; ./sim_test` in each module's folder (or `make systemc_test` in `part4/`, which runs all three)
+- `cd hls/Accelerator && make hls`: about 30 minutes
+- `make vcs`, then the Verdi waveform screenshot
+
+**Deliverables.** The `make submission` zip (the three headers plus the generated `concat_Accelerator.v`) and a
+write-up with five screenshots and a short SystemC-vs-Verilog note. Rough size, if Part 2 is done and understood:
+an evening each for the code, plus about an hour for HLS, VCS and screenshots. `make update-starter PART=part4` pulls
+in any staff fixes.
 
 ## First Design Compiler run: check these three things
 

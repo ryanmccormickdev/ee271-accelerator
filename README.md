@@ -7,7 +7,7 @@ Our team repo for the EE271 (Fall 2026) course project. It holds all parts in on
 | 1 | Python simulator of the accelerator | Fri Nov 13 (submitted) | `part1/` |
 | 2 | SystemVerilog RTL + equivalence tests + synthesis | **Fri Nov 20** (handout) / Thu Nov 19 (syllabus): we target **Thu 11/19** | `part2/unoptimized_verilog/` |
 | 3 | Optimize power/performance/area (a figure of merit) + report | **Dec 1** (Prof. on Ed #207) / Dec 4 (handout): we target **Tue 12/1**; no late days | `part2/optimized_verilog/` (made after Part 2) |
-| 4 | HLS version (Siemens Catapult), optional, +5% of the project component | with Part 3, not released yet | — |
+| 4 | HLS version (Siemens Catapult), optional, +5% of the project component | **Tue Dec 1** (handout); no late days; only if Part 3 is in hand | `part4/` |
 | — | **Oral exam**: 15 min, 25% of the course grade | **Thu Dec 3** | `docs/oral-prep.html` |
 
 **Start with [`docs/PLAN.md`](docs/PLAN.md)**: the Part 2 design and timing contract, who does what, the calendar,
@@ -64,16 +64,17 @@ ee271-project/
 │   ├── unoptimized_verilog/synth       Design Compiler script + Nangate 45 nm library
 │   ├── equivalence_testing/           the graded int8/int16/int32 tests (VCS)
 │   └── simulator/                     staff reference Python + the ivd-* tools
+├── part4/                  the staff's optional Part 4 starter (simd-part4): Catapult HLS, runs on FarmShare
 ├── verif/                  our per-module checks (PE, controller, buffer) against the staff Python
 ├── scripts/rtl/            the local Icarus/Verilator flow and the caddy wrappers;  scripts/fom.py
 ├── runs/                   Design Compiler run records we cite (committed)
-├── handouts/               assignment PDFs (+ text copies of Parts 2 and 3 for grep)
+├── handouts/               assignment PDFs (+ text copies of Parts 2 and 3 for grep; Part 4's is part4/README.md)
 ├── docs/                   PLAN, WORKFLOW, spec-notes, decisions, experiments, part3-report, ai-log, explainers
 ├── playground/tour.py      Part 1 mini-debugger
 └── Makefile                the shortcuts above
 ```
 
-`part1/` and `part2/` keep exactly the staff's folder layout, so every command in the handouts still works there
+`part1/`, `part2/` and `part4/` keep exactly the staff's folder layout, so every command in the handouts still works there
 (e.g. on caddy: `cd part2/equivalence_testing && make int8_test`).
 
 ## Rules we're working under
