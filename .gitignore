@@ -1,0 +1,16 @@
+cmod/Accelerator/ProcessingElement/sim_test
+cmod/Accelerator/ProcessingElement/build.log
+cmod/Accelerator/MainBuffer/build.log
+cmod/Accelerator/MainBuffer/sim_test
+cmod/Accelerator/sim_test
+cmod/Accelerator/build.log
+hls/Accelerator/Catapult
+hls/Accelerator/Catapult.ccs
+hls/Accelerator/catapult.log
+hls/Accelerator/default.fsdb
+hls/Accelerator/inter.fsdb*
+hls/Accelerator/novas.conf
+hls/Accelerator/novas.rc
+hls/Accelerator/novas_dump.log
+hls/Accelerator/ucli.key
+hls/Accelerator/verdiLog
