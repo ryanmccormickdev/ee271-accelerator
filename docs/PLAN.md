@@ -18,7 +18,7 @@ split the work so that **both of us can defend every line in the oral exam**. Ed
 
 | What | Due | Notes |
 |---|---|---|
-| Part 2: RTL + equivalence + synthesis | **Fri Nov 20 11:59 PM** per handout; syllabus says Thu Nov 19 | Target **Thu Nov 19** night. Staff enforced the handout date for Part 1 with no extensions (Ed #204, #236). Late days allowed (1 from each partner = 24 h). |
+| Part 2: RTL + equivalence + synthesis | **Thu Nov 19**: staff clarified on Ed (the handout's Fri Nov 20 is wrong) | Late days allowed: **1 from each partner = 24 h**, i.e. Fri Nov 20. That spends both partners' days and eats a day of Part 3, which has no late days. |
 | Part 3: optimization **report** | Fri Dec 4 per handout; **Dec 1** per Prof. Tambe on Ed (#207) | Target **Tue Dec 1**. **No late days on Part 3.** Report = each optimization, its % FoM change, why, final FoM, plus a 1-page AI reflection. |
 | Oral exam ("Project Understanding Oral Exam") | **Thu Dec 3** | 15 minutes, **25% of the course grade**. Individual vs. pair format not announced yet (Ed #208). Assume individual. |
 | Part 4 (HLS with Siemens Catapult) | **Tue Dec 1 11:59 PM** (handout) | Optional, **+5% of the project component** (Ed #243). Released Nov 16, starter in `part4/`. **No late days.** Runs on FarmShare, not caddy. See [Part 4 (optional)](#part-4-optional). |
@@ -199,7 +199,7 @@ Every experiment: one change, `make check` + `make eq-stress` green, `make synth
 | Tue 11/17 | Caddy: `make vcs-eq`, `make synth`, fix `compile.log`; pair session #3 reading the reports; baseline FoM. **First-run checks:** below |
 | Wed 11/18 | `make eq-stress`; spec edge cases; review the whole RTL together; **mock oral #1** (Parts 1–2, 15 min each) |
 | **Thu 11/19** | **Submit Part 2** (`make submit-check`, `make submit PART=part2`, tag `part2-submitted`) |
-| Fri 11/20 | Backup deadline. Review session 9 (Part 3 + HLS). Pair session #4: Part 3 strategy; create `optimized_verilog/` |
+| Fri 11/20 | Deadline only if we each spend a late day. Review session 9 (Part 3 + HLS). Pair session #4: Part 3 strategy; create `optimized_verilog/` |
 | Sat 11/21 – Wed 11/25 | Workstreams in parallel; daily 15-min sync (results → `docs/experiments.md`) |
 | Thu 11/26 – Fri 11/27 | Thanksgiving: light. **Mock oral #2** (Part 3 so far) |
 | Sat 11/28 – Mon 11/30 | Combine winners; final FoM; report complete, including the AI reflection |
@@ -255,7 +255,7 @@ in any staff fixes.
 ## Questions to ask staff on Ed
 
 Answered staff questions also earn participation points if we answer others' posts.
-1. Part 2 due date: Thu 11/19 (syllabus) or Fri 11/20 (handout)? And Part 3: Dec 1 (Ed #207) or Dec 4 (handout)?
+1. ~~Part 2 due date~~: answered on Ed, **Thu 11/19**. Still open: Part 3, Dec 1 (Ed #207) or Dec 4 (handout)?
 2. Staff tool bug: `ivd-as` uses `Bits.length`, removed in bitstring 5.0 (a fresh env from `requirements.yml` gets 5.0.0).
    Pin `bitstring<5`? (We could post this as a helpful note.)
 3. FoM inputs: is Power the total (dynamic + leakage) from `report_power`, and Area the "Total cell area" (SRAMs are

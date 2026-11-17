@@ -5,7 +5,7 @@ Our team repo for the EE271 (Fall 2026) course project. It holds all parts in on
 | Part | What | Due | Folder |
 |---|---|---|---|
 | 1 | Python simulator of the accelerator | Fri Nov 13 (submitted) | `part1/` |
-| 2 | SystemVerilog RTL + equivalence tests + synthesis | **Fri Nov 20** (handout) / Thu Nov 19 (syllabus): we target **Thu 11/19** | `part2/unoptimized_verilog/` |
+| 2 | SystemVerilog RTL + equivalence tests + synthesis | **Thu Nov 19** (staff on Ed; the handout's Fri Nov 20 is wrong). A late day from each of us moves it to Fri | `part2/unoptimized_verilog/` |
 | 3 | Optimize power/performance/area (a figure of merit) + report | **Dec 1** (Prof. on Ed #207) / Dec 4 (handout): we target **Tue 12/1**; no late days | `part2/optimized_verilog/` (made after Part 2) |
 | 4 | HLS version (Siemens Catapult), optional, +5% of the project component | **Tue Dec 1** (handout); no late days; only if Part 3 is in hand | `part4/` |
 | — | **Oral exam**: 15 min, 25% of the course grade | **Thu Dec 3** | `docs/oral-prep.html` |
