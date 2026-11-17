@@ -1,0 +1,95 @@
+    Magic 271485
+Revision Verdi_V-2023.12-SP2-4
+
+; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
+viewPort 0 25 1536 555 199 65
+
+; File list:
+; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
+openDirFile -d / "" "/home/users/psmriti/ee271-2025/assignment-4-fall-2025/hls/Accelerator/default.fsdb"
+
+; file time scale:
+; fileTimeScale ### s|ms|us|ns|ps
+
+; signal spacing:
+signalSpacing 5
+
+; windowTimeUnit is used for zoom, cursor & marker
+; waveform viewport range
+zoom 1682342.385109 1952139.124003
+cursor 1772000.000000
+marker 0.000000
+
+; user define markers
+; userMarker time_pos marker_name color linestyle
+; visible top row signal index
+top 6
+; marker line index
+markerPos 28
+
+; event list
+; addEvent event_name event_expression
+; curEvent event_name
+
+
+
+COMPLEX_EVENT_BEGIN
+
+
+COMPLEX_EVENT_END
+
+
+
+; toolbar current search type
+; curSTATUS search_type
+curSTATUS ByChange
+
+
+addGroup "G1"
+addGroup "G2"
+activeDirFile "" "/home/users/psmriti/ee271-2025/assignment-4-fall-2025/hls/Accelerator/default.fsdb"
+addSignal -h 15 /sc_main/tb/dut/ccs_rtl/dut_inst/clk
+addSignal -h 15 -holdScope rst
+addSignal -h 15 -holdScope pe_inst_channels_0_val
+addSignal -h 15 -holdScope pe_inst_channels_0_rdy
+addSignal -h 15 -UNSIGNED -HEX -holdScope pe_inst_channels_0_msg[8:0]
+addSignal -h 15 -holdScope vector_data_channels_0_val
+addSignal -h 15 -holdScope vector_data_channels_0_rdy
+addSignal -h 15 -holdScope matrix_data_channels_0_val
+addSignal -h 15 -UNSIGNED -HEX -holdScope vector_data_channels_0_msg[31:0]
+addSignal -h 15 -holdScope matrix_data_channels_0_rdy
+addSignal -h 15 -UNSIGNED -HEX -holdScope matrix_data_channels_0_msg[31:0]
+addSignal -h 15 -holdScope output_data_channels_0_val
+addSignal -h 15 -holdScope output_data_channels_0_rdy
+addSignal -h 15 -UNSIGNED -HEX -holdScope output_data_channels_0_msg[31:0]
+addGroup "G3"
+addSignal -h 15 /sc_main/tb/dut/ccs_rtl/dut_inst/buf_inst_val
+addSignal -h 15 -holdScope buf_inst_rdy
+addSignal -h 15 -UNSIGNED -HEX -holdScope buf_inst_msg[23:0]
+addSignal -h 15 -holdScope output_data_channels_0_val
+addSignal -h 15 -holdScope output_data_channels_0_rdy
+addSignal -h 15 -UNSIGNED -HEX -holdScope output_data_channels_0_msg[31:0]
+addSignal -h 15 -holdScope matrix_data_channels_0_val
+addSignal -h 15 -holdScope matrix_data_channels_0_rdy
+addSignal -h 15 -UNSIGNED -HEX -holdScope matrix_data_channels_0_msg[31:0]
+addSignal -h 15 -holdScope vector_data_channels_0_val
+addSignal -h 15 -holdScope vector_data_channels_0_rdy
+addSignal -h 15 -UNSIGNED -HEX -holdScope vector_data_channels_0_msg[31:0]
+addGroup "G4"
+
+; getSignalForm Scope Hierarchy Status
+; active file of getSignalForm
+activeDirFile "" "/home/users/psmriti/ee271-2025/assignment-4-fall-2025/hls/Accelerator/default.fsdb"
+
+GETSIGNALFORM_SCOPE_HIERARCHY_BEGIN
+getSignalForm close
+
+"/sc_main"
+
+SCOPE_LIST_BEGIN
+"/sc_main"
+SCOPE_LIST_END
+
+GETSIGNALFORM_SCOPE_HIERARCHY_END
+
+
