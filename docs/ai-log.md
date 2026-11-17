@@ -69,3 +69,10 @@ Template:
   describe behavior and timing with diagrams and recorded waveforms, not solution code. The recorded waveforms and the
   cycle-level "timing contract" are effectively a reference for the timing (flagged on the pages).
 - Worked / didn't: (fill in after using it)
+
+## 2026-11-17: Ryan, Claude Code (Claude Opus 5.5)
+- Asked for: a briefing on how much work Part 2 still is for Ryan (controller + buffer, with `top.sv` shared), and to
+  pull in the optional Part 4 so it's ready if we have time.
+- Got: the time estimate (in chat); `part4/` imported from `simd-part4` (subtree, like Parts 1 and 2), the Part 4 PDF
+  in `handouts/`, and a "Part 4 (optional)" section in `docs/PLAN.md`. Done on branch `part4-setup`.
+- Not done by AI: no Part 2 RTL and no Part 4 TODOs. They are untouched staff skeletons.
