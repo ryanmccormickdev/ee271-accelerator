@@ -76,3 +76,16 @@ Template:
 - Got: the time estimate (in chat); `part4/` imported from `simd-part4` (subtree, like Parts 1 and 2), the Part 4 PDF
   in `handouts/`, and a "Part 4 (optional)" section in `docs/PLAN.md`. Done on branch `part4-setup`.
 - Not done by AI: no Part 2 RTL and no Part 4 TODOs. They are untouched staff skeletons.
+
+## 2026-11-18: Ryan, Claude Code (Claude Opus 5.5)
+- Asked for: a structured, beginner-level path through his share of Part 2 (buffer, controller, `top.sv`) that works in
+  short gaps of time, without the AI writing the RTL.
+- Got: `docs/part2-sittings.html`, 16 sittings of about 10–25 minutes each. Each one says what to read, what to type (in
+  words, plus generic SystemVerilog idioms), the command to run, the output to expect, the usual wrong output and what
+  it means, and a commit. Three sittings work on a phone. It links into `docs/part2-rtl.html` for depth.
+- How it was checked: every "You should see" block was captured by running `make buf-unit`, `make ctl-check` and
+  `make eq` on partial designs built in the AI's scratch space, outside the repo: buffer in 4 stages, controller in 4,
+  `top.sv` with an empty PE and with a working one, plus two deliberately wrong variants for the "If instead" boxes.
+  Checked for horizontal overflow at phone width in Firefox. The caddy sittings have not been run.
+- Not done by AI: the RTL. `buffer.sv`, `controller.sv` and `top.sv` are still the staff skeletons. The page describes
+  each piece in words and leaves the code to Ryan; the two "Hint 2" boxes are the most specific part.

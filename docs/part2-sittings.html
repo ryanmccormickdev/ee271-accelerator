@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 2 Sittings</title>
+<style>
+:root {
+  --bg: #faf9f6; --fg: #1d1d1b; --muted: #66645e; --card: #ffffff; --border: #e4e1d8;
+  --accent: #3451c7; --code-bg: #f2f0ea; --code-fg: #26251f;
+  --do: #eaf6ee; --do-b: #2f8f46; --see: #edf1ff; --see-b: #3d5fd9; --watch: #fff3e3; --watch-b: #d0640b;
+  --phone: #f3e9fb; --phone-b: #8a4cc2;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15161a; --fg: #e7e5df; --muted: #a09d94; --card: #1d1f24; --border: #30333a;
+    --accent: #8fa6ff; --code-bg: #23262c; --code-fg: #e6e4dc;
+    --do: #16271c; --do-b: #4cbf6a; --see: #1a2036; --see-b: #7f9bff; --watch: #2c2214; --watch-b: #f0913d;
+    --phone: #261b31; --phone-b: #c193ee;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15161a; --fg: #e7e5df; --muted: #a09d94; --card: #1d1f24; --border: #30333a;
+  --accent: #8fa6ff; --code-bg: #23262c; --code-fg: #e6e4dc;
+  --do: #16271c; --do-b: #4cbf6a; --see: #1a2036; --see-b: #7f9bff; --watch: #2c2214; --watch-b: #f0913d;
+  --phone: #261b31; --phone-b: #c193ee;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; }
+.wrap { display: grid; grid-template-columns: 1fr; max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 1100px) { .wrap { grid-template-columns: 250px minmax(0, 800px); gap: 44px; } }
+nav.toc { display: none; }
+@media (min-width: 1100px) {
+  nav.toc { display: block; position: sticky; top: 16px; align-self: start; padding-top: 48px; font-size: 14px;
+    max-height: calc(100vh - 32px); overflow-y: auto; }
+  nav.toc .grp { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin: 14px 0 2px; }
+  nav.toc a { display: flex; gap: 8px; color: var(--muted); text-decoration: none; padding: 3px 0; }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc a.done { opacity: .55; }
+  nav.toc a.done::after { content: "✓"; color: var(--do-b); margin-left: auto; }
+}
+main { min-width: 0; padding: 36px 0 80px; }
+.kicker { color: var(--muted); font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
+h1 { font-size: 32px; line-height: 1.2; margin: 6px 0 12px; }
+h2 { font-size: 22px; margin: 0 0 6px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+h2 .num { color: var(--accent); }
+h3 { font-size: 18px; margin: 26px 0 6px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 10px; font-size: 13.5px; color: var(--muted); }
+.pill { border: 1px solid var(--border); border-radius: 999px; padding: 1px 9px; background: var(--card); }
+.pill.phone { background: var(--phone); border-color: var(--phone-b); color: var(--phone-b); font-weight: 600; }
+.pill.lap { color: var(--muted); }
+label.mark { margin-left: auto; font-size: 14px; font-weight: 600; color: var(--do-b); cursor: pointer;
+  display: inline-flex; gap: 6px; align-items: center; }
+p, li { max-width: 74ch; }
+a { color: var(--accent); }
+.lede { font-size: 18px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; padding: 0; list-style: none; }
+.facts li { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: 14.5px; }
+section.sit { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 18px 8px; margin: 22px 0; }
+section.sit.done { opacity: .62; }
+section.sit.done:hover { opacity: 1; }
+.phase { margin: 44px 0 4px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; }
+.phase b { color: var(--fg); }
+code { font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  color: var(--code-fg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+pre { position: relative; background: var(--code-bg); color: var(--code-fg); border-radius: 8px; padding: 12px 14px;
+  overflow-x: auto; margin: 10px 0; border: 1px solid var(--border); font-size: 13.5px; line-height: 1.5; }
+pre code { background: none; padding: 0; overflow-wrap: normal; font-size: inherit; }
+pre .c { color: var(--muted); }
+button.copy { position: absolute; top: 6px; right: 6px; font: 12px/1 -apple-system, sans-serif; padding: 5px 8px;
+  border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; }
+.callout { border-left: 4px solid; border-radius: 6px; padding: 10px 14px; margin: 12px 0; }
+.callout > :first-child { margin-top: 0; } .callout > :last-child { margin-bottom: 0; }
+.callout .tag { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 2px; }
+.do { background: var(--do); border-color: var(--do-b); } .do .tag { color: var(--do-b); }
+.see { background: var(--see); border-color: var(--see-b); } .see .tag { color: var(--see-b); }
+.watch { background: var(--watch); border-color: var(--watch-b); } .watch .tag { color: var(--watch-b); }
+.ph { background: var(--phone); border-color: var(--phone-b); } .ph .tag { color: var(--phone-b); }
+.do ol, .do ul { padding-left: 22px; margin: 4px 0; }
+.see pre, .watch pre { background: var(--card); }
+details { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; margin: 10px 0; }
+details > summary { cursor: pointer; font-weight: 600; font-size: 15.5px; }
+details[open] > summary { margin-bottom: 6px; }
+.explain { font-size: 15.5px; color: var(--muted); border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 8px; }
+.explain b { color: var(--fg); }
+.save { font-size: 15px; }
+.tw { overflow-x: auto; max-width: 100%; margin: 10px 0; }
+table { border-collapse: collapse; font-size: 14.5px; }
+th, td { border: 1px solid var(--border); padding: 5px 9px; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); }
+td.n { text-align: right; color: var(--muted); }
+td code, th code { overflow-wrap: normal; white-space: nowrap; }
+.next { position: sticky; top: 0; z-index: 5; background: var(--accent); color: #fff; border-radius: 0 0 10px 10px;
+  padding: 8px 14px; font-size: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.next[hidden] { display: none; }
+.next a { color: #fff; font-weight: 700; }
+.next .small { opacity: .85; font-size: 13.5px; margin-left: auto; }
+.plan { display: grid; grid-template-columns: 1fr; gap: 8px; margin: 12px 0; }
+@media (min-width: 700px) { .plan { grid-template-columns: repeat(3, 1fr); } }
+.plan div { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 15px; }
+.plan b { display: block; margin-bottom: 2px; }
+.small { font-size: 14.5px; color: var(--muted); }
+footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); padding-top: 16px; }
+.theme { position: fixed; bottom: 12px; right: 12px; font-size: 13px; padding: 4px 9px; border-radius: 6px; z-index: 6;
+  border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; }
+</style>
+</head>
+<body>
+<button class="theme" id="theme" type="button" aria-label="Toggle light or dark theme">◐</button>
+<div class="wrap">
+<nav class="toc" aria-label="Sittings">
+  <div class="grp">Prep</div>
+  <a href="#s1" data-step="s1">1 · The picture</a>
+  <a href="#s2" data-step="s2">2 · Four building blocks</a>
+  <a href="#s3" data-step="s3">3 · Set up</a>
+  <div class="grp">Buffer</div>
+  <a href="#s4" data-step="s4">4 · Matrix path</a>
+  <a href="#s5" data-step="s5">5 · Remember last cycle</a>
+  <a href="#s6" data-step="s6">6 · Vector path</a>
+  <a href="#s7" data-step="s7">7 · Write path</a>
+  <div class="grp">Caddy</div>
+  <a href="#s8" data-step="s8">8 · First login</a>
+  <div class="grp">Controller</div>
+  <a href="#s9" data-step="s9">9 · On paper</a>
+  <a href="#s10" data-step="s10">10 · Issue instructions</a>
+  <a href="#s11" data-step="s11">11 · Step the offsets</a>
+  <a href="#s12" data-step="s12">12 · Delay the PE</a>
+  <a href="#s13" data-step="s13">13 · No bubbles</a>
+  <div class="grp">Finish</div>
+  <a href="#s14" data-step="s14">14 · top.sv</a>
+  <a href="#s15" data-step="s15">15 · Plug in the PE</a>
+  <a href="#s16" data-step="s16">16 · Caddy + submit</a>
+  <div class="grp">Help</div>
+  <a href="#stuck">When you're stuck</a>
+</nav>
+<main>
+<div class="next" id="next" hidden></div>
+<header>
+  <div class="kicker">EE271 · Project Part 2 · Ryan's path</div>
+  <h1>Part 2, one sitting at a time</h1>
+  <p class="lede">Your three files (<code>buffer.sv</code>, <code>controller.sv</code>, <code>top.sv</code>) broken into
+  16 short sittings, mostly 10 to 25 minutes each. Each one says what to read, what to type and what to run. Each ends with a
+  check whose output you can compare to the <b>You should see</b> box, then a commit. Stop after any sitting.
+  Tick the box when you finish one, and the bar at the top tells you where to pick up.</p>
+  <ul class="facts">
+    <li>Due <b>Thu Nov 19, 11:59 PM PST</b></li>
+    <li>Late day: one from <b>each</b> of you → Fri</li>
+    <li>Total ≈ 4½–5 h of sittings</li>
+    <li>Three are <span class="pill phone">phone OK</span></li>
+  </ul>
+  <div class="plan">
+    <div><b>Wed (today)</b>1–2 on your phone in any gap. 3–7 at the laptop: the buffer, about 75 min. Then 8: first caddy login, 30 min.</div>
+    <div><b>Thu, before 6 PM</b>9 on your phone. 10–14 at the laptop: controller and top, about 75 min. (CS240 response due 1:30 PM.)</div>
+    <div><b>Thu evening</b>15–16 with your partner: plug in the PE, caddy, submit. <b>6 PM rule:</b> if <code>make eq</code> isn't green by then, you each spend a late day.</div>
+  </div>
+  <div class="callout ph"><span class="tag">Phone</span>
+  Sittings 1, 2 and 9 need nothing but this page. To read them on your phone, AirDrop this file
+  (<code>docs/part2-sittings.html</code>) to it and open it there. Links to other pages won't work on the phone, and these three don't need them.</div>
+  <p class="small">Every <b>You should see</b> box below is real output, captured Nov 18 by running these exact checks
+  on partial designs built outside the repo. Your numbers in the INT32/MemBOffset details may differ slightly
+  if you take a different but valid route; the PASS/FAIL lines and the meaning won't. The caddy sittings (8, 16) have not
+  been run by anyone yet.</p>
+</header>
+
+<!-- ============================================================ PREP -->
+<div class="phase"><b>Prep</b> · 25 min</div>
+
+<section class="sit" id="s1" data-step="s1">
+  <h2><span class="num">1</span> The picture and the one timing rule
+    <label class="mark"><input type="checkbox" data-done="s1"> done</label></h2>
+  <div class="meta"><span class="pill phone">phone OK</span><span class="pill">10 min</span><span class="pill">read only</span></div>
+
+  <p><b>What the machine does.</b> The controller reads one instruction at a time from the instruction memory and
+  repeats it <code>count&nbsp;+&nbsp;1</code> times, <b>one repetition per clock cycle</b>. Every repetition has two halves:
+  a memory half (<code>buf_inst</code>, sent to the buffer: READ / WRITE / NOP) and a compute half
+  (<code>pe_inst</code>, sent to all 16 PEs: MAC / OUT / CLR / …). That's the same <code>READ | MAC</code> pairing you had in
+  Part 1.</p>
+  <p><b>The buffer is three memories.</b> MEM0 holds the matrix: one 512-bit word gives each of the 16 PEs 32 bits.
+  MEM1 holds the vector, in 32-bit words. MEM2 receives the results, in 512-bit words. All three are instances of the
+  staff's <code>array</code> module, already placed in <code>buffer.sv</code>; you wire them up.</p>
+  <p><b>The one rule everything else follows from:</b> the memories are <em>synchronous</em>. You give an address in
+  cycle <i>t</i>; the data comes out in cycle <i>t</i>+1. Writing it out:</p>
+  <div class="tw"><table>
+    <tr><th></th><th>cycle <i>t</i></th><th>cycle <i>t</i>+1</th></tr>
+    <tr><td>READ</td><td>buffer sends the addresses to MEM0/MEM1</td><td>the data is on <code>matrix_data</code> / <code>vector_data</code></td></tr>
+    <tr><td>PE op of that repetition</td><td>(not yet: no data)</td><td>runs on that data; its result is stored at the end of <i>t</i>+1</td></tr>
+    <tr><td>WRITE</td><td>buffer notes "write pending"</td><td>MEM2 stores <code>output_data</code> (which by now includes the OUT just before)</td></tr>
+  </table></div>
+  <p>So: the controller sends <code>buf_inst</code> first and the matching <code>pe_inst</code> one cycle later, and the
+  buffer has to <b>remember</b> a few things from cycle <i>t</i> to use in <i>t</i>+1. Every one of those is a register you'll write.</p>
+  <p><b>Your files:</b> <code>buffer.sv</code> (wire the memories, remember what's needed for one cycle),
+  <code>controller.sv</code> (count repetitions, step addresses, delay the PE half), <code>top.sv</code> (plug it all
+  together, no logic). Your partner writes <code>processing_element.sv</code>.</p>
+  <p class="explain"><b>Done when</b> you can say it out loud: <i>"address in t, data in t+1, so the PE works one cycle after its READ, and a WRITE lands one cycle after it's issued."</i>
+  Deeper (laptop): the animated <a href="part2-rtl.html#cycles">Cycles tab</a>.</p>
+</section>
+
+<section class="sit" id="s2" data-step="s2">
+  <h2><span class="num">2</span> Four building blocks of SystemVerilog
+    <label class="mark"><input type="checkbox" data-done="s2"> done</label></h2>
+  <div class="meta"><span class="pill phone">phone OK</span><span class="pill">10 min</span><span class="pill">read only</span></div>
+  <p>You're not writing steps for a processor. You're describing wires and registers that all exist at once and all
+  update on the same clock. This project needs only four building blocks. Here they are in a made-up example
+  (a counter), <b>not</b> project code:</p>
+<pre><code><span class="c">// 1. Signals: give every signal a width.</span>
+logic [15:0] count;      <span class="c">// 16 bits, bit 15 on the left</span>
+logic        busy;       <span class="c">// 1 bit</span>
+
+<span class="c">// 2. A wire with an equation: busy is ALWAYS equal to this. No order, no "running".</span>
+assign busy = (count != '0);           <span class="c">// '0 means "all zeros", any width</span>
+
+<span class="c">// 3. A register: changes only at the rising clock edge (or right away on reset).</span>
+always_ff @(posedge clk, negedge rst_n) begin
+    if (!rst_n) begin                  <span class="c">// reset is active-low: rst_n == 0 means "reset now"</span>
+        count &lt;= '0;                   <span class="c">// every register gets a reset value</span>
+    end else if (busy) begin
+        count &lt;= count - 1'b1;         <span class="c">// &lt;= inside always_ff, always</span>
+    end
+end
+
+<span class="c">// 4. An instance: one physical copy of another module, ports connected BY NAME.</span>
+timer u_timer (                        <span class="c">// module name, then your name for this copy</span>
+    .clk(clk),                         <span class="c">// .port_name(my_signal)</span>
+    .start(busy),
+    .done()                            <span class="c">// empty () = not connected</span>
+);</code></pre>
+  <p><b>Two rules that prevent most beginner bugs:</b> (1) registers live in <code>always_ff</code> and use
+  <code>&lt;=</code>; everything combinational is an <code>assign</code>. (2) Every register gets a value in the reset branch.
+  (A register without one is <code>x</code>, unknown, and <code>x</code> spreads.)</p>
+  <h3>The names you'll use (from the generated <code>defines.sv</code>)</h3>
+  <p>A <code>struct</code> is a bundle of fields; read a field with a dot: <code>buf_inst.mema_offset</code>. Backtick
+  names like <code>`BUF_WRITE</code> are constants.</p>
+  <div class="tw"><table>
+    <tr><th>Type</th><th>Fields (widths)</th></tr>
+    <tr><td><code>buf_inst_t</code></td><td><code>opcode</code> (2) · <code>mode</code> (2) · <code>mema_offset</code> (16) · <code>memb_offset</code> (16)</td></tr>
+    <tr><td><code>pe_inst_t</code></td><td><code>opcode</code> (2) · <code>mode</code> (2) · <code>value</code> (5)</td></tr>
+    <tr><td><code>instruction_t</code></td><td><code>buf_instruction</code> (a <code>buf_inst_t</code>) · <code>pe_instruction</code> (a <code>pe_inst_t</code>) · <code>count</code> (16) · <code>mema_inc</code> (1) · <code>memb_inc</code> (1)</td></tr>
+  </table></div>
+  <p>Buffer opcodes: <code>`BUF_READ</code> = 0, <code>`BUF_WRITE</code> = 1, <code>`BUF_NOP</code> = 2. Widths:
+  <code>`BUF_MEMB_OFFSET_BITWIDTH</code> = 16, <code>`BUF_MODE_BITWIDTH</code> = 2, <code>`MEM1_ADDR_WIDTH</code> = 14,
+  <code>`MEM1_BITWIDTH</code> = 32, <code>`MEM2_ADDR_WIDTH</code> = 16, <code>`MEM0_BITWIDTH</code> = <code>`MEM2_BITWIDTH</code> = 512,
+  <code>`CONTROLLER_COUNT_BITWIDTH</code> = 16, <code>`PE_COUNT</code> = 16. Operators: <code>==</code>, <code>!=</code>,
+  <code>&amp;&amp;</code> (and), <code>||</code> (or), <code>!x</code> / <code>~x</code> (not).</p>
+  <p class="explain"><b>Done when</b> you can say why <code>count</code> needs a reset and <code>busy</code> doesn't.
+  Deeper (laptop): <a href="part2-rtl.html#primer">SystemVerilog for Python programmers</a>.</p>
+</section>
+
+<section class="sit" id="s3" data-step="s3">
+  <h2><span class="num">3</span> Set up your workspace
+    <label class="mark"><input type="checkbox" data-done="s3"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">10 min</span></div>
+  <div class="callout do"><span class="tag">Do</span>
+<pre class="cmd"><code>cd ~/ee271-project
+git switch main &amp;&amp; git merge part4-setup &amp;&amp; git push   # today's doc updates, incl. this page
+git switch -c p2/ryan-rtl                              # your branch: buffer, controller, top
+code . part2/unoptimized_verilog/logical/buffer.sv     # or open it in your editor
+make buf-unit                                          # see the starting line</code></pre>
+  <p>Then two things that take a minute each and save you later:</p>
+  <ol>
+    <li><b>Text your partner:</b> (a) when will the PE be pushed? You need it by Thu afternoon. (b) You'll decide the late day at 6 PM Thu. (c) Who presses submit?</li>
+    <li><b>Make a GitHub token</b> for Sitting 8 (works on your phone): github.com → Settings → Developer settings →
+    Personal access tokens → Tokens (classic) → scope <code>repo</code>. Save it somewhere; it's your password when cloning on caddy.</li>
+  </ol></div>
+  <div class="callout see"><span class="tag">You should see</span>
+<pre><code>  reads:  FAIL. 204 of 204 READs wrong; first at cycle 1: READ INT32 MemAOffset=3 MemBOffset=5
+          ...
+          observed x/z (uninitialised or undriven)
+  writes: FAIL. 53 write(s) stored the data from ? cycle(s) after the WRITE. ...
+Buffer unit test: FAIL (re-run with WAVES=1, then make waves)</code></pre>
+  <p>That's the empty skeleton. <code>make buf-unit</code> drives your buffer alone with 204 READs and 53 WRITEs and
+  compares against the staff's Python. It takes a few seconds. You'll run it after every buffer sitting.</p></div>
+  <p class="save"><b>Save after every sitting</b> (10 seconds; a tiny gap never loses work):
+  <code>git commit -am "what I just did"</code>. <code>git log --oneline -3</code> shows where you left off.</p>
+</section>
+
+<!-- ============================================================ BUFFER -->
+<div class="phase"><b>Buffer</b> · ≈ 70 min · file: <code>part2/unoptimized_verilog/logical/buffer.sv</code></div>
+
+<section class="sit" id="s4" data-step="s4">
+  <h2><span class="num">4</span> Buffer 1/4: the matrix path
+    <label class="mark"><input type="checkbox" data-done="s4"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">15 min</span><span class="pill">≈ 3 lines</span></div>
+  <p><b>Why.</b> A READ's <code>mema_offset</code> is a MEM0 word address, and MEM0's output <code>q</code> <em>is</em>
+  <code>matrix_data</code>. This is pure wiring, your first win. The memory's control pins are active-low:
+  <code>cen</code> = 0 means "on", <code>gwen</code> = 1 means "don't write". The skeleton already ties them that way for MEM0.</p>
+  <div class="callout do"><span class="tag">Do</span><ol>
+    <li>Find the <code>u_matrix_mem</code> instance. Fill its empty <code>.a()</code> with the MemA offset field of
+    <code>buf_inst</code>. Both are 16 bits, so no slicing.</li>
+    <li>Fill its <code>.q()</code> with the module's output <code>matrix_data</code>.</li>
+    <li>Leave <code>.cen('0)</code>, <code>.wen('1)</code>, <code>.gwen('1)</code> as they are (read every cycle, never
+    write). <code>.d()</code> stays empty.</li>
+    <li><b>Temporary line</b>, under <code>// Your Code Here</code>: <code>assign vector_data = '0;</code>. Without it,
+    <code>vector_data</code> is undriven (x) and the check can't show you whether your matrix part is right. You delete it in Sitting 6.</li>
+  </ol></div>
+<pre class="cmd"><code>make lint          # catches typos and width mistakes, with line numbers: want "0 error(s)"
+make buf-unit</code></pre>
+  <div class="callout see"><span class="tag">You should see</span>
+<pre><code>  reads:  FAIL. 204 of 204 READs wrong; first at cycle 1: READ INT32 MemAOffset=3 MemBOffset=5
+          the instruction presented in the NEXT cycle (while this data is on the output) is op=READ mode=INT32
+          vector_data expected fd26770a, got 00000000; MEM1 word 5 = fd26770a, lane select MemBOffset[0:0] = 0
+  writes: FAIL. ...</code></pre>
+  <p><b>What matters is what's missing:</b> no <code>matrix_data expected … got …</code> line. Your matrix path is
+  right; only the vector (still zeros) is wrong. Writes come in Sitting 7.</p></div>
+  <p class="explain"><b>Explain it:</b> why is the row on <code>matrix_data</code> one cycle after the READ, not in the same cycle?</p>
+  <p class="save">Save: <code>git commit -am "Buffer: MEM0 read path"</code></p>
+</section>
+
+<section class="sit" id="s5" data-step="s5">
+  <h2><span class="num">5</span> Buffer 2/4: remember last cycle's offset and mode
+    <label class="mark"><input type="checkbox" data-done="s5"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">15 min</span><span class="pill">your first register</span></div>
+  <p><b>Why.</b> In INT8 one 32-bit MEM1 word holds 4 vector elements. <em>Which word</em> (the address) is needed in
+  cycle <i>t</i>. <em>Which element in it</em> (the lane) is needed in <i>t</i>+1, when the word arrives. But by
+  <i>t</i>+1, <code>buf_inst</code> already shows the <em>next</em> instruction. So the buffer keeps its own copy of the
+  READ's <code>memb_offset</code> and <code>mode</code>.</p>
+  <div class="callout do"><span class="tag">Do</span><ol>
+    <li>Declare two signals: one <code>`BUF_MEMB_OFFSET_BITWIDTH</code> bits wide, one <code>`BUF_MODE_BITWIDTH</code>
+    wide. Suggested names: <code>memb_q</code>, <code>mode_q</code>. The <code>_q</code> suffix is a common way to say "register output".</li>
+    <li>Write one <code>always_ff</code> block, the same shape as the counter in Sitting 2. On reset, both get
+    <code>'0</code>. Otherwise, <b>every cycle</b>, copy <code>buf_inst.memb_offset</code> and <code>buf_inst.mode</code> into them.</li>
+  </ol></div>
+<pre class="cmd"><code>make lint
+make buf-unit</code></pre>
+  <div class="callout see"><span class="tag">You should see</span>
+  <p><code>make lint</code>: <code>&gt;&gt; 0 error(s); … warning(s)</code>. Warnings named <code>PINCONNECTEMPTY</code> are just
+  the pins you haven't connected yet. <code>make buf-unit</code>: <b>the same output as Sitting 4</b>. That's expected: nothing
+  reads these registers yet.</p></div>
+  <details><summary>Hint: "every cycle" or "only when it's a READ"?</summary>
+  <p>Both pass. Every cycle is simpler, and it's correct: in <i>t</i>+1 the registers always hold cycle <i>t</i>'s values, and if <i>t</i>
+  wasn't a READ, nobody uses the data anyway. If you'd rather only capture on a valid READ, that's an
+  <code>else if (buf_inst_valid &amp;&amp; buf_inst.opcode == `BUF_READ)</code> branch. Pick one, and be ready to say why.</p></details>
+  <p class="explain"><b>Explain it:</b> what goes wrong if the lane select used <code>buf_inst.memb_offset</code> directly?</p>
+  <p class="save">Save: <code>git commit -am "Buffer: register the READ's offset and mode"</code></p>
+</section>
+
+<section class="sit" id="s6" data-step="s6">
+  <h2><span class="num">6</span> Buffer 3/4: the vector path
+    <label class="mark"><input type="checkbox" data-done="s6"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">20–25 min</span><span class="pill">the trickiest buffer sitting</span></div>
+  <p><b>Why.</b> <code>defines.sv</code> gives you a module, <code>vector_decoder</code>, that does both MEM1 jobs: it turns an
+  offset into a MEM1 word address, and it picks the right lane out of the word that comes back and copies it to all
+  lanes for the PEs. But those two jobs happen in different cycles. So you use <b>two copies</b> of it. The
+  <em>address copy</em> gets this cycle's offset and mode. The <em>data copy</em> gets the word from MEM1 plus your
+  registers from Sitting 5. Each copy leaves the other job's ports unused.</p>
+  <div class="callout do"><span class="tag">Do</span><ol>
+    <li>Declare wires: the MEM1 address (<code>`MEM1_ADDR_WIDTH</code> = 14 bits), the MEM1 word (<code>`MEM1_BITWIDTH</code>
+    = 32), and two spares (one 14-bit, one 32-bit) for decoder outputs you won't use.</li>
+    <li>Instantiate <code>vector_decoder</code> twice, with two instance names (for example <code>u_addr_dec</code>,
+    <code>u_data_dec</code>). Ports are in Hint 1. Try the connections yourself first.</li>
+    <li>In <code>u_vector_mem</code>: <code>.a()</code> ← the address wire, <code>.q()</code> → the word wire.</li>
+    <li><b>Delete</b> the temporary <code>assign vector_data = '0;</code>. The data copy drives <code>vector_data</code> now.</li>
+  </ol></div>
+  <details><summary>Hint 1: the decoder's ports</summary>
+  <div class="tw"><table>
+    <tr><th>Port</th><th>Dir</th><th>Bits</th><th>What it is</th></tr>
+    <tr><td><code>data_from_mem</code></td><td>in</td><td>32</td><td>the word MEM1 returned</td></tr>
+    <tr><td><code>addr_from_controller</code></td><td>in</td><td>16</td><td>the offset used to compute the address</td></tr>
+    <tr><td><code>addr_from_controller_reg</code></td><td>in</td><td>16</td><td>the offset used to pick the lane (from a register)</td></tr>
+    <tr><td><code>mode</code></td><td>in</td><td>2</td><td>INT8 / INT16 / INT32, used for <b>both</b> jobs</td></tr>
+    <tr><td><code>data_to_pe</code></td><td>out</td><td>32</td><td>the selected lane, copied to all lanes</td></tr>
+    <tr><td><code>addr_to_mem</code></td><td>out</td><td>14</td><td>the MEM1 word address</td></tr>
+  </table></div>
+  <p>Unused inputs get <code>'0</code>; unused outputs go to a spare wire.</p></details>
+  <details><summary>Hint 2: what goes where (open only if stuck)</summary>
+  <div class="tw"><table>
+    <tr><th>Port</th><th>Address copy</th><th>Data copy</th></tr>
+    <tr><td><code>data_from_mem</code></td><td><code>'0</code></td><td>the MEM1 word wire</td></tr>
+    <tr><td><code>addr_from_controller</code></td><td><code>buf_inst.memb_offset</code></td><td><code>'0</code></td></tr>
+    <tr><td><code>addr_from_controller_reg</code></td><td><code>'0</code></td><td>your offset register</td></tr>
+    <tr><td><code>mode</code></td><td><code>buf_inst.mode</code></td><td>your mode register</td></tr>
+    <tr><td><code>data_to_pe</code></td><td>spare 32-bit wire</td><td><code>vector_data</code></td></tr>
+    <tr><td><code>addr_to_mem</code></td><td>the MEM1 address wire</td><td>spare 14-bit wire</td></tr>
+  </table></div></details>
+<pre class="cmd"><code>make lint
+make buf-unit</code></pre>
+  <div class="callout see"><span class="tag">You should see</span>
+<pre><code>  reads:  PASS. 204 READs; data appears 1 cycle(s) after the READ is presented
+  writes: FAIL. 53 write(s) stored the data from ? cycle(s) after the WRITE. ...</code></pre></div>
+  <div class="callout watch"><span class="tag">If instead</span>
+<pre><code>          -&gt; got is that word decoded as INT16: the lane select is using another cycle's mode. ...</code></pre>
+  <p>Your data copy is getting <code>buf_inst.mode</code> instead of your mode register. This one bug passes all three
+  official tests and is still wrong, so it's worth getting right here. Lint warnings about <code>vector_decoder</code>
+  (a missing <code>default</code>) come from staff code. Ignore them.</p></div>
+  <p class="explain"><b>Explain it:</b> why does the address copy use this cycle's values and the data copy last cycle's?</p>
+  <p class="save">Save: <code>git commit -am "Buffer: MEM1 path, reads pass"</code></p>
+</section>
+
+<section class="sit" id="s7" data-step="s7">
+  <h2><span class="num">7</span> Buffer 4/4: the write path
+    <label class="mark"><input type="checkbox" data-done="s7"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">20 min</span></div>
+  <p><b>Why.</b> Every program ends a tile with <code>NOP | OUT</code> followed by <code>WRITE | NOP</code>. The OUT updates
+  the PE outputs at the end of the cycle the WRITE is issued in. If MEM2 stored <code>output_data</code> during the
+  WRITE's own cycle, it would store the old values (zeros). So the buffer waits one cycle: it remembers "a write is
+  pending" and its address, then writes. MEM2's write enable is <b>active-low</b>. The skeleton already connects it to
+  <code>write_control_n</code>; you drive that signal.</p>
+  <div class="callout do"><span class="tag">Do</span><ol>
+    <li>Declare a 1-bit register (the pending flag) and a <code>`MEM2_ADDR_WIDTH</code>-bit register (the address).</li>
+    <li>One <code>always_ff</code>: on reset both get 0. Otherwise, every cycle: pending ← "this cycle has a <em>valid</em>
+    WRITE", meaning <code>buf_inst_valid</code> and <code>buf_inst.opcode == `BUF_WRITE</code>; address ← <code>buf_inst.mema_offset</code>.</li>
+    <li>Drive <code>write_control_n</code> with the <em>opposite</em> of pending (active-low).</li>
+    <li>In <code>u_output_mem</code>: <code>.a()</code> ← your address register, <code>.d()</code> ← <code>output_data</code>.</li>
+  </ol></div>
+<pre class="cmd"><code>make buf-unit</code></pre>
+  <div class="callout see"><span class="tag">You should see</span>
+<pre><code>  reads:  PASS. 204 READs; data appears 1 cycle(s) after the READ is presented
+  writes: PASS. 53 addresses written; each holds the output_data from 1 cycle after its WRITE was presented; no other address changed
+Buffer unit test: PASS</code></pre>
+  <p><b>The buffer is done.</b></p></div>
+  <div class="callout watch"><span class="tag">If instead</span>
+  <p><code>53 write(s) stored the data from 0 cycle(s) after the WRITE</code>: you're writing in the issue cycle, using
+  <code>buf_inst</code> directly instead of your registers. <code>addresses changed without a valid WRITE</code>: the
+  valid or opcode check is missing.</p></div>
+  <p class="explain"><b>Explain it:</b> why does a WRITE commit one cycle after it's issued?</p>
+  <p class="save">Save and back up: <code>git commit -am "Buffer: passes make buf-unit" &amp;&amp; git push -u origin p2/ryan-rtl</code></p>
+</section>
+
+<!-- ============================================================ CADDY -->
+<div class="phase"><b>Caddy</b> · do this early: it's the one thing you can't fix at 11 PM Thursday</div>
+
+<section class="sit" id="s8" data-step="s8">
+  <h2><span class="num">8</span> First caddy login (a dry run)
+    <label class="mark"><input type="checkbox" data-done="s8"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop + network</span><span class="pill">20–40 min</span><span class="pill">not yet run by anyone</span></div>
+  <p><b>Why.</b> <code>compile.log</code>, half of the grading criteria, only comes from Design Compiler, and it only runs on
+  caddy. Nobody on your team has logged in there yet. Find the snags today, while there's time to post on Ed. Your
+  code on your laptop doesn't change; FarmShare is just the door you go through.</p>
+  <div class="callout do"><span class="tag">Do</span>
+<pre class="cmd"><code>ssh &lt;sunetid&gt;@login.farmshare.stanford.edu
+ssh -XY caddy.best.stanford.edu
+git clone https://github.com/ryanmccormickdev/ee271-accelerator.git ee271-project   # password = your GitHub token
+cd ee271-project &amp;&amp; git switch p2/ryan-rtl
+make setup PART=part2          # if conda is missing: install Miniconda (handout Part 1, section 2.2), re-run
+tcsh
+source part2/load_modules.sh
+make synth                     # Design Compiler; takes a while</code></pre></div>
+  <div class="callout see"><span class="tag">You should see</span>
+  <p><code>make synth</code> ends with <code>&gt;&gt; done in N min. compile.log has K error line(s)</code>. <b>Today any K is
+  fine</b>: the controller isn't written yet. The goal is that Design Compiler <em>starts and finishes</em>. If it stops
+  before that (command not found, a module won't load, clone refused), that's the snag to solve or post on Ed now.
+  Optional: <code>make vcs-eq MODE=int8</code> proves VCS runs. It will FAIL for now; that's fine.</p></div>
+  <p class="small">Full notes: <code>docs/WORKFLOW.md</code> → "Working on caddy". If something there is wrong, fix the
+  doc while it's fresh.</p>
+</section>
+
+<!-- ============================================================ CONTROLLER -->
+<div class="phase"><b>Controller</b> · ≈ 70 min · file: <code>part2/unoptimized_verilog/logical/controller.sv</code></div>
+
+<section class="sit" id="s9" data-step="s9">
+  <h2><span class="num">9</span> The controller on paper
+    <label class="mark"><input type="checkbox" data-done="s9"> done</label></h2>
+  <div class="meta"><span class="pill phone">phone OK</span><span class="pill">15 min</span><span class="pill">pen and paper</span></div>
+  <p><b>Why.</b> Ten minutes predicting the schedule saves an hour of guessing at the keyboard. The rules:</p>
+  <ul>
+    <li>The controller <b>takes</b> an instruction (raises <code>inst_exec_begins</code> for that one cycle) when one is
+    valid and it's either idle or on the <b>last repetition</b> of the current one. That's why there are no gaps.</li>
+    <li>The first repetition's <code>buf_inst</code> goes out the cycle <b>after</b> the take.</li>
+    <li>Each <code>pe_inst</code> goes out <b>one cycle after</b> its <code>buf_inst</code> (the memory rule from Sitting 1).</li>
+    <li>The count in a <code>.asm</code> line is the number of repetitions. (The assembler stores it minus one, which is
+    why the hardware runs <code>count + 1</code>.)</li>
+  </ul>
+  <p>Program (the check's <code>basic.asm</code>). After it comes one all-zero padding word, which means
+  <code>READ INT8 0 0 | MAC INT8</code>, 1 repetition:</p>
+<pre><code>NOP           | CLR INT8 | 1 0 0      <span class="c">// count  MemA-inc  MemB-inc</span>
+READ INT8 0 0 | MAC INT8 | 4 1 1
+NOP           | OUT INT8 | 1 0 0
+WRITE 0       | NOP INT8 | 1 0 0
+(padding: READ INT8 0 0 | MAC INT8 | 1 0 0)</code></pre>
+  <p>On paper, make columns <b>cycle 0–10 · buf_inst · pe_inst · inst_exec_begins</b>. Cycle 0 is the first cycle
+  after reset, when the CLR is already valid. Fill it in, then reveal.</p>
+  <details><summary>Reveal the answer (from the simulator)</summary>
+  <div class="tw"><table>
+    <tr><th>cycle</th><th>state</th><th>buf_inst</th><th>pe_inst</th><th>inst_exec_begins</th></tr>
+    <tr><td class="n">0</td><td>IDLE</td><td>—</td><td>—</td><td>1 (takes CLR)</td></tr>
+    <tr><td class="n">1</td><td>EXEC</td><td>NOP</td><td>—</td><td>1 (last rep of CLR → takes READ)</td></tr>
+    <tr><td class="n">2</td><td>EXEC</td><td>READ 0 0</td><td>CLR</td><td>0</td></tr>
+    <tr><td class="n">3</td><td>EXEC</td><td>READ 1 1</td><td>MAC</td><td>0</td></tr>
+    <tr><td class="n">4</td><td>EXEC</td><td>READ 2 2</td><td>MAC</td><td>0</td></tr>
+    <tr><td class="n">5</td><td>EXEC</td><td>READ 3 3</td><td>MAC</td><td>1 (last READ → takes OUT)</td></tr>
+    <tr><td class="n">6</td><td>EXEC</td><td>NOP</td><td>MAC</td><td>1 (takes WRITE)</td></tr>
+    <tr><td class="n">7</td><td>EXEC</td><td>WRITE 0</td><td>OUT</td><td>1 (takes padding)</td></tr>
+    <tr><td class="n">8</td><td>EXEC</td><td>READ 0 0 (padding)</td><td>NOP</td><td>0</td></tr>
+    <tr><td class="n">9</td><td>IDLE</td><td>—</td><td>MAC (padding)</td><td>0</td></tr>
+    <tr><td class="n">10</td><td>IDLE</td><td>—</td><td>—</td><td>0</td></tr>
+  </table></div>
+  <p>Notice: 8 repetitions in 8 back-to-back cycles (1 → 8). The OUT's PE op (cycle 7) happens in the same cycle the WRITE
+  is issued, which is exactly why the buffer delays the write.</p></details>
+  <p class="explain"><b>Explain it:</b> why does <code>inst_exec_begins</code> go high in cycle 5, not cycle 6?</p>
+</section>
+
+<section class="sit" id="s10" data-step="s10">
+  <h2><span class="num">10</span> Controller 1/4: issue each instruction
+    <label class="mark"><input type="checkbox" data-done="s10"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">25 min</span><span class="pill">the biggest sitting</span></div>
+  <p><b>Why.</b> The controller is a two-state machine (the skeleton declares <code>state</code>: <code>IDLE</code>,
+  <code>EXECUTING</code>) plus a down-counter. Build the basic version first: offsets don't step yet, and there's a gap
+  between instructions. The next three sittings fix those, one at a time.</p>
+  <div class="tw"><table>
+    <tr><th>Piece</th><th>Kind</th><th>What it does</th></tr>
+    <tr><td><code>cur</code></td><td>register, <code>instruction_t</code></td><td>the instruction being executed, copied from <code>inst</code> when you take it</td></tr>
+    <tr><td><code>remaining</code></td><td>register, <code>`CONTROLLER_COUNT_BITWIDTH</code></td><td>repetitions left after this one: loaded with <code>inst.count</code>, counts down</td></tr>
+    <tr><td><code>last_rep</code></td><td>wire</td><td>1 in the last repetition: EXECUTING and <code>remaining</code> is 0</td></tr>
+    <tr><td><code>take</code></td><td>wire</td><td>1 when you accept <code>inst</code> this cycle. <b>For now:</b> <code>inst_valid</code> and IDLE</td></tr>
+    <tr><td><code>inst_exec_begins</code></td><td>output</td><td>equals <code>take</code>; it tells the instruction memory to move on</td></tr>
+  </table></div>
+  <div class="callout do"><span class="tag">Do</span><ol>
+    <li>Declare <code>cur</code>, <code>remaining</code>, <code>last_rep</code>, <code>take</code>.</li>
+    <li><code>assign</code> <code>last_rep</code>, <code>take</code> and <code>inst_exec_begins</code>.</li>
+    <li>One <code>always_ff</code>, <b>in this order</b> (the order matters in Sitting 13):
+      reset → <code>state</code> IDLE, <code>cur</code> and <code>remaining</code> 0.
+      Else if <code>take</code> → EXECUTING, <code>cur</code> ← <code>inst</code>, <code>remaining</code> ← <code>inst.count</code>.
+      Else if EXECUTING → if <code>last_rep</code>, go to IDLE; otherwise <code>remaining</code> ← <code>remaining</code> − 1.</li>
+    <li>Outputs, all <code>assign</code>: <code>buf_inst_valid</code> = (state is EXECUTING). The four fields of
+    <code>buf_inst</code> come from <code>cur.buf_instruction</code>, offsets too for now. <code>pe_inst</code> =
+    <code>cur.pe_instruction</code>; <code>pe_inst_valid</code> = (state is EXECUTING).</li>
+  </ol>
+  <p class="small">Assigning one field of a struct output works like any signal: <code>assign pkt.kind = src.kind;</code>.
+  Comparing an enum: <code>(state == EXECUTING)</code>.</p></div>
+<pre class="cmd"><code>make lint
+make ctl-check</code></pre>
+  <div class="callout see"><span class="tag">You should see</span> (shortened)
+<pre><code>basic    WRONG buffer instruction #2 at cycle 4: expected READ INT8 1 1, got READ INT8 0 0   (instruction 1 'READ INT8 0 0 | MAC INT8 | 4 1 1', repetition 1)
+FAIL: 8 repetitions from 5 instruction words; PE port lags the buffer port by 0 cycle(s); 4 bubble cycle(s); ...
+single   PASS: 2 repetitions from 2 instruction words; PE port lags the buffer port by 0 cycle(s); 1 bubble cycle(s); ...</code></pre>
+  <p>Repetitions are issued and counted right, and <code>single</code> already passes. The only complaint is offsets that
+  don't step (<code>expected 1 1, got 0 0</code>). That's the next sitting.</p></div>
+  <div class="callout watch"><span class="tag">If instead</span>
+  <p><code>x/z on buf_inst_valid</code>: the state isn't reset. <code>MISSING … instructions</code> or
+  <code>never finished</code>: an off-by-one in the count, or <code>take</code> never fires.
+  <code>inst_exec_begins was high in N cycle(s)</code>: <code>take</code> fires at the wrong times.</p></div>
+  <p class="explain"><b>Explain it:</b> an instruction written with count 4 issues 4 repetitions, but <code>inst.count</code> holds 3. How does your counter get that right?</p>
+  <p class="save">Save: <code>git commit -am "Controller: FSM and repetition counter"</code></p>
+</section>
+
+<section class="sit" id="s11" data-step="s11">
+  <h2><span class="num">11</span> Controller 2/4: step the offsets
+    <label class="mark"><input type="checkbox" data-done="s11"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">10 min</span></div>
+  <div class="callout do"><span class="tag">Do</span><ol>
+    <li>Two 16-bit registers, for the MemA and MemB offsets. Add them to the reset branch.</li>
+    <li>In the <code>take</code> branch, load them from <code>inst.buf_instruction.mema_offset</code> / <code>memb_offset</code>.</li>
+    <li>In the "not the last repetition" branch, add <code>cur.mema_inc</code> / <code>cur.memb_inc</code> (1 bit each) to them.</li>
+    <li>Drive <code>buf_inst</code>'s two offset fields from these registers instead of from <code>cur</code>.</li>
+  </ol></div>
+<pre class="cmd"><code>make ctl-check</code></pre>
+  <div class="callout see"><span class="tag">You should see</span>
+<pre><code>back_to_back   PASS: 9 repetitions from 8 instruction words; PE port lags the buffer port by 0 cycle(s); 7 bubble cycle(s); ...
+basic          PASS: 8 repetitions from 5 instruction words; PE port lags the buffer port by 0 cycle(s); 4 bubble cycle(s); ...
+counts         PASS: 319 repetitions from 10 instruction words; ...
+single         PASS: ...
+compiled       PASS: 17 repetitions from 9 instruction words; PE port lags the buffer port by 0 cycle(s); 8 bubble cycle(s); ...</code></pre>
+  <p>All five PASS. Two numbers are still wrong for the full design: the lag (want 1) and the bubbles (want 0).</p></div>
+  <p class="explain"><b>Explain it:</b> when do the offsets step, and when are they reloaded?</p>
+  <p class="save">Save: <code>git commit -am "Controller: offsets step"</code></p>
+</section>
+
+<section class="sit" id="s12" data-step="s12">
+  <h2><span class="num">12</span> Controller 3/4: delay the PE instruction
+    <label class="mark"><input type="checkbox" data-done="s12"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">10 min</span></div>
+  <p><b>Why.</b> Lag 0 means each PE op would run in the same cycle as its READ, before the data exists. The check
+  accepts any steady lag, but the full design needs exactly <b>1</b>.</p>
+  <div class="callout do"><span class="tag">Do</span>
+  <p>Replace the two <code>assign</code>s for <code>pe_inst</code> and <code>pe_inst_valid</code> with an
+  <code>always_ff</code>. On reset both get 0. Otherwise, every cycle: <code>pe_inst</code> ← <code>cur.pe_instruction</code>,
+  <code>pe_inst_valid</code> ← (state is EXECUTING). Same values as before, one cycle later.</p></div>
+  <div class="callout see"><span class="tag">You should see</span>
+<pre><code>basic          PASS: 8 repetitions from 5 instruction words; PE port lags the buffer port by 1 cycle(s); 4 bubble cycle(s); ...</code></pre>
+  <p>(and the same <code>lags … by 1 cycle(s)</code> on all five)</p></div>
+  <p class="explain"><b>Explain it:</b> why one cycle, not two?</p>
+  <p class="save">Save: <code>git commit -am "Controller: PE instruction one cycle behind"</code></p>
+</section>
+
+<section class="sit" id="s13" data-step="s13">
+  <h2><span class="num">13</span> Controller 4/4: no bubbles
+    <label class="mark"><input type="checkbox" data-done="s13"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">10 min</span><span class="pill">one line</span></div>
+  <p><b>Why.</b> Right now, after the last repetition the controller drops to IDLE and spends a cycle taking the next
+  instruction: a bubble per instruction. Taking the next one <em>during</em> the last repetition removes it. The results are the
+  same, but the cycle count goes into Part 3's score raised to the power 2.3.</p>
+  <div class="callout do"><span class="tag">Do</span>
+  <p>Change <code>take</code> so it's also true on the last repetition: <code>inst_valid</code> and (IDLE <b>or</b>
+  <code>last_rep</code>). Your <code>always_ff</code> checks <code>take</code> before the EXECUTING branch, so a take on the
+  last repetition reloads everything. Nothing else changes.</p></div>
+  <div class="callout see"><span class="tag">You should see</span>
+<pre><code>back_to_back   PASS: 9 repetitions from 8 instruction words; PE port lags the buffer port by 1 cycle(s); 0 bubble cycle(s); first issue 1 cycle(s) after reset.
+basic          PASS: 8 repetitions from 5 instruction words; PE port lags the buffer port by 1 cycle(s); 0 bubble cycle(s); first issue 1 cycle(s) after reset.
+counts         PASS: 319 repetitions from 10 instruction words; PE port lags the buffer port by 1 cycle(s); 0 bubble cycle(s); first issue 1 cycle(s) after reset.
+single         PASS: 2 repetitions from 2 instruction words; PE port lags the buffer port by 1 cycle(s); 0 bubble cycle(s); first issue 1 cycle(s) after reset.
+compiled       PASS: 17 repetitions from 9 instruction words; PE port lags the buffer port by 1 cycle(s); 0 bubble cycle(s); first issue 1 cycle(s) after reset.</code></pre>
+  <p><b>The controller is done.</b></p></div>
+  <p class="explain"><b>Explain it:</b> what's a bubble, and why does it matter more in Part 3 than in Part 2?</p>
+  <p class="save">Save and back up: <code>git commit -am "Controller: passes make ctl-check, 0 bubbles" &amp;&amp; git push</code></p>
+</section>
+
+<!-- ============================================================ FINISH -->
+<div class="phase"><b>Finish</b> · ≈ 1½ h · <code>top.sv</code>, then together</div>
+
+<section class="sit" id="s14" data-step="s14">
+  <h2><span class="num">14</span> top.sv: plug it together
+    <label class="mark"><input type="checkbox" data-done="s14"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">20 min</span><span class="pill">no logic, only wiring</span></div>
+  <p><b>Why.</b> <code>top.sv</code> declares the wires between the blocks and places them. The staff already wrote most of it in
+  a testbench wrapper; you copy that, add one bus, and add the 16 PEs. You can do this <b>before</b> the PE exists.</p>
+  <div class="callout do"><span class="tag">Do</span><ol>
+    <li>Open <code>part2/unoptimized_verilog/validation/testbenches/top_buffer.sv</code>. Copy into <code>top.sv</code> (under
+    "Your Code Here"): the declarations of <code>pe_inst</code>, <code>pe_inst_valid</code>, <code>buf_inst</code>,
+    <code>buf_inst_valid</code>, <code>matrix_data</code>, <code>vector_data</code>, and the <code>u_controller</code> and
+    <code>u_buffer</code> instances. Skip <code>inst</code>, <code>inst_valid</code>, <code>inst_exec_begins</code> and the
+    instruction memory: <code>top.sv</code> already has them.</li>
+    <li>Declare <code>output_data</code> as a <code>wire</code>, <code>`MEM2_BITWIDTH</code> bits wide like the others, and connect
+    the buffer's <code>.output_data</code> to it instead of <code>'0</code>.</li>
+    <li>Add a <code>generate</code> loop with <code>`PE_COUNT</code> copies of <code>processing_element</code> (pattern in the hint).
+    Every copy gets the same <code>clk</code>, <code>rst_n</code>, <code>pe_inst</code>, <code>pe_inst_valid</code>, and
+    <code>vector_input</code> = <code>vector_data</code>. Copy <i>i</i>: <code>matrix_input</code> = the 32-bit slice of
+    <code>matrix_data</code> at <code>[32·(`PE_COUNT−1−i) +: 32]</code>, and <code>vector_output</code> drives <b>the same
+    slice</b> of <code>output_data</code>. For the 32, use <code>`PE_INPUT_BITWIDTH</code> / <code>`PE_OUTPUT_BITWIDTH</code>.</li>
+    <li>Keep the names <code>u_buffer</code>, <code>pe_inst_valid</code>, <code>buf_inst_valid</code>. The testbench reaches in by name.</li>
+  </ol></div>
+  <details><summary>Hint: the generate-loop pattern (made-up example)</summary>
+<pre><code>genvar i;
+generate
+    for (i = 0; i &lt; 4; i++) begin : g_adder        <span class="c">// 4 copies: g_adder[0].u_add ... g_adder[3].u_add</span>
+        adder u_add (.x(x_bus[8*i +: 8]), .y(y_bus[8*i +: 8]), .s(s_bus[8*i +: 8]));
+    end
+endgenerate
+<span class="c">// x[8*i +: 8] means "8 bits starting at bit 8*i, going up"</span></code></pre>
+  <p>The order matters: the PE that reads the <em>leftmost</em> 32 bits of <code>matrix_data</code> must write the leftmost 32
+  bits of <code>output_data</code>.</p></details>
+<pre class="cmd"><code>make lint
+make eq MODE=int8          # the real INT8 test, locally (~15 s)</code></pre>
+  <div class="callout see"><span class="tag">You should see</span> (with your partner's PE still empty)
+<pre><code>FAIL    official INT8       1024x1024  cycles=16440   (0s)  [...]
+   16 MEM2 word(s) differ of the 16 MEM2 words the program writes: ...
+   Likely cause(s):
+     - The result contains x or z bits: a register without reset or an undriven signal ...</code></pre>
+  <p><b>That FAIL is good news.</b> The x's are the empty PE. The number that matters is <code>cycles=16440</code>: exactly
+  what the plan predicts. It means your controller, buffer and wiring run the whole program correctly.</p></div>
+  <div class="callout watch"><span class="tag">If instead</span>
+  <p><code>Unable to bind … dut.pe_inst_valid</code> or <code>Can't find definition of 'u_buffer'</code>: a name differs from
+  the one the testbench expects. <code>ERROR: Timeout!</code>: a valid never drops. A different cycle count: bubbles.</p></div>
+  <p class="explain"><b>Explain it:</b> why must PE <i>i</i> read and write the same 32-bit position?</p>
+  <p class="save">Save: <code>git commit -am "top: controller, buffer, PE array" &amp;&amp; git push</code>, then open a PR so your partner can review (<code>gh pr create --fill</code>).</p>
+</section>
+
+<section class="sit" id="s15" data-step="s15">
+  <h2><span class="num">15</span> Together: plug in the PE
+    <label class="mark"><input type="checkbox" data-done="s15"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop</span><span class="pill">20 min (+ debugging)</span><span class="pill">with your partner</span></div>
+  <div class="callout do"><span class="tag">Do</span>
+<pre class="cmd"><code>git fetch
+git merge origin/&lt;partner's PE branch&gt;   # or merge both PRs on GitHub, then: git switch main &amp;&amp; git pull
+make pe-unit                             # their PE alone
+make eq                                  # all three official tests, locally</code></pre></div>
+  <div class="callout see"><span class="tag">You should see</span>
+<pre><code>PASS    official INT8       1024x1024  cycles=16440   (4s)
+PASS    official INT16       512x512   cycles=8248    (2s)
+PASS    official INT32       256x256   cycles=4152    (1s)</code></pre>
+  <p>If you have 10 spare minutes: <code>make eq-stress</code> runs nine extra cases the official tests miss.</p></div>
+  <div class="callout watch"><span class="tag">If a test fails</span>
+  <p>The output names a likely cause. The full list is in <a href="part2-rtl.html#verify/vd-symptoms">Symptom → likely cause</a>.
+  Quick map: only INT8 fails → PE clamping. INT8 and INT16 fail, INT32 passes → lane select. Every row is zero → write timing.
+  <b>6 PM Thursday:</b> not green yet → each of you spends a late day.</p></div>
+</section>
+
+<section class="sit" id="s16" data-step="s16">
+  <h2><span class="num">16</span> Caddy for real, then submit
+    <label class="mark"><input type="checkbox" data-done="s16"> done</label></h2>
+  <div class="meta"><span class="pill lap">laptop + caddy</span><span class="pill">45 min (synthesis runs on its own)</span></div>
+  <div class="callout do"><span class="tag">Do: on caddy</span>
+<pre class="cmd"><code>cd ee271-project &amp;&amp; git fetch &amp;&amp; git switch main &amp;&amp; git pull   # the branch that has everything
+tcsh
+source part2/load_modules.sh
+make vcs-eq                 # the graded simulator: want three PASS
+make synth                  # want: compile.log has 0 error line(s)
+git add runs/ &amp;&amp; git commit -m "Synthesis record for the Part 2 submission" &amp;&amp; git push</code></pre>
+  <p class="small">If git asks who you are: <code>git config --global user.name "…"</code> and <code>user.email</code>, once.</p></div>
+  <div class="callout do"><span class="tag">Do: on your laptop</span>
+<pre class="cmd"><code>git pull
+make submit PART=part2      # checks compile.log + test results, then builds the zip</code></pre>
+  <p>Upload <code>part2/assignment2.zip</code> to Gradescope and <b>add your partner</b> to the submission. Then:
+  <code>git tag part2-submitted &amp;&amp; git push --tags</code>.</p></div>
+  <div class="callout see"><span class="tag">You should see</span>
+  <p><code>make submit</code> prints <code>ok: compile.log has no error lines</code>, the official tests that passed, then
+  the zip's contents: your <code>logical/</code> folder and <code>synth/compile.log</code>.</p></div>
+</section>
+
+<!-- ============================================================ STUCK -->
+<div class="phase" id="stuck"><b>When you're stuck</b> (more than 10 minutes on one thing)</div>
+<section class="sit">
+  <ol>
+    <li><b>Read only the first complaint</b> the check prints. Everything after it is often a consequence.</li>
+    <li><b><code>make lint</code></b>: missing semicolons, typos, widths, with a line number. Fix errors; most warnings can wait.</li>
+    <li><b>Look up the symptom</b> in <a href="part2-rtl.html#verify/vd-symptoms">the symptom table</a>, or read the relevant
+    tab of <a href="part2-rtl.html">part2-rtl.html</a> (<a href="part2-rtl.html#buffer">Buffer</a>,
+    <a href="part2-rtl.html#controller">Controller</a>, <a href="part2-rtl.html#top">Top</a>).</li>
+    <li><b>Ask Claude, "explain, don't fix":</b> paste the error and the few lines around it. You'll get what the message
+    means and where to look, not your code written for you.</li>
+    <li><b>Waveforms</b> (slower, last resort when short on time): add <code>WAVES=1</code> to the check, then <code>make waves</code>.</li>
+  </ol>
+</section>
+
+<footer>
+  Built Nov 18, 2026 for Ryan's half of Part 2. The "You should see" outputs come from running <code>make buf-unit</code>,
+  <code>make ctl-check</code> and <code>make eq</code> on partial designs kept outside the repo (scratch space only), one per
+  sitting. The caddy steps follow <code>docs/WORKFLOW.md</code> and have not been run yet. Concepts in depth:
+  <a href="part2-rtl.html">part2-rtl.html</a>. Plan and timing contract: <code>docs/PLAN.md</code>. Made with Claude Code;
+  see <code>docs/ai-log.md</code>.
+</footer>
+</main>
+</div>
+<script>
+(function () {
+  var KEY = "ee271-p2-sittings";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  var order = [];
+  document.querySelectorAll("section.sit[data-step]").forEach(function (s) { order.push(s); });
+  function paint() {
+    document.querySelectorAll("[data-step]").forEach(function (el) {
+      el.classList.toggle("done", !!state[el.getAttribute("data-step")]);
+    });
+    var nb = document.getElementById("next");
+    var nxt = null, doneCount = 0;
+    order.forEach(function (s) { if (state[s.id]) doneCount++; else if (!nxt) nxt = s; });
+    if (doneCount === 0) { nb.hidden = true; return; }
+    nb.hidden = false;
+    if (nxt) {
+      var h = nxt.querySelector("h2").cloneNode(true);
+      var lab = h.querySelector("label"); if (lab) lab.remove();
+      var num = h.querySelector(".num"); var n = num ? num.textContent : ""; if (num) num.remove();
+      var meta = nxt.querySelector(".meta .pill:nth-child(2)");
+      nb.innerHTML = 'Next up: <a href="#' + nxt.id + '"></a><span class="small"></span>';
+      nb.querySelector("a").textContent = n + " · " + h.textContent.replace(/\s+/g, " ").trim();
+      nb.querySelector(".small").textContent = doneCount + " of " + order.length + " done" + (meta ? " · " + meta.textContent : "");
+    } else {
+      nb.textContent = "All 16 sittings done. Part 2 is submitted. 🎉";
+    }
+  }
+  document.querySelectorAll("input[data-done]").forEach(function (cb) {
+    var k = cb.getAttribute("data-done");
+    cb.checked = !!state[k];
+    cb.addEventListener("change", function () { state[k] = cb.checked; save(); paint(); });
+  });
+  paint();
+  document.querySelectorAll("pre.cmd").forEach(function (pre) {
+    var b = document.createElement("button");
+    b.className = "copy"; b.type = "button"; b.textContent = "copy";
+    b.addEventListener("click", function () {
+      var text = pre.querySelector("code").innerText.split("\n")
+        .map(function (l) { return l.replace(/\s+#.*$/, ""); }).join("\n").trim();
+      var done = function () { b.textContent = "copied"; setTimeout(function () { b.textContent = "copy"; }, 1200); };
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () {});
+    });
+    pre.appendChild(b);
+  });
+  var root = document.documentElement, t = document.getElementById("theme");
+  try { var saved = localStorage.getItem(KEY + "-theme"); if (saved) root.setAttribute("data-theme", saved); } catch (e) {}
+  t.addEventListener("click", function () {
+    var dark = root.getAttribute("data-theme") ? root.getAttribute("data-theme") === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+    var next = dark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem(KEY + "-theme", next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
