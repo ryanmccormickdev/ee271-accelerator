@@ -1,8 +1,10 @@
 # EE271 SIMD Accelerator: Assignment #2 (text transcription)
 
-> Transcribed from `Project_Part_2.pdf` on Canvas (uploaded Fri Nov 13 2026, 5:16 PM; updated Sat Nov 14, 12:21 AM):
-> https://canvas.stanford.edu/courses/232707/files/17974607. The PDF, saved next to this file, is the authority. This copy exists so the text
-> can be searched with grep. Formatting is ours; wording is the handout's (checked word for word on Nov 14).
+> Transcribed from `Project_Part_2.pdf` on Canvas. Current revision: uploaded Mon Nov 16 2026, 1:22 PM, updated
+> 1:34 PM: https://canvas.stanford.edu/courses/232707/files/17986717 (it replaces file 17974607 from Nov 13). The PDF,
+> saved next to this file, is the authority. This copy exists so the text can be searched with grep. Formatting is
+> ours; wording is the handout's (checked word for word on Nov 14). The Nov 16 revision changes the due date, Fri Nov 20
+> → **Thu Nov 19**. On Nov 17 we compared the rest by reading it and found no other change.
 
 ## 1 Introduction
 
@@ -103,4 +105,4 @@ following at the top-level of the git repository:
 $ make generate_submission
 ```
 
-**Submit to Gradescope by Friday, Nov 20, 2026, 11:59 PM PST.**
+**Submit to Gradescope by Thursday, Nov 19, 2026, 11:59 PM PST.**

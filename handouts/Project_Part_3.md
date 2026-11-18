@@ -1,8 +1,11 @@
 # EE271 SIMD Accelerator: Assignment #3 (text transcription)
 
-> Transcribed from `Project_Part_3.pdf` on Canvas (uploaded Fri Nov 13 2026, 5:16 PM; updated Sat Nov 14, 12:59 AM):
-> https://canvas.stanford.edu/courses/232707/files/17974608. The PDF, saved next to this file, is the authority. This copy exists so the text
-> can be searched with grep. Formatting is ours; wording is the handout's (checked word for word on Nov 14).
+> Transcribed from `Project_Part_3.pdf` on Canvas. Current revision: uploaded Sun Nov 15 2026, 2:59 PM, updated
+> 3:53 PM: https://canvas.stanford.edu/courses/232707/files/17981048 (it replaces file 17974608 from Nov 13). The PDF,
+> saved next to this file, is the authority. This copy exists so the text can be searched with grep. Formatting is
+> ours; wording is the handout's (checked word for word on Nov 14). The Nov 15 revision makes two changes: a new
+> grading paragraph (FoM < 50 and area < 1,000,000 µm² for 93% of the credit), and the due date, Fri Dec 4 →
+> **Tue Dec 1**. On Nov 17 we compared the rest by reading it and found no other change.
 
 ## 1 Introduction
 
@@ -45,7 +48,9 @@ nanoseconds. This can be computed by multiplying the number of clock cycles it t
 period. This pattern holds for `Time_int16` and `Time_int32` as well. **You must be able to actually synthesize your
 design at the clock period you use in your calculations without any timing violations.**
 
-In part 3 of the project your goal is to minimize the FoM of your design.
+In part 3 of the project your goal is to minimize the FoM of your design. **In order to get 93% of the credit for this
+assignment, you will be required to meet an FoM of less than 50 with an area of less than 1,000,000 µm².** The remaining
+7% of the assignment will come from how your FoM compares to the FoM of your classmates.
 
 ### 2.2 Optimization Approaches
 
@@ -115,4 +120,4 @@ Your submission will consist of a report in which you document the following:
 4. Your final FoM.
 5. A 1-page reflection on your use of AI tools throughout this project.
 
-**Submit to Gradescope by Friday, Dec 4, 2026, 11:59 PM PST.**
+**Submit to Gradescope by Tuesday, Dec 1, 2026, 11:59 PM PST.**

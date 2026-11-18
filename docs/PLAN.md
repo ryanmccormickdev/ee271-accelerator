@@ -18,8 +18,8 @@ split the work so that **both of us can defend every line in the oral exam**. Ed
 
 | What | Due | Notes |
 |---|---|---|
-| Part 2: RTL + equivalence + synthesis | **Thu Nov 19**: staff clarified on Ed (the handout's Fri Nov 20 is wrong) | Late days allowed: **1 from each partner = 24 h**, i.e. Fri Nov 20. That spends both partners' days and eats a day of Part 3, which has no late days. |
-| Part 3: optimization **report** | Fri Dec 4 per handout; **Dec 1** per Prof. Tambe on Ed (#207) | Target **Tue Dec 1**. **No late days on Part 3.** Report = each optimization, its % FoM change, why, final FoM, plus a 1-page AI reflection. |
+| Part 2: RTL + equivalence + synthesis | **Thu Nov 19, 11:59 PM**: staff on Ed, and the revised handout (Nov 16) agrees | Late days allowed: **1 from each partner = 24 h**, i.e. Fri Nov 20. That spends both partners' days and eats a day of Part 3, which has no late days. |
+| Part 3: optimization **report** | **Tue Dec 1, 11:59 PM** (revised handout, Nov 15; matches Ed #207) | **No late days on Part 3.** **93% of the credit: FoM < 50 with area < 1,000,000 µm²**; the other 7% is relative to the class. Report = each optimization, its % FoM change, why, final FoM, plus a 1-page AI reflection. |
 | Oral exam ("Project Understanding Oral Exam") | **Thu Dec 3** | 15 minutes, **25% of the course grade**. Individual vs. pair format not announced yet (Ed #208). Assume individual. |
 | Part 4 (HLS with Siemens Catapult) | **Tue Dec 1 11:59 PM** (handout) | Optional, **+5% of the project component** (Ed #243). Released Nov 16, starter in `part4/`. **No late days.** Runs on FarmShare, not caddy. See [Part 4 (optional)](#part-4-optional). |
 
@@ -203,7 +203,7 @@ Every experiment: one change, `make check` + `make eq-stress` green, `make synth
 | Sat 11/21 – Wed 11/25 | Workstreams in parallel; daily 15-min sync (results → `docs/experiments.md`) |
 | Thu 11/26 – Fri 11/27 | Thanksgiving: light. **Mock oral #2** (Part 3 so far) |
 | Sat 11/28 – Mon 11/30 | Combine winners; final FoM; report complete, including the AI reflection |
-| **Tue 12/1** | **Submit Part 3 report** (the professor's date). Mock oral #3 |
+| **Tue 12/1** | **Submit Part 3 report** (11:59 PM). Mock oral #3 |
 | Wed 12/2 | Oral prep: `docs/oral-prep.html` mock mode, swap roles, fill every **Our design** field |
 | **Thu 12/3** | **Oral exam** |
 | Fri 12/4 | Handout's report date: backup only |
@@ -255,7 +255,7 @@ in any staff fixes.
 ## Questions to ask staff on Ed
 
 Answered staff questions also earn participation points if we answer others' posts.
-1. ~~Part 2 due date~~: answered on Ed, **Thu 11/19**. Still open: Part 3, Dec 1 (Ed #207) or Dec 4 (handout)?
+1. ~~Due dates~~: answered. Part 2 is **Thu 11/19** (Ed, revised handout), Part 3 is **Tue 12/1** (revised handout).
 2. Staff tool bug: `ivd-as` uses `Bits.length`, removed in bitstring 5.0 (a fresh env from `requirements.yml` gets 5.0.0).
    Pin `bitstring<5`? (We could post this as a helpful note.)
 3. FoM inputs: is Power the total (dynamic + leakage) from `report_power`, and Area the "Total cell area" (SRAMs are
