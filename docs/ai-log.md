@@ -89,3 +89,19 @@ Template:
   Checked for horizontal overflow at phone width in Firefox. The caddy sittings have not been run.
 - Not done by AI: the RTL. `buffer.sv`, `controller.sv` and `top.sv` are still the staff skeletons. The page describes
   each piece in words and leaves the code to Ryan; the two "Hint 2" boxes are the most specific part.
+
+## 2026-11-18 (later): Ryan, Claude Code (Claude Opus 5.5)
+- Asked for: a Claude chat built into the sittings page, as a local app.
+- Got: `make tutor` → `scripts/tutor/server.py` (standard-library Python) serves `docs/` on `127.0.0.1:8271` and runs
+  Claude Code headless (`claude -p`) with his existing login for each message, so no API key is needed. The page
+  has an **Ask Claude** button on every sitting. The button attaches that sitting's text, and quick buttons offer
+  *Explain an error*, *Smallest hint*, *Look at my code*, *Check my Explain-it answer* and *Quiz me*. Claude gets
+  read-only tools (Read, Grep, Glob) in the repo, no MCP servers, and the tutor rules in
+  `scripts/tutor/system-prompt.md`: explain and hint, smallest hint first, never write the graded RTL. Each exchange
+  is copied to `scratch/tutor-chats/` (git-ignored) as raw material for the AI reflection.
+- How it was checked: two-turn chats through the server (it read `buffer.sv`, answered with `path:line`
+  references, and declined "just write the line" with a hint); Stop kills the background process within a
+  second (a first version kept it running while Claude thought; fixed); the chat continues after a stop; the
+  Host and Origin guards reject other sites; the plain-file page shows how to start the app; layout checked at
+  1440 px and 390 px.
+- Also: the phone/AirDrop advice is gone from the page (Ryan isn't using his phone for this).

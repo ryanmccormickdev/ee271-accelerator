@@ -103,8 +103,70 @@ td code, th code { overflow-wrap: normal; white-space: nowrap; }
 .plan b { display: block; margin-bottom: 2px; }
 .small { font-size: 14.5px; color: var(--muted); }
 footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); padding-top: 16px; }
-.theme { position: fixed; bottom: 12px; right: 12px; font-size: 13px; padding: 4px 9px; border-radius: 6px; z-index: 6;
+.theme { position: fixed; bottom: 12px; left: 12px; font-size: 13px; padding: 4px 9px; border-radius: 6px; z-index: 6;
   border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; }
+
+/* ---- Ask Claude (works when the page is served by `make tutor`) */
+button.ask { margin-left: auto; font: 600 13px/1 -apple-system, BlinkMacSystemFont, sans-serif; padding: 5px 10px;
+  border-radius: 999px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+button.ask:hover { background: var(--accent); color: #fff; }
+.askfab { position: fixed; right: 16px; bottom: 16px; z-index: 7; background: var(--accent); color: #fff; border: 0;
+  border-radius: 999px; padding: 11px 18px; font: 600 15px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2); cursor: pointer; }
+body.chat-open .askfab { display: none; }
+aside.chat { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100vw); z-index: 8; background: var(--card);
+  border-left: 1px solid var(--border); box-shadow: -8px 0 28px rgba(0,0,0,.14); display: flex; flex-direction: column; }
+aside.chat[hidden] { display: none; }
+@media (min-width: 1100px) {
+  body.chat-open .wrap { margin: 0 440px 0 0; grid-template-columns: minmax(0, 800px); }
+  body.chat-open nav.toc { display: none; }
+}
+@media (min-width: 1600px) {
+  body.chat-open .wrap { margin: 0 460px 0 auto; grid-template-columns: 250px minmax(0, 800px); }
+  body.chat-open nav.toc { display: block; }
+}
+.chat-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.chat-head b { font-size: 16px; }
+.chat-head button, .chat-ctx button { font: 13px/1 -apple-system, sans-serif; padding: 5px 8px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--muted); cursor: pointer; }
+.chat-head .grow { flex: 1; }
+.chat-ctx { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 13px; color: var(--muted);
+  border-bottom: 1px solid var(--border); background: var(--bg); }
+.chat-ctx span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-ctx b { color: var(--fg); font-weight: 600; }
+.chat-log { flex: 1; overflow-y: auto; padding: 14px 12px 4px; font-size: 15px; line-height: 1.55; }
+.chat-log p, .chat-log li { max-width: none; }
+.chat-log p { margin: 0 0 8px; }
+.chat-log ul, .chat-log ol { margin: 0 0 8px; padding-left: 20px; }
+.chat-log pre { font-size: 12.5px; margin: 6px 0 10px; }
+.chat-log code { font-size: 13px; }
+.chat-log table { font-size: 13px; }
+.msg { margin: 0 0 16px; }
+.msg.user .bubble { background: var(--see); border: 1px solid var(--border); border-radius: 10px; padding: 8px 11px;
+  white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow-y: auto; }
+.msg .who { font-size: 12px; color: var(--muted); margin: 0 0 3px; display: flex; gap: 6px; }
+.msg .tool { font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); margin: 0 0 4px;
+  overflow-wrap: anywhere; }
+.msg .status { font-size: 13.5px; color: var(--muted); font-style: italic; }
+.msg .err { background: var(--watch); border-left: 3px solid var(--watch-b); border-radius: 6px; padding: 6px 10px;
+  font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat-empty { color: var(--muted); font-size: 14.5px; }
+.chat-empty pre { font-size: 13px; }
+.chat-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 0; }
+.chat-quick button { font: 13px/1.2 -apple-system, sans-serif; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--fg); padding: 5px 10px; cursor: pointer; }
+.chat-quick button:hover { border-color: var(--accent); color: var(--accent); }
+.chat-form { padding: 8px 12px 12px; }
+.chat-form textarea { width: 100%; min-height: 70px; max-height: 40vh; resize: vertical; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--fg); padding: 8px 10px;
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.chat-form textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.chat-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.chat-row .small { flex: 1; font-size: 12.5px; }
+.chat-row button { font: 600 14px/1 -apple-system, sans-serif; padding: 8px 14px; border-radius: 8px; border: 0;
+  background: var(--accent); color: #fff; cursor: pointer; }
+.chat-row button:disabled { opacity: .5; cursor: default; }
+.chat-row button.stop { background: var(--watch-b); }
 </style>
 </head>
 <body>
@@ -148,16 +210,18 @@ footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px
     <li>Due <b>Thu Nov 19, 11:59 PM PST</b></li>
     <li>Late day: one from <b>each</b> of you → Fri</li>
     <li>Total ≈ 4½–5 h of sittings</li>
-    <li>Three are <span class="pill phone">phone OK</span></li>
+    <li>Three need <span class="pill phone">no terminal</span></li>
   </ul>
   <div class="plan">
-    <div><b>Wed (today)</b>1–2 on your phone in any gap. 3–7 at the laptop: the buffer, about 75 min. Then 8: first caddy login, 30 min.</div>
-    <div><b>Thu, before 6 PM</b>9 on your phone. 10–14 at the laptop: controller and top, about 75 min. (CS240 response due 1:30 PM.)</div>
+    <div><b>Wed (today)</b>1–2 in any gap: reading only, no terminal. 3–7: the buffer, about 75 min. Then 8: first caddy login, 30 min.</div>
+    <div><b>Thu, before 6 PM</b>9 on paper. 10–14: controller and top, about 75 min. (CS240 response due 1:30 PM.)</div>
     <div><b>Thu evening</b>15–16 with your partner: plug in the PE, caddy, submit. <b>6 PM rule:</b> if <code>make eq</code> isn't green by then, you each spend a late day.</div>
   </div>
-  <div class="callout ph"><span class="tag">Phone</span>
-  Sittings 1, 2 and 9 need nothing but this page. To read them on your phone, AirDrop this file
-  (<code>docs/part2-sittings.html</code>) to it and open it there. Links to other pages won't work on the phone, and these three don't need them.</div>
+  <div class="callout ph"><span class="tag">Ask Claude</span>
+  Open this page with <code>make tutor</code> (from the repo, in any terminal) and every sitting gets an <b>Ask Claude</b>
+  button. The chat knows which sitting you're on and can read your files. It explains errors and gives hints, smallest first.
+  It won't write your RTL; that's yours for the oral exam. It can't run commands, so run the check and paste the output.
+  It uses your Claude Code login, so there's no key to set up.</div>
   <p class="small">Every <b>You should see</b> box below is real output, captured Nov 18 by running these exact checks
   on partial designs built outside the repo. Your numbers in the INT32/MemBOffset details may differ slightly
   if you take a different but valid route; the PASS/FAIL lines and the meaning won't. The caddy sittings (8, 16) have not
@@ -170,7 +234,7 @@ footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px
 <section class="sit" id="s1" data-step="s1">
   <h2><span class="num">1</span> The picture and the one timing rule
     <label class="mark"><input type="checkbox" data-done="s1"> done</label></h2>
-  <div class="meta"><span class="pill phone">phone OK</span><span class="pill">10 min</span><span class="pill">read only</span></div>
+  <div class="meta"><span class="pill">10 min</span><span class="pill">read only</span></div>
 
   <p><b>What the machine does.</b> The controller reads one instruction at a time from the instruction memory and
   repeats it <code>count&nbsp;+&nbsp;1</code> times, <b>one repetition per clock cycle</b>. Every repetition has two halves:
@@ -200,7 +264,7 @@ footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px
 <section class="sit" id="s2" data-step="s2">
   <h2><span class="num">2</span> Four building blocks of SystemVerilog
     <label class="mark"><input type="checkbox" data-done="s2"> done</label></h2>
-  <div class="meta"><span class="pill phone">phone OK</span><span class="pill">10 min</span><span class="pill">read only</span></div>
+  <div class="meta"><span class="pill">10 min</span><span class="pill">read only</span></div>
   <p>You're not writing steps for a processor. You're describing wires and registers that all exist at once and all
   update on the same clock. This project needs only four building blocks. Here they are in a made-up example
   (a counter), <b>not</b> project code:</p>
@@ -260,7 +324,7 @@ make buf-unit                                          # see the starting line</
   <p>Then two things that take a minute each and save you later:</p>
   <ol>
     <li><b>Text your partner:</b> (a) when will the PE be pushed? You need it by Thu afternoon. (b) You'll decide the late day at 6 PM Thu. (c) Who presses submit?</li>
-    <li><b>Make a GitHub token</b> for Sitting 8 (works on your phone): github.com → Settings → Developer settings →
+    <li><b>Make a GitHub token</b> for Sitting 8: github.com → Settings → Developer settings →
     Personal access tokens → Tokens (classic) → scope <code>repo</code>. Save it somewhere; it's your password when cloning on caddy.</li>
   </ol></div>
   <div class="callout see"><span class="tag">You should see</span>
@@ -451,7 +515,7 @@ make synth                     # Design Compiler; takes a while</code></pre></di
 <section class="sit" id="s9" data-step="s9">
   <h2><span class="num">9</span> The controller on paper
     <label class="mark"><input type="checkbox" data-done="s9"> done</label></h2>
-  <div class="meta"><span class="pill phone">phone OK</span><span class="pill">15 min</span><span class="pill">pen and paper</span></div>
+  <div class="meta"><span class="pill">15 min</span><span class="pill">pen and paper</span></div>
   <p><b>Why.</b> Ten minutes predicting the schedule saves an hour of guessing at the keyboard. The rules:</p>
   <ul>
     <li>The controller <b>takes</b> an instruction (raises <code>inst_exec_begins</code> for that one cycle) when one is
@@ -696,8 +760,9 @@ make submit PART=part2      # checks compile.log + test results, then builds the
     <li><b>Look up the symptom</b> in <a href="part2-rtl.html#verify/vd-symptoms">the symptom table</a>, or read the relevant
     tab of <a href="part2-rtl.html">part2-rtl.html</a> (<a href="part2-rtl.html#buffer">Buffer</a>,
     <a href="part2-rtl.html#controller">Controller</a>, <a href="part2-rtl.html#top">Top</a>).</li>
-    <li><b>Ask Claude, "explain, don't fix":</b> paste the error and the few lines around it. You'll get what the message
-    means and where to look, not your code written for you.</li>
+    <li><b>Ask Claude</b> (the button on each sitting, with the page opened by <code>make tutor</code>): paste the first
+    error, or tap <i>Smallest hint</i>. You'll get what the message means and where to look, not your code written for you.
+    A readable copy of each chat lands in <code>scratch/tutor-chats/</code> (not committed) for the AI-use log.</li>
     <li><b>Waveforms</b> (slower, last resort when short on time): add <code>WAVES=1</code> to the check, then <code>make waves</code>.</li>
   </ol>
 </section>
@@ -706,17 +771,41 @@ make submit PART=part2      # checks compile.log + test results, then builds the
   Built Nov 18, 2026 for Ryan's half of Part 2. The "You should see" outputs come from running <code>make buf-unit</code>,
   <code>make ctl-check</code> and <code>make eq</code> on partial designs kept outside the repo (scratch space only), one per
   sitting. The caddy steps follow <code>docs/WORKFLOW.md</code> and have not been run yet. Concepts in depth:
-  <a href="part2-rtl.html">part2-rtl.html</a>. Plan and timing contract: <code>docs/PLAN.md</code>. Made with Claude Code;
-  see <code>docs/ai-log.md</code>.
+  <a href="part2-rtl.html">part2-rtl.html</a>. Plan and timing contract: <code>docs/PLAN.md</code>. The chat panel is served
+  by <code>scripts/tutor/server.py</code> (<code>make tutor</code>); its rules are in <code>scripts/tutor/system-prompt.md</code>.
+  Made with Claude Code; see <code>docs/ai-log.md</code>.
 </footer>
 </main>
 </div>
+<button class="askfab" id="askfab" type="button">Ask Claude</button>
+<aside class="chat" id="chat" aria-label="Ask Claude" hidden>
+  <div class="chat-head">
+    <b>Ask Claude</b><span class="grow"></span>
+    <button type="button" id="chatNew" title="Forget this conversation and start fresh">New chat</button>
+    <button type="button" id="chatClose" aria-label="Close the chat">✕</button>
+  </div>
+  <div class="chat-ctx"><span id="chatCtxText"></span><button type="button" id="chatCtxClear" title="Ask without attaching this sitting">detach</button></div>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
+  <div class="chat-quick" id="chatQuick"></div>
+  <form class="chat-form" id="chatForm">
+    <textarea id="chatInput" aria-label="Message" placeholder="Ask a question or paste an error. Enter sends, Shift+Enter adds a line."></textarea>
+    <div class="chat-row"><span class="small">Hints and explanations, not your RTL.</span>
+      <button type="submit" id="chatSend">Send</button></div>
+  </form>
+</aside>
 <script>
 (function () {
   var KEY = "ee271-p2-sittings";
   var state = {};
   try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  // ?done=s1,s2 carries ticks over from the plain-file copy (each address keeps its own storage).
+  var carried = new URLSearchParams(location.search).get("done");
+  if (carried !== null) {
+    carried.split(",").forEach(function (k) { if (/^s\d+$/.test(k)) state[k] = true; });
+    save();
+    try { history.replaceState(null, "", location.pathname + location.hash); } catch (e) {}
+  }
   var order = [];
   document.querySelectorAll("section.sit[data-step]").forEach(function (s) { order.push(s); });
   function paint() {
@@ -765,6 +854,297 @@ make submit PART=part2      # checks compile.log + test results, then builds the
     var next = dark ? "light" : "dark";
     root.setAttribute("data-theme", next);
     try { localStorage.setItem(KEY + "-theme", next); } catch (e) {}
+  });
+})();
+</script>
+<script>
+/* Ask Claude. The page posts to /api/chat on the local server (scripts/tutor/server.py), which runs
+   Claude Code headless with read-only repo access and streams the answer back as JSON lines. */
+(function () {
+  var CKEY = "ee271-p2-chat", PORT = 8271;
+  function $(id) { return document.getElementById(id); }
+  var panel = $("chat"), log = $("chatLog"), input = $("chatInput"), sendBtn = $("chatSend"),
+      ctxText = $("chatCtxText"), ctxClear = $("chatCtxClear"), quick = $("chatQuick");
+  var served = location.protocol === "http:" && /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+  var available = served ? null : false;   // null = not checked yet
+  var ctx = null;                           // {id, title} of the attached sitting
+  var busy = false, aborter = null, queued = false;
+  var chat = load();
+
+  function fresh() { return { session_id: null, lastCtx: null, messages: [] }; }
+  function load() {
+    var c = null;
+    try { c = JSON.parse(localStorage.getItem(CKEY) || "null"); } catch (e) {}
+    if (!c || !Array.isArray(c.messages)) return fresh();
+    c.messages.forEach(function (m) { if (m.pending) { m.pending = false; if (!m.text) m.error = "Interrupted (the page was closed)."; } });
+    return c;
+  }
+  function save() { try { localStorage.setItem(CKEY, JSON.stringify(chat)); } catch (e) {} }
+
+  // ---- a small, safe Markdown renderer (everything is escaped first)
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function inline(s) {
+    return s.split(/(`[^`\n]+`)/g).map(function (part) {
+      if (/^`[^`\n]+`$/.test(part)) return "<code>" + esc(part.slice(1, -1)) + "</code>";
+      return esc(part)
+        .replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>")
+        .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>")
+        .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    }).join("");
+  }
+  var LIST = /^\s*([-*•]|\d+[.)])\s+/, ROW = /^\s*\|.*\|\s*$/;
+  function cells(row) { return row.trim().replace(/^\||\|$/g, "").split("|").map(function (c) { return c.trim(); }); }
+  function md(src) {
+    var lines = String(src).replace(/\r/g, "").split("\n"), out = [], i = 0, m, buf;
+    while (i < lines.length) {
+      var l = lines[i];
+      if (/^\s*```/.test(l)) {
+        buf = []; i++;
+        while (i < lines.length && !/^\s*```\s*$/.test(lines[i])) buf.push(lines[i++]);
+        i++; out.push("<pre><code>" + esc(buf.join("\n")) + "</code></pre>"); continue;
+      }
+      if (!l.trim()) { i++; continue; }
+      if ((m = l.match(/^#{1,6}\s+(.*)/))) { out.push("<p><b>" + inline(m[1]) + "</b></p>"); i++; continue; }
+      if (ROW.test(l) && i + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
+        var head = cells(l), rows = []; i += 2;
+        while (i < lines.length && ROW.test(lines[i])) rows.push(cells(lines[i++]));
+        out.push('<div class="tw"><table><tr>' + head.map(function (c) { return "<th>" + inline(c) + "</th>"; }).join("") + "</tr>" +
+          rows.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + inline(c) + "</td>"; }).join("") + "</tr>"; }).join("") +
+          "</table></div>");
+        continue;
+      }
+      if (LIST.test(l)) {
+        var ordered = /^\s*\d/.test(l), items = [];
+        while (i < lines.length) {
+          if (!LIST.test(lines[i])) {
+            if (!lines[i].trim() && i + 1 < lines.length && LIST.test(lines[i + 1])) { i++; continue; }
+            break;
+          }
+          var item = lines[i++].replace(LIST, "");
+          while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !LIST.test(lines[i])) item += " " + lines[i++].trim();
+          items.push("<li>" + inline(item) + "</li>");
+        }
+        out.push((ordered ? "<ol>" : "<ul>") + items.join("") + (ordered ? "</ol>" : "</ul>"));
+        continue;
+      }
+      buf = [l]; i++;
+      while (i < lines.length && lines[i].trim() && !/^\s*```/.test(lines[i]) && !/^#{1,6}\s/.test(lines[i]) &&
+             !LIST.test(lines[i]) && !ROW.test(lines[i])) buf.push(lines[i++]);
+      out.push("<p>" + buf.map(inline).join("<br>") + "</p>");
+    }
+    return out.join("");
+  }
+
+  // ---- which sitting the question is about
+  function sittingTitle(sec) {
+    var h = sec.querySelector("h2").cloneNode(true);
+    h.querySelectorAll("label, button").forEach(function (x) { x.remove(); });
+    var num = h.querySelector(".num"), n = num ? num.textContent.trim() : "";
+    if (num) num.remove();
+    return (n ? n + " · " : "") + h.textContent.replace(/\s+/g, " ").trim();
+  }
+  function sittingText(sec) {
+    var c = sec.cloneNode(true);
+    c.querySelectorAll("label.mark, button").forEach(function (x) { x.remove(); });
+    c.querySelectorAll("summary").forEach(function (s) { s.textContent = "[" + s.textContent.trim() + "]\n"; });
+    c.querySelectorAll("td, th").forEach(function (x) { x.append(" | "); });
+    c.querySelectorAll("tr, li, p, h2, h3, pre, div, details").forEach(function (x) { x.append("\n"); });
+    return c.textContent.replace(/[ \t]+/g, " ").replace(/\n[ \t]+/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  }
+  function visibleSitting() {
+    var best = null, bestH = 0, vh = window.innerHeight;
+    document.querySelectorAll("section.sit[data-step]").forEach(function (s) {
+      var r = s.getBoundingClientRect(), h = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+      if (h > bestH) { bestH = h; best = s; }
+    });
+    return best;
+  }
+  function setCtx(sec) {
+    ctx = sec ? { id: sec.id, title: sittingTitle(sec) } : null;
+    if (ctx) { ctxText.innerHTML = "About: <b></b>"; ctxText.querySelector("b").textContent = "Sitting " + ctx.title; }
+    else ctxText.textContent = "No sitting attached.";
+    ctxClear.hidden = !ctx;
+    paintQuick();
+  }
+
+  var QUICK = [
+    { label: "Explain an error", fill: "Explain this error. Don't fix it for me; tell me what it means and where to look:\n\n" },
+    { label: "Smallest hint", send: "I'm stuck on this sitting. Give me the smallest hint that gets me moving.", needsCtx: true },
+    { label: "Look at my code", send: "Read my file for this sitting and tell me in words what's off or missing so far. Don't write the code.", needsCtx: true },
+    { label: "Check my Explain-it answer", fill: "My answer to this sitting's \"Explain it\" question: ", needsCtx: true, needsExplain: true },
+    { label: "Quiz me", send: "Quiz me on this sitting: 2 short questions, one at a time. Wait for my answer before the next one.", needsCtx: true }
+  ];
+  function paintQuick() {
+    quick.innerHTML = "";
+    var sec = ctx && document.getElementById(ctx.id);
+    QUICK.forEach(function (q) {
+      if (q.needsCtx && !sec) return;
+      if (q.needsExplain && !sec.querySelector(".explain")) return;
+      var b = document.createElement("button");
+      b.type = "button"; b.textContent = q.label; b.disabled = busy;
+      b.addEventListener("click", function () {
+        if (q.send) return send(q.send);
+        input.value = q.fill; input.focus(); input.setSelectionRange(input.value.length, input.value.length);
+      });
+      quick.appendChild(b);
+    });
+  }
+
+  // ---- drawing the conversation
+  function note(html) { var d = document.createElement("div"); d.className = "chat-empty"; d.innerHTML = html; return d; }
+  function setupNote() {
+    if (served) return note("<p><b>The local app isn't answering</b> (or can't find the <code>claude</code> command). " +
+      "Check the terminal where <code>make tutor</code> runs, or start it again from the repo:</p><pre><code>make tutor</code></pre>");
+    var done = [];
+    try { var st = JSON.parse(localStorage.getItem("ee271-p2-sittings") || "{}"); Object.keys(st).forEach(function (k) { if (st[k]) done.push(k); }); } catch (e) {}
+    var url = "http://127.0.0.1:" + PORT + "/part2-sittings.html" + (done.length ? "?done=" + done.join(",") : "");
+    return note("<p><b>The chat needs the local app.</b> This page is open as a plain file. In a terminal in the repo, run:</p>" +
+      "<pre><code>make tutor</code></pre><p>That serves this page at <code>127.0.0.1:" + PORT + "</code> with the chat working, using " +
+      "your Claude Code login (nothing to set up). Already running? <a href=\"" + esc(url) + "\">Open it there</a>" +
+      (done.length ? " (brings your " + done.length + " ticked sitting" + (done.length > 1 ? "s" : "") + " along)" : "") + ".</p>");
+  }
+  function emptyNote() {
+    return note("<p>Ask about the sitting you're on, or paste an error. Claude can read your files in the repo but can't run " +
+      "commands, so run the check yourself and paste what it prints.</p><p>It explains and hints, smallest hint first. " +
+      "It won't write your RTL.</p>");
+  }
+  function msgEl(m) {
+    var d = document.createElement("div"), who = document.createElement("div");
+    d.className = "msg " + (m.role === "user" ? "user" : "bot");
+    who.className = "who";
+    who.textContent = m.role === "user" ? "You" + (m.about ? " · about Sitting " + m.about : "") : "Claude";
+    d.appendChild(who);
+    if (m.role === "user") {
+      var b = document.createElement("div"); b.className = "bubble"; b.textContent = m.text; d.appendChild(b);
+      return d;
+    }
+    (m.tools || []).forEach(function (t) { var x = document.createElement("div"); x.className = "tool"; x.textContent = "↳ " + t; d.appendChild(x); });
+    if (m.text) { var body = document.createElement("div"); body.innerHTML = md(m.text); d.appendChild(body); }
+    if (m.pending && !m.text) { var s = document.createElement("div"); s.className = "status"; s.textContent = (m.status || "working") + "…"; d.appendChild(s); }
+    if (m.error) { var e = document.createElement("div"); e.className = "err"; e.textContent = m.error; d.appendChild(e); }
+    return d;
+  }
+  function atBottom() { return log.scrollHeight - log.scrollTop - log.clientHeight < 80; }
+  function render() {
+    var stick = atBottom();
+    log.innerHTML = "";
+    if (available === false) log.appendChild(setupNote());
+    else if (!chat.messages.length) log.appendChild(emptyNote());
+    chat.messages.forEach(function (m) { log.appendChild(msgEl(m)); });
+    if (stick || !log.dataset.drawn) log.scrollTop = log.scrollHeight;
+    log.dataset.drawn = "1";
+  }
+  function renderLast() {   // cheap redraw while an answer streams in
+    queued = false;
+    var stick = atBottom(), last = log.lastElementChild, m = chat.messages[chat.messages.length - 1];
+    if (!m) return;
+    var el = msgEl(m);
+    if (last && last.classList.contains("msg")) log.replaceChild(el, last); else log.appendChild(el);
+    if (stick) log.scrollTop = log.scrollHeight;
+  }
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(renderLast); } }
+
+  function setBusy(b) {
+    busy = b;
+    sendBtn.textContent = b ? "Stop" : "Send";
+    sendBtn.classList.toggle("stop", b);
+    quick.querySelectorAll("button").forEach(function (x) { x.disabled = b; });
+  }
+
+  // ---- talking to the local app
+  function send(text) {
+    text = (text || "").trim();
+    if (!text || busy) return;
+    if (available === false) { render(); return; }
+    var sent = null;
+    if (ctx && ctx.id !== chat.lastCtx) sent = { id: ctx.id, title: ctx.title, text: sittingText(document.getElementById(ctx.id)) };
+    chat.messages.push({ role: "user", text: text, about: sent ? ctx.title : null });
+    var a = { role: "bot", text: "", tools: [], pending: true, status: "starting Claude" };
+    chat.messages.push(a);
+    input.value = "";
+    setBusy(true); save(); render();
+    log.scrollTop = log.scrollHeight;
+    aborter = new AbortController();
+
+    function handle(ev) {
+      if (ev.type === "session") { chat.session_id = ev.session_id; if (sent) chat.lastCtx = sent.id; }
+      else if (ev.type === "text") a.text += ev.text;
+      else if (ev.type === "tool") { a.tools.push(ev.text); a.status = "reading"; }
+      else if (ev.type === "status") a.status = ev.text;
+      else if (ev.type === "done") { if (ev.session_id) chat.session_id = ev.session_id; if (ev.error) a.error = ev.error; }
+      else if (ev.type === "error") a.error = ev.message;
+      queue();
+    }
+    fetch("/api/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" }, signal: aborter.signal,
+      body: JSON.stringify({ message: text, session_id: chat.session_id, context: sent })
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error("The local app said " + r.status + ": " + t.trim()); });
+      var reader = r.body.getReader(), dec = new TextDecoder(), buf = "";
+      function pump() {
+        return reader.read().then(function (res) {
+          if (res.done) return;
+          buf += dec.decode(res.value, { stream: true });
+          var nl;
+          while ((nl = buf.indexOf("\n")) >= 0) {
+            var line = buf.slice(0, nl); buf = buf.slice(nl + 1);
+            if (line.trim()) { try { handle(JSON.parse(line)); } catch (e) {} }
+          }
+          return pump();
+        });
+      }
+      return pump();
+    }).catch(function (e) {
+      if (e.name === "AbortError") { a.error = "Stopped."; return; }
+      if (e instanceof TypeError) { available = false; a.error = "Couldn't reach the local app. Is make tutor still running?"; return; }
+      a.error = e.message || String(e);
+    }).then(function () {
+      if (a.error && chat.session_id && !/^Stopped/.test(a.error)) a.error += "\n\nIf this keeps happening, press New chat.";
+      a.pending = false; aborter = null;
+      setBusy(false); save(); render();
+    });
+  }
+
+  function checkApp() {
+    if (available !== null) return;
+    fetch("/api/health", { cache: "no-store" }).then(function (r) { return r.json(); })
+      .then(function (j) { available = !!(j.ok && j.claude); }, function () { available = false; })
+      .then(render);
+  }
+  function openChat(sec) {
+    panel.hidden = false;
+    document.body.classList.add("chat-open");
+    setCtx(sec || visibleSitting());
+    render(); checkApp();
+    input.focus();
+  }
+  function closeChat() { panel.hidden = true; document.body.classList.remove("chat-open"); }
+
+  document.querySelectorAll("section.sit[data-step]").forEach(function (sec) {
+    var meta = sec.querySelector(".meta");
+    if (!meta) return;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "ask"; b.textContent = "Ask Claude";
+    b.addEventListener("click", function () { openChat(sec); });
+    meta.appendChild(b);
+  });
+  $("askfab").addEventListener("click", function () { openChat(null); });
+  $("chatClose").addEventListener("click", closeChat);
+  ctxClear.addEventListener("click", function () { setCtx(null); input.focus(); });
+  $("chatNew").addEventListener("click", function () {
+    if (aborter) aborter.abort();
+    chat = fresh(); save(); render(); input.focus();
+  });
+  $("chatForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (busy) { if (aborter) aborter.abort(); return; }
+    send(input.value);
+  });
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("chatForm").requestSubmit(); }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !panel.hidden && panel.contains(document.activeElement)) closeChat();
   });
 })();
 </script>

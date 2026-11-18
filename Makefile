@@ -17,7 +17,7 @@ export RTL PE_COUNT SIM
 
 .PHONY: help help-rtl setup test test-pe test-buffer test-accel test-ours tour repl submit update-starter \
         walkthrough walkthrough-check docs _env \
-        eq eq-stress eq-both tb waves lint pe-unit ctl-check buf-unit check vcs-eq vcs-tb synth fom submit-check clean-build
+        eq eq-stress eq-both tb waves lint pe-unit ctl-check buf-unit check vcs-eq vcs-tb synth fom submit-check clean-build tutor
 
 help:
 	@echo "Part 1 (Python):"
@@ -34,6 +34,7 @@ help:
 
 help-rtl:
 	@echo "Part 2/3 (RTL). Local = your laptop (Icarus by default, SIM=verilator for speed); caddy = Synopsys tools."
+	@echo "  make tutor           open the Part 2 step-by-step page with its Ask-Claude chat (local app, your Claude Code login)"
 	@echo "  make check           everything local below, in order: lint, pe-unit, ctl-check, buf-unit, eq  (run before you push)"
 	@echo "  make eq              the three official equivalence tests, locally   (MODE=int8|int16|int32, WAVES=1)"
 	@echo "  make eq-stress       extra seeds, sizes and value ranges the official tests miss"
@@ -54,6 +55,10 @@ help-rtl:
 
 setup:
 	@scripts/setup.sh $(PART)
+
+# The Part 2 sittings page plus a chat panel (scripts/tutor/server.py, standard-library Python only).
+tutor:
+	@python3 scripts/tutor/server.py
 
 _env:
 	@test -x "$(PY)" || { echo "No environment yet for $(PART). Run: make setup"; exit 1; }
