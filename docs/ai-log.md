@@ -105,3 +105,25 @@ Template:
   Host and Origin guards reject other sites; the plain-file page shows how to start the app; layout checked at
   1440 px and 390 px.
 - Also: the phone/AirDrop advice is gone from the page (Ryan isn't using his phone for this).
+
+## 2026-11-18 (evening): Ryan, Claude Code (Claude Opus 5.5)
+- Asked for: (1) the cycle-by-cycle simulation the sidebar chat couldn't build (a whole sample program, every
+  clock cycle, the state of the memories and PEs, and reset); (2) full permissions for the sidebar agent, so it
+  can edit the explainers, while keeping its instruction not to write RTL.
+- Got: **Watch it run**, a new section after Sitting 1 of `docs/part2-sittings.html`. It steps through the
+  recorded run of a working design (6×3 INT16, 2 PEs, 21 cycles from reset to done) from
+  `docs/part2-rtl-src/waves.json`, embedded by `scripts/sittings_sim_data.py`. It shows a pipeline strip
+  (memory half vs compute half per cycle), a plain-words account of each cycle, the program with markers, the
+  controller registers, MEM0 drawn as the tiled matrix, MEM1, MEM2 filling in, both PEs' accumulators and
+  outputs, and what each register becomes at the clock edge. Its "Ask about this cycle" button sends the chat
+  the chip's state in the cycle on screen. The sidebar agent now runs with `bypassPermissions`. Its rules
+  (`scripts/tutor/system-prompt.md`) still forbid creating or editing the four graded `.sv` files or giving
+  paste-able RTL. When a turn changes a page, the chat offers Reload and reopens afterwards.
+  `scripts/tutor/check_page.py` lets it (and us) check a page's scripts after an edit.
+- How it was checked: the embed script cross-checks the recording against the program (owners of every
+  half, MEM0/MEM1 contents, MEM2 = gold); all 21 cycles' explanations were read against the decoded signals
+  (MAC sums, the WRITE landing one cycle late, the padding instruction); layout at 1440 px and 390 px. Through
+  the page: the agent ran `make lint`, edited the page and ran the checker; Reload brought the chat back.
+  The test edit was undone.
+- Not done by AI: the RTL. The simulator shows a working design's signals, not its code. It does show the
+  timing Sitting 9 asks you to predict, and says so.

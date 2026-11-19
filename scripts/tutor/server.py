@@ -2,10 +2,11 @@
 """Local app for docs/part2-sittings.html with an "Ask Claude" chat panel.  Run: make tutor
 
 Serves docs/ on http://127.0.0.1:8271 and answers POST /api/chat by running Claude Code headless
-(`claude -p`) with your existing Claude Code login, so there is no API key to set up. Claude gets
-read-only tools (Read, Grep, Glob) in this repo, no MCP servers, and the tutor rules in
-system-prompt.md (explain, don't write the graded RTL). Each chat is a resumable Claude Code session;
-a readable copy of every exchange goes to scratch/tutor-chats/ (git-ignored) for the AI-use log.
+(`claude -p`) with your existing Claude Code login, so there is no API key to set up. Claude runs with
+full permissions in this repo (it can run the checks and edit the explainer pages), no MCP servers, and
+the tutor rules in system-prompt.md (explain, don't write the graded RTL). When a turn changes a page in
+docs/, the page offers a reload. Each chat is a resumable Claude Code session; a readable copy of every
+exchange goes to scratch/tutor-chats/ (git-ignored) for the AI-use log.
 
 Only standard-library Python. Listens on 127.0.0.1 only and rejects requests whose Host or Origin
 isn't this server, so other websites can't drive it.
@@ -44,7 +45,11 @@ UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 MAX_BODY = 300_000          # bytes of JSON per chat request
 MAX_MESSAGE = 60_000        # characters (a long pasted log fits)
 MAX_CONTEXT = 20_000        # characters of sitting text
-TOOLS = "Read,Grep,Glob"
+
+
+def page_mtimes():
+    """Modification times of the pages this server serves, to tell the browser what the agent changed."""
+    return {p.name: p.stat().st_mtime_ns for p in DOCS.glob("*.html")}
 
 
 def find_claude():
@@ -67,9 +72,11 @@ def child_env():
 
 
 def claude_command(claude, session_id):
+    # Full permissions (Ryan's call, Nov 18): every built-in tool, no prompts. The no-RTL rule lives in the
+    # system prompt. MCP servers stay off so each message starts fast.
     cmd = [claude, "-p",
            "--output-format", "stream-json", "--verbose", "--include-partial-messages",
-           "--tools", TOOLS, "--allowedTools", TOOLS, "--permission-mode", "dontAsk",
+           "--permission-mode", "bypassPermissions",
            "--strict-mcp-config",
            "--append-system-prompt", PROMPT_FILE.read_text(encoding="utf-8")]
     if os.environ.get("TUTOR_MODEL"):
@@ -99,6 +106,9 @@ def describe_tool(name, inp):
 
     if "file_path" in inp:
         return rel(inp["file_path"])
+    if "command" in inp:
+        cmd = " ".join(str(inp["command"]).split())
+        return cmd[:140] + ("…" if len(cmd) > 140 else "")
     if "pattern" in inp:
         where = rel(inp["path"]) if inp.get("path") else ""
         return f'"{inp["pattern"]}"' + (f" in {where}" if where else "")
@@ -242,6 +252,7 @@ class Handler(BaseHTTPRequestHandler):
                     return
 
         threading.Thread(target=watch_client, daemon=True).start()
+        pages_before = page_mtimes()
         reply, tools = [], []
         saw_text = got_result = False
         error = None
@@ -286,6 +297,10 @@ class Handler(BaseHTTPRequestHandler):
                 elif kind == "result":
                     got_result = True
                     sid = ev.get("session_id") or sid
+                    now = page_mtimes()
+                    changed = sorted(n for n, m in now.items() if pages_before.get(n) != m)
+                    if changed:
+                        self._emit({"type": "edited", "pages": changed})
                     if ev.get("is_error") or ev.get("subtype") != "success":
                         error = str(ev.get("result") or ev.get("subtype") or "Claude reported an error.")
                     self._emit({"type": "done", "session_id": sid, "error": error})

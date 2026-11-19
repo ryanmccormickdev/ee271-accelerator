@@ -106,6 +106,100 @@ footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px
 .theme { position: fixed; bottom: 12px; left: 12px; font-size: 13px; padding: 4px 9px; border-radius: 6px; z-index: 6;
   border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; }
 
+/* ---- Watch it run (the recorded worked example) */
+section.sim { outline: none; }
+.nx { color: var(--watch-b); font-weight: 700; white-space: nowrap; }
+.sim-ctl { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 12px 0 8px; }
+.sim-ctl button, .sim-ctl select { font: 600 14px/1 -apple-system, BlinkMacSystemFont, sans-serif; padding: 7px 10px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); cursor: pointer; }
+.sim-ctl button.play { background: var(--accent); color: #fff; border-color: var(--accent); min-width: 68px; }
+.sim-ctl input[type=range] { flex: 1 1 140px; min-width: 120px; accent-color: var(--accent); }
+.sim-cyc { font-size: 14px; color: var(--muted); min-width: 92px; }
+.sim-cyc b { color: var(--fg); font-size: 16px; }
+.sim-stripwrap { margin: 4px 0 10px; }
+table.sim-strip { border-collapse: separate; border-spacing: 2px; font: 12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
+table.sim-strip th { background: none; border: 0; font: 600 11.5px/1.2 -apple-system, sans-serif; color: var(--muted);
+  text-align: right; padding: 2px 6px 2px 0; white-space: nowrap; }
+table.sim-strip td { border: 1px solid transparent; border-radius: 4px; width: 22px; min-width: 22px; height: 20px; padding: 0;
+  text-align: center; cursor: pointer; color: var(--fg); }
+table.sim-strip td.rst { background: var(--code-bg); color: var(--muted); }
+table.sim-strip td.t0 { background: var(--see); box-shadow: inset 0 -3px 0 var(--see-b); }
+table.sim-strip td.t1 { background: var(--phone); box-shadow: inset 0 -3px 0 var(--phone-b); }
+table.sim-strip td.tp { background: var(--code-bg); color: var(--muted); box-shadow: inset 0 -3px 0 var(--border); }
+table.sim-strip td.ev { color: var(--watch-b); font-weight: 700; }
+table.sim-strip td.cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; font-weight: 700; }
+table.sim-strip tr.num td { color: var(--muted); }
+table.sim-strip tr.num td.cur { color: var(--accent); }
+.sim-say { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin: 8px 0 12px;
+  font-size: 15.5px; min-height: 120px; }
+.sim-say h4 { margin: 0 0 6px; font-size: 15px; }
+.sim-say ul { margin: 0; padding-left: 20px; }
+.sim-say li { margin: 3px 0; max-width: none; }
+.sim-chip { display: grid; gap: 8px; grid-template-columns: 1fr;
+  grid-template-areas: "imem" "ctl" "bus1" "buf" "bus2" "pe0" "pe1"; }
+@media (min-width: 700px) {
+  .sim-chip { grid-template-columns: 1fr 1fr; grid-template-areas: "imem ctl" "bus1 bus1" "buf buf" "bus2 bus2" "pe0 pe1"; }
+}
+.blk { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: var(--card); min-width: 0; font-size: 14px; }
+.blk.idle { opacity: .75; }
+.blk > .bh { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin-bottom: 6px; }
+.blk > .bh b { font-size: 15px; }
+.blk > .bh span { color: var(--muted); font-size: 12.5px; }
+.blk.imem { grid-area: imem; } .blk.ctl { grid-area: ctl; } .blk.buf { grid-area: buf; }
+.blk.pe0 { grid-area: pe0; } .blk.pe1 { grid-area: pe1; }
+.rstnote { background: var(--code-bg); color: var(--muted); border-radius: 6px; padding: 3px 8px; font-size: 12.5px; margin-bottom: 6px; }
+.prog { font: 12.5px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.prog div { display: flex; gap: 6px; align-items: center; padding: 2px 4px; border-radius: 5px; border-left: 3px solid transparent; flex-wrap: wrap; }
+.prog .k { color: var(--muted); width: 2.2em; }
+.prog .pad { color: var(--muted); }
+.prog .on { border-left-color: var(--phone-b); }
+.prog .mh { background: var(--see); }
+.prog .ch { box-shadow: 0 0 0 1px var(--do-b) inset; }
+.tag { font: 600 11px/1.3 -apple-system, sans-serif; border-radius: 999px; padding: 1px 7px; white-space: nowrap; }
+.tag.f { background: var(--phone); color: var(--phone-b); }
+.tag.m { background: var(--see); color: var(--see-b); border: 1px solid var(--see-b); }
+.tag.c { background: var(--do); color: var(--do-b); border: 1px solid var(--do-b); }
+.tag.w { background: var(--watch); color: var(--watch-b); border: 1px solid var(--watch-b); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13.5px; align-items: baseline; }
+.kv .n { font: 12.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
+.kv .v { font: 13.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+.bus { display: flex; flex-wrap: wrap; gap: 6px; }
+.bus.b1 { grid-area: bus1; } .bus.b2 { grid-area: bus2; }
+.wire { flex: 1 1 220px; border: 1px dashed var(--border); border-radius: 8px; padding: 5px 9px; font-size: 13px; min-width: 0; }
+.wire .wn { font: 600 12.5px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.wire .wd { color: var(--muted); font-size: 12px; }
+.wire .wv { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; display: block; overflow-wrap: anywhere; }
+.wire.on.m { border: 1px solid var(--see-b); background: var(--see); }
+.wire.on.c { border: 1px solid var(--do-b); background: var(--do); }
+.wire.on.o { border: 1px solid var(--watch-b); background: var(--watch); }
+.wire.off .wv { color: var(--muted); }
+.mems { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+.mem { min-width: 0; }
+.mem .mt { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+.mem .mt span { font-weight: 400; color: var(--muted); }
+table.mx { border-collapse: separate; border-spacing: 0; font: 12.5px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
+table.mx th, table.mx td { border: 0; padding: 3px 6px; text-align: right; background: none; }
+table.mx th { color: var(--muted); font-weight: 400; font-size: 11px; }
+table.mx td.rl { color: var(--muted); font-size: 11px; text-align: left; padding-left: 0; white-space: nowrap; }
+table.mx tr.tile th { padding-top: 7px; }
+table.mx tr.padrow td:not(.rl) { color: var(--muted); }
+table.mx td.addr { box-shadow: 1px 0 0 0 var(--see-b) inset, -1px 0 0 0 var(--see-b) inset; }
+table.mx tr.top td.addr { box-shadow: 1px 0 0 0 var(--see-b) inset, -1px 0 0 0 var(--see-b) inset, 0 1px 0 0 var(--see-b) inset; }
+table.mx tr.bot td.addr { box-shadow: 1px 0 0 0 var(--see-b) inset, -1px 0 0 0 var(--see-b) inset, 0 -1px 0 0 var(--see-b) inset; }
+table.mx td.out { background: var(--see); color: var(--see-b); font-weight: 700; }
+table.mx td.pick { background: var(--do); color: var(--do-b); font-weight: 700; }
+table.mx td.wr { background: var(--watch); color: var(--watch-b); font-weight: 700; }
+table.mx td.empty { color: var(--muted); }
+.regs { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+.regs code { font-size: 12.5px; }
+.lg { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pe .op { font: 600 13.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; margin-bottom: 4px; }
+table.pet { border-collapse: collapse; font: 12.5px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; width: 100%; }
+table.pet th, table.pet td { border: 0; border-top: 1px solid var(--border); padding: 3px 4px; text-align: right; background: none; }
+table.pet th { color: var(--muted); font-weight: 400; text-align: left; white-space: nowrap; }
+table.pet tr:first-child th, table.pet tr:first-child td { border-top: 0; color: var(--muted); font-size: 11px; }
+table.pet td.unused { color: var(--muted); }
+
 /* ---- Ask Claude (works when the page is served by `make tutor`) */
 button.ask { margin-left: auto; font: 600 13px/1 -apple-system, BlinkMacSystemFont, sans-serif; padding: 5px 10px;
   border-radius: 999px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
@@ -150,6 +244,9 @@ aside.chat[hidden] { display: none; }
 .msg .status { font-size: 13.5px; color: var(--muted); font-style: italic; }
 .msg .err { background: var(--watch); border-left: 3px solid var(--watch-b); border-radius: 6px; padding: 6px 10px;
   font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg .edited { margin-top: 6px; background: var(--do); border-left: 3px solid var(--do-b); border-radius: 6px; padding: 6px 10px; font-size: 14px; }
+.msg .edited button { font: 600 13px/1 -apple-system, sans-serif; padding: 5px 10px; border-radius: 6px; border: 0;
+  background: var(--do-b); color: #fff; cursor: pointer; }
 .chat-empty { color: var(--muted); font-size: 14.5px; }
 .chat-empty pre { font-size: 13px; }
 .chat-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 0; }
@@ -175,6 +272,7 @@ aside.chat[hidden] { display: none; }
 <nav class="toc" aria-label="Sittings">
   <div class="grp">Prep</div>
   <a href="#s1" data-step="s1">1 · The picture</a>
+  <a href="#sim">▶ · Watch it run</a>
   <a href="#s2" data-step="s2">2 · Four building blocks</a>
   <a href="#s3" data-step="s3">3 · Set up</a>
   <div class="grp">Buffer</div>
@@ -259,6 +357,43 @@ aside.chat[hidden] { display: none; }
   together, no logic). Your partner writes <code>processing_element.sv</code>.</p>
   <p class="explain"><b>Done when</b> you can say it out loud: <i>"address in t, data in t+1, so the PE works one cycle after its READ, and a WRITE lands one cycle after it's issued."</i>
   Deeper (laptop): the animated <a href="part2-rtl.html#cycles">Cycles tab</a>.</p>
+</section>
+
+<section class="sit sim" id="sim" data-ask="sim">
+  <h2><span class="num">▶</span> Watch it run: the whole chip, cycle by cycle</h2>
+  <div class="meta"><span class="pill">optional</span><span class="pill">5–15 min</span><span class="pill phone">no terminal</span></div>
+  <p>This is a real run of a <b>working design</b> through the staff testbench, recorded one value per signal per cycle.
+  It multiplies a 6×3 INT16 matrix by a 3-element vector on <b>2 PEs</b> (yours has 16; nothing else changes) and
+  takes 21 cycles from reset to "done". Step through it and watch the program, the controller, the three memories
+  and the PEs.</p>
+  <p class="small">How to read it: every value is what the signal holds <b>during</b> that cycle. Registers change only at
+  the clock edge that ends a cycle; an orange <span class="nx">→ 9</span> shows what a register becomes at that edge.
+  ← and → step once you've clicked inside the simulator. Heads-up: this shows a complete, working timing, including the
+  controller columns Sitting 9 asks you to predict.</p>
+  <div class="sim-ctl" role="toolbar" aria-label="Simulator controls">
+    <button type="button" data-act="first" title="Back to cycle 0 (Home)">⏮</button>
+    <button type="button" data-act="prev" title="Previous cycle (←)">◀</button>
+    <button type="button" data-act="play" class="play">Play</button>
+    <button type="button" data-act="next" title="Next cycle (→)">▶</button>
+    <button type="button" data-act="last" title="Last cycle (End)">⏭</button>
+    <input type="range" min="0" max="20" value="0" aria-label="Cycle" id="simRange">
+    <span class="sim-cyc" id="simCyc"></span>
+    <select id="simSpeed" aria-label="Playback speed"><option value="1800">slow</option><option value="1000" selected>normal</option><option value="450">fast</option></select>
+  </div>
+  <div class="tw sim-stripwrap"><table class="sim-strip" id="simStrip"></table></div>
+  <div class="sim-say" id="simSay" aria-live="polite"></div>
+  <div class="sim-chip" id="simChip"></div>
+  <details><summary>What's being computed</summary>
+    <p><b>y = M · v</b> with the 6×3 matrix below and v = [2, −1, 3]. The compiler splits M into <b>tiles</b> of 4 rows
+    (2 PEs × 2 INT16 lanes each). Each MEM0 word holds one column of one tile, first row in the most significant bits, so
+    tile 1 is words 0–2 and tile 2 is words 3–5. Tile 2 has only 2 real rows; rows 6 and 7 are zero padding. MEM1 packs two
+    vector elements per 32-bit word. Each tile's program is <code>CLR</code>, three <code>READ | MAC</code> repetitions (one
+    per column), <code>OUT</code>, then <code>WRITE</code> to the next MEM2 word.</p>
+    <p>Expected result: y = [−3, 12, 7, 6, 8, −6]. The testbench dumps MEM2 at the end and compares it with the Python
+    model; this run matches. Source: <code>docs/part2-rtl-src/waves.json</code>, design <code>ref</code>, embedded by
+    <code>scripts/sittings_sim_data.py</code>.</p>
+  </details>
+  <script type="application/json" id="sim-data">{"source":"docs/part2-rtl-src/waves.json, design ref","cycles":21,"took":20,"asm":["NOP | CLR INT16 | 1 0 0","READ INT16 0 0 | MAC INT16 | 3 1 1","NOP | OUT INT16 | 1 0 0","WRITE 0 | NOP INT16 | 1 0 0","NOP | CLR INT16 | 1 0 0","READ INT16 3 0 | MAC INT16 | 3 1 1","NOP | OUT INT16 | 1 0 0","WRITE 1 | NOP INT16 | 1 0 0","READ INT8 0 0 | MAC INT8 | 1 0 0"],"reps":[1,3,1,1,1,3,1,1,1],"mem0":["00010003fffe0000","000200000001fffd","ffff000200040001","0002ffff00000000","0002000400000000","0002000000000000"],"mem1":["ffff0002","00000003"],"mem2_final":["fffd000c00070006","0008fffa00000000","0000000000000000","0000000000000000"],"gold":["fffd000c00070006","0008fffa00000000","0000000000000000","0000000000000000"],"buf_owner":[null,null,null,null,null,null,[0,1,1],[1,1,3],[1,2,3],[1,3,3],[2,1,1],[3,1,1],[4,1,1],[5,1,3],[5,2,3],[5,3,3],[6,1,1],[7,1,1],[8,1,1],null,null],"pe_owner":[null,null,null,null,null,null,null,[0,1,1],[1,1,3],[1,2,3],[1,3,3],[2,1,1],[3,1,1],[4,1,1],[5,1,3],[5,2,3],[5,3,3],[6,1,1],[7,1,1],[8,1,1],null],"sig":{"rst_n":["0","0","0","0","0","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1"],"pc":["00","00","00","00","00","00","01","02","02","02","03","04","05","06","06","06","07","08","09","09","09"],"imem_a":["00","00","00","00","00","01","02","02","02","03","04","05","06","06","06","07","08","09","09","09","09"],"inst_valid":["0","0","0","0","0","1","1","1","1","1","1","1","1","1","1","1","1","1","0","0","0"],"begins":["0","0","0","0","0","1","1","0","0","1","1","1","1","0","0","1","1","1","0","0","0"],"state":["00000000","00000000","00000000","00000000","00000000","00000000","00000001","00000001","00000001","00000001","00000001","00000001","00000001","00000001","00000001","00000001","00000001","00000001","00000001","00000000","00000000"],"remaining":["0000","0000","0000","0000","0000","0000","0000","0002","0001","0000","0000","0000","0000","0002","0001","0000","0000","0000","0000","0000","0000"],"buf_inst":["000000000","000000000","000000000","000000000","000000000","000000000","800000000","100000000","100010001","100020002","800000000","400000000","800000000","100030000","100040001","100050002","800000000","400010000","000000000","000000000","000000000"],"buf_valid":["0","0","0","0","0","0","1","1","1","1","1","1","1","1","1","1","1","1","1","0","0"],"m0_cen":["1","1","1","1","1","1","1","0","0","0","1","1","1","0","0","0","1","1","0","1","1"],"m0_a":["0000","0000","0000","0000","0000","0000","0000","0000","0001","0002","0000","0000","0000","0003","0004","0005","0000","0001","0000","0000","0000"],"m0_q":["0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","00010003fffe0000","000200000001fffd","ffff000200040001","ffff000200040001","ffff000200040001","ffff000200040001","0002ffff00000000","0002000400000000","0002000000000000","0002000000000000","0002000000000000","00010003fffe0000","00010003fffe0000"],"m1_a":["0000","0000","0000","0000","0000","0000","0000","0000","0000","0001","0000","0000","0000","0000","0000","0001","0000","0000","0000","0000","0000"],"m1_q":["00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","ffff0002","ffff0002","00000003","00000003","00000003","00000003","ffff0002","ffff0002","00000003","00000003","00000003","ffff0002","ffff0002"],"memb_q":["0000","0000","0000","0000","0000","0000","0000","0000","0000","0001","0002","0002","0002","0002","0000","0001","0002","0002","0002","0000","0000"],"mode_q":["0","0","0","0","0","0","0","0","1","1","1","1","1","1","1","1","1","1","1","0","0"],"matrix_data":["0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","00010003fffe0000","000200000001fffd","ffff000200040001","ffff000200040001","ffff000200040001","ffff000200040001","0002ffff00000000","0002000400000000","0002000000000000","0002000000000000","0002000000000000","00010003fffe0000","00010003fffe0000"],"vector_data":["00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00020002","ffffffff","00030003","00030003","00030003","00030003","00020002","ffffffff","00030003","00030003","00030003","02020202","02020202"],"pe_inst":["000","000","000","000","000","000","000","024","020","020","020","022","021","024","020","020","020","022","021","000","000"],"pe_valid":["0","0","0","0","0","0","0","1","1","1","1","1","1","1","1","1","1","1","1","1","0"],"acc0":["0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000200000006","0000000000000006","fffffffd0000000c","fffffffd0000000c","fffffffd0000000c","0000000000000000","00000004fffffffe","00000002fffffffa","00000008fffffffa","00000008fffffffa","00000008fffffffa","0000000affff0000"],"out0":["00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","fffd000c","fffd000c","00000000","00000000","00000000","00000000","0008fffa","0008fffa","0008fffa"],"acc1":["0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","fffffffc00000000","fffffffb00000003","0000000700000006","0000000700000006","0000000700000006","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","fffefffc00000000"],"out1":["00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00000000","00070006","00070006","00000000","00000000","00000000","00000000","00000000","00000000","00000000"],"output_data":["0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","fffd000c00070006","fffd000c00070006","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0008fffa00000000","0008fffa00000000","0008fffa00000000"],"m2_gwen":["1","1","1","1","1","1","1","1","1","1","1","1","0","1","1","1","1","1","0","1","1"],"m2_a":["0000","0000","0000","0000","0000","0000","0000","0000","0000","0001","0002","0000","0000","0000","0003","0004","0005","0000","0001","0000","0000"],"m2_d":["0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0000000000000000","fffd000c00070006","fffd000c00070006","0000000000000000","0000000000000000","0000000000000000","0000000000000000","0008fffa00000000","0008fffa00000000","0008fffa00000000"],"done":["0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","1"]}}</script>
 </section>
 
 <section class="sit" id="s2" data-step="s2">
@@ -858,6 +993,349 @@ make submit PART=part2      # checks compile.log + test results, then builds the
 })();
 </script>
 <script>
+/* Watch it run: steps through the recorded worked example. The data (#sim-data) is the "ref" design from
+   docs/part2-rtl-src/waves.json, embedded by scripts/sittings_sim_data.py: one value per signal per cycle, plus
+   which instruction/repetition owns each half. Nothing here simulates; it only decodes and explains the recording. */
+(function () {
+  var sec = document.getElementById("sim"), D = null;
+  try { D = JSON.parse(document.getElementById("sim-data").textContent); } catch (e) {}
+  if (!sec || !D || !D.cycles) return;
+  var S = D.sig, N = D.cycles, LAST = N - 1, SKEY = "ee271-p2-sim";
+  var MODES = ["INT8", "INT16", "INT32", "mode 3"], BUFOPS = ["READ", "WRITE", "NOP", "op 3"];
+  var PEOPS = { 0: "MAC", 1: "NOP", 2: "OUT", 3: "PASS", 4: "CLR" };
+  var COLS = D.reps[1];               // repetitions of the first READ|MAC = matrix columns (3)
+  var PER_TILE = 4;                   // CLR, READ|MAC, OUT, WRITE
+  var PAD = D.asm.length - 1;         // the all-zero padding instruction
+  var REAL_ROWS = 6;                  // the worked example is 6 x 3; rows 6 and 7 are padding
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (ch) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]; }); }
+  function big(h) { return BigInt("0x" + h); }
+  function bit(k, c) { return S[k][c] === "1"; }
+  function num(k, c) { return parseInt(S[k][c], 16); }
+  function lanes(h, width, lw) {          // signed lanes, least significant first
+    var v = big(h), out = [];
+    for (var k = 0; k < width / lw; k++) out.push(Number(BigInt.asIntN(lw, v >> BigInt(k * lw))));
+    return out;
+  }
+  function rows4(h) { return lanes(h, 64, 16).reverse(); }               // 64-bit word as tile rows 0..3 (row 0 = top bits)
+  function peLanes(h, width) { return lanes(h, width, width / 2).reverse(); }   // a PE's two lanes, upper row first
+  function f(v) { return v < 0 ? "−" + (-v) : String(v); }
+  function fp(v) { return v < 0 ? "(" + f(v) + ")" : f(v); }
+  function list(a) { return a.map(f).join(", "); }
+  function decBuf(h) { var v = big(h); return { op: Number(v >> 34n), mode: Number((v >> 32n) & 3n), a: Number((v >> 16n) & 0xffffn), b: Number(v & 0xffffn) }; }
+  function decPe(h) {
+    var v = big(h), op = Number(v >> 7n), val = Number(v & 31n);
+    return { name: op === 1 ? "RND " + val : op === 0 ? (PEOPS[val] || "value " + val) : "opcode " + op, mode: MODES[Number((v >> 5n) & 3n)] };
+  }
+  function bufText(b) { return BUFOPS[b.op] + (b.op === 0 ? " " + MODES[b.mode] + " " + b.a + " " + b.b : b.op === 1 ? " " + b.a : ""); }
+  function tileOf(k) { return k === PAD ? null : Math.floor(k / PER_TILE); }
+  function own(o) { return o ? "#" + o[0] + ", rep " + o[1] + "/" + o[2] : ""; }
+  function nx(cur, next) { return next !== undefined && String(next) !== String(cur) ? ' <span class="nx">→ ' + next + "</span>" : ""; }
+  function c_(s) { return "<code>" + s + "</code>"; }
+  function at(k, c) { return S[k][Math.min(c, LAST)]; }
+
+  // ---- facts derived once from the recording
+  var V = []; D.mem1.forEach(function (w) { V = V.concat(lanes(w, 32, 16)); });
+  var M = [];
+  for (var t = 0; t * COLS < D.mem0.length; t++)
+    for (var r = 0; r < 4; r++) { M[t * 4 + r] = []; for (var j = 0; j < COLS; j++) M[t * 4 + r][j] = rows4(D.mem0[t * COLS + j])[r]; }
+  var GOLD = []; D.gold.forEach(function (w) { GOLD = GOLD.concat(rows4(w)); });
+  var mem2At = [], m2 = [null, null], tileAt = [], lt = 0, fresh = [];
+  for (var c = 0; c < N; c++) {
+    mem2At.push(m2.slice());
+    if (!bit("m2_gwen", c) && num("m2_a", c) < m2.length) m2[num("m2_a", c)] = S.m2_d[c];
+    var po = D.pe_owner[c];
+    if (po && tileOf(po[0]) !== null) lt = tileOf(po[0]);
+    tileAt.push(lt);
+    fresh.push(c > 0 && !!D.buf_owner[c - 1] && decBuf(S.buf_inst[c - 1]).op === 0);
+  }
+  var firstRun = S.rst_n.indexOf("1");
+
+  // ---- what happens in cycle c, in words
+  function say(c) {
+    var L = [], rst = !bit("rst_n", c), pc = num("pc", c), st = num("state", c), rem = num("remaining", c);
+    var bo = D.buf_owner[c], po = D.pe_owner[c];
+    if (rst) {
+      L.push("<b>Reset is held</b> (" + c_("rst_n") + " = 0" + (c === 0 ? " for the first " + firstRun + " cycles" : "") +
+        "). Every flip-flop is forced to 0: the controller is IDLE with " + c_("program_counter") + " = 0, both valids are 0, and the PEs' accumulators and outputs are 0.");
+      L.push(c === 0 ? "The memories are <b>not</b> reset. Before the run the testbench already loaded the program into the instruction memory, the matrix into MEM0 and the vector into MEM1 (with the simulation-only " + c_("loadmem") + " task)."
+                     : "Nothing moves until reset is released.");
+      return L;
+    }
+    if (c === firstRun) L.push("<b>Reset is released</b> at the start of this cycle. From now on, flip-flops update at every clock edge.");
+    if (bit("begins", c)) {
+      L.push("<b>Controller:</b> instruction #" + pc + " (" + c_(esc(D.asm[pc])) + (pc === PAD ? ", the all-zero padding word" : "") + ") is on " + c_("inst") + " with " + c_("inst_valid") + " = 1. " +
+        (st === 0 ? "The controller is IDLE, so it" : "This is the last repetition of #" + bo[0] + ", so with no gap it") +
+        " <b>takes it at the end of this cycle</b> (" + c_("inst_exec_begins") + " = 1). Its first repetition goes out next cycle.");
+    } else if (bo) {
+      L.push("<b>Controller:</b> sending repetition " + bo[1] + " of " + bo[2] + " of #" + bo[0] + "; " + c_("remaining") + " = " + rem + " more after this one." +
+        (!bit("inst_valid", c) ? " " + c_("program_counter") + " has reached " + c_("instruction_count") + " (" + pc + "), so " + c_("inst_valid") + " = 0: nothing more to take, and the controller goes IDLE at the end of this cycle." : ""));
+    } else if (!bit("inst_valid", c)) {
+      L.push("<b>Controller:</b> IDLE. " + c_("program_counter") + " = " + pc + " = " + c_("instruction_count") + ", so there is nothing left to take.");
+    }
+    if (bo) {
+      var b = decBuf(S.buf_inst[c]), tag = " (" + own(bo) + ")";
+      if (bo[0] === PAD) L.push("<b>Buffer:</b> the memory half of the all-zero <b>padding</b> instruction, which decodes as " + c_("READ INT8 0 0") + ". The testbench runs one instruction more than the program has. It's harmless: nothing is written after it.");
+      else if (b.op === 0) L.push("<b>Buffer, memory half" + tag + ": READ.</b> MEM0 gets address " + b.a + " (column " + (b.a % COLS) + " of tile " + (Math.floor(b.a / COLS) + 1) +
+        ") and MEM1 gets the word holding vector element " + b.b + ". Their data comes out <b>next cycle</b>. At the end of this cycle the buffer also stores this READ's MemB offset (" + b.b + ") and mode (" + MODES[b.mode] +
+        "): next cycle it needs them to pick the vector lane, and " + c_("buf_inst") + " will already show something else.");
+      else if (b.op === 1) L.push("<b>Buffer, memory half" + tag + ": WRITE</b> to MEM2 word " + b.a + ". Not yet, though: the OUT that makes the data updates " + c_("output_data") +
+        " only at the end of this cycle. So the buffer remembers the address (a write is <i>pending</i>) and writes at the end of <b>next</b> cycle.");
+      else L.push("<b>Buffer, memory half" + tag + ":</b> NOP, nothing to do. This instruction's real work is its compute half, next cycle.");
+    }
+    if (fresh[c] && D.buf_owner[c - 1][0] !== PAD) {
+      var A = rows4(S.matrix_data[c]), w0 = num("m0_a", c - 1), vb = num("memb_q", c);
+      L.push("<b>Data on the buses</b> all cycle, from last cycle's READ: " + c_("matrix_data") + " = column " + (w0 % COLS) + " of tile " + (Math.floor(w0 / COLS) + 1) +
+        " (" + list(A) + "), and " + c_("vector_data") + " = v[" + vb + "] = " + f(lanes(S.vector_data[c], 32, 16)[0]) +
+        ", copied into both lanes. The vector decoder picked that element with the <i>stored</i> offset and mode, because " + c_("buf_inst") + " has moved on.");
+    }
+    if (po) {
+      var p = decPe(S.pe_inst[c]), tp = " (" + own(po) + ", one cycle after its memory half)";
+      if (po[0] === PAD) L.push("<b>PEs:</b> the padding instruction's MAC runs on whatever is on the buses. It changes the accumulators after the last WRITE, so no result is affected.");
+      else if (p.name === "CLR") L.push("<b>PEs, compute half" + tp + ": CLR.</b> At the end of this cycle every accumulator and output register becomes 0, ready for a new tile.");
+      else if (p.name === "MAC") L.push("<b>PEs, compute half" + tp + ": MAC.</b> Each PE multiplies its two matrix values by the vector value and adds the products to its accumulators at the end of the cycle: " + macText(c) + ".");
+      else if (p.name === "OUT") L.push("<b>PEs, compute half" + tp + ": OUT.</b> Each accumulator, saturated to 16 bits, is copied into the output register at the end of this cycle. " +
+        c_("output_data") + " (all four outputs side by side) shows it next cycle, just when the pending WRITE needs it.");
+      else L.push("<b>PEs, compute half" + tp + ":</b> " + p.name + ". They hold their values.");
+    } else if (!bit("done", c)) {
+      L.push("<b>PEs:</b> idle (" + c_("pe_inst_valid") + " = 0)." + (bo && D.pe_owner[c + 1] ? " The first compute half arrives next cycle, one cycle behind its memory half." : ""));
+    }
+    if (!bit("m2_gwen", c)) {
+      var a2 = num("m2_a", c), y = rows4(S.m2_d[c]);
+      L.push("<b>MEM2 write:</b> last cycle's WRITE commits at the end of this cycle: word " + a2 + " ← " + c_("output_data") + " = [" + list(y) + "]. That's y[" + (4 * a2) + "–" + (4 * a2 + 3) + "]" +
+        (4 * a2 + 3 >= REAL_ROWS ? " (the last " + (4 * a2 + 4 - REAL_ROWS) + " are padding rows)" : "") + ".");
+    }
+    if (bit("done", c)) {
+      L.push("<b>Done:</b> " + c_("simulation_complete") + " = 1 (" + c_("program_counter") + " = " + c_("instruction_count") + " and both valids 0). The testbench waits one more clock, prints “Computation took " +
+        D.took + " clock cycles” and dumps MEM2, which is compared with the Python model: y = [" + list(GOLD.slice(0, REAL_ROWS)) + "]. They match.");
+    }
+    return L;
+  }
+  function macText(c) {
+    var A = rows4(S.matrix_data[c]), b = lanes(S.vector_data[c], 32, 16)[0], t0 = tileAt[c] * 4, out = [];
+    for (var p = 0; p < 2; p++) {
+      var acc = peLanes(S["acc" + p][c], 64), nxt = peLanes(at("acc" + p, c + 1), 64);
+      for (var i = 0; i < 2; i++) out.push("row " + (t0 + 2 * p + i) + ": " + f(acc[i]) + " + " + fp(A[2 * p + i]) + "×" + fp(b) + " = " + f(nxt[i]));
+    }
+    return out.join("; ");
+  }
+  function title(c) {
+    if (!bit("rst_n", c)) return "Cycle " + c + ": reset";
+    if (bit("done", c)) return "Cycle " + c + ": done";
+    var bo = D.buf_owner[c], po = D.pe_owner[c];
+    return "Cycle " + c + ": memory half " + (bo ? BUFOPS[decBuf(S.buf_inst[c]).op] : "—") + " · compute half " + (po ? decPe(S.pe_inst[c]).name : "—");
+  }
+
+  // ---- the chip at cycle c
+  function blk(cls, name, sub, body) {
+    return '<div class="blk ' + cls + '"><div class="bh"><b>' + name + "</b><span>" + sub + "</span></div>" + body + "</div>";
+  }
+  function wire(name, what, val, cls) {
+    return '<div class="wire ' + cls + '"><span class="wn">' + name + '</span> <span class="wd">' + what + '</span><span class="wv">' + val + "</span></div>";
+  }
+  function imemBox(c) {
+    var pc = num("pc", c), iv = bit("inst_valid", c), bo = D.buf_owner[c], po = D.pe_owner[c], h = '<div class="prog">';
+    D.asm.forEach(function (line, k) {
+      var cls = [], tags = "";
+      if (iv && pc === k) { cls.push("on"); tags += ' <span class="tag f">on inst' + (bit("begins", c) ? ", taken at the edge" : "") + "</span>"; }
+      if (bo && bo[0] === k) { cls.push("mh"); tags += ' <span class="tag m">memory half ' + bo[1] + "/" + bo[2] + "</span>"; }
+      if (po && po[0] === k) { cls.push("ch"); tags += ' <span class="tag c">compute half ' + po[1] + "/" + po[2] + "</span>"; }
+      h += '<div class="' + cls.join(" ") + '"><span class="k">#' + k + "</span><span" + (k === PAD ? ' class="pad"' : "") + ">" +
+        esc(k === PAD ? "0000… padding (READ INT8 0 0 | MAC INT8)" : line) + "</span>" + tags + "</div>";
+    });
+    return h + '</div><p class="small" style="margin:6px 0 0">Last field: repetitions, MemA step, MemB step.</p>';
+  }
+  function ctlBox(c) {
+    var st = num("state", c), pc = num("pc", c), n = Math.min(c + 1, LAST), rst = !bit("rst_n", c);
+    var S2 = function (k) { return num(k, n); };
+    return (rst ? '<div class="rstnote">held in reset</div>' : "") + '<div class="kv">' +
+      '<span class="n">state</span><span class="v">' + (st ? "EXECUTING" : "IDLE") + (c < LAST ? nx(st ? "EXECUTING" : "IDLE", S2("state") ? "EXECUTING" : "IDLE") : "") + "</span>" +
+      '<span class="n">program_counter</span><span class="v">' + pc + (c < LAST ? nx(pc, S2("pc")) : "") + "</span>" +
+      '<span class="n">remaining</span><span class="v">' + num("remaining", c) + (c < LAST ? nx(num("remaining", c), S2("remaining")) : "") + "</span>" +
+      '<span class="n">inst_valid</span><span class="v">' + S.inst_valid[c] + "</span>" +
+      '<span class="n">inst_exec_begins</span><span class="v">' + S.begins[c] + (bit("begins", c) ? ' <span class="tag f">takes #' + pc + "</span>" : "") + "</span>" +
+      '<span class="n">buf_inst_valid</span><span class="v">' + S.buf_valid[c] + "</span>" +
+      '<span class="n">pe_inst_valid</span><span class="v">' + S.pe_valid[c] + "</span></div>";
+  }
+  function bufBox(c) {
+    var rst = !bit("rst_n", c), fr = fresh[c], bo = D.buf_owner[c];
+    var aW = !bit("m0_cen", c) ? num("m0_a", c) : -1, qW = fr ? num("m0_a", c - 1) : -1;
+    var h = (rst ? '<div class="rstnote">registers held in reset; the memories keep what the testbench loaded</div>' : "") + '<div class="mems">';
+    // MEM0 as the matrix
+    h += '<div class="mem"><div class="mt">MEM0 <span>matrix, one word = one column of a tile</span></div><table class="mx"><tr><th></th>';
+    for (var j = 0; j < COLS; j++) h += "<th>col " + j + "</th>";
+    h += "</tr>";
+    for (var t = 0; t * 4 < M.length; t++) {
+      h += '<tr class="tile"><th style="text-align:left">tile ' + (t + 1) + "</th>";
+      for (j = 0; j < COLS; j++) h += "<th>w" + (t * COLS + j) + "</th>";
+      h += "</tr>";
+      for (var r = 0; r < 4; r++) {
+        var R = t * 4 + r, rc = (r === 0 ? "top" : r === 3 ? "bot" : "") + (R >= REAL_ROWS ? " padrow" : "");
+        h += '<tr class="' + rc + '"><td class="rl">r' + R + " " + (R >= REAL_ROWS ? "pad" : "PE" + (r >> 1)) + "</td>";
+        for (j = 0; j < COLS; j++) {
+          var w = t * COLS + j, cl = (w === aW ? "addr " : "") + (w === qW ? "out" : "");
+          h += '<td class="' + cl + '">' + f(M[R][j]) + "</td>";
+        }
+        h += "</tr>";
+      }
+    }
+    h += "</table></div>";
+    // MEM1 as the vector
+    var m1a = bo && decBuf(S.buf_inst[c]).op === 0 ? num("m1_a", c) : -1, m1q = fr ? num("m1_a", c - 1) : -1, pick = fr ? num("memb_q", c) : -1;
+    h += '<div class="mem"><div class="mt">MEM1 <span>vector, 2 per word</span></div><table class="mx">';
+    V.forEach(function (v, i) {
+      var w = i >> 1, cl = (w === m1a ? "addr " : "") + (i === pick ? "pick" : w === m1q ? "out" : "");
+      h += '<tr class="' + (i % 2 === 0 ? "top" : "bot") + (i >= COLS ? " padrow" : "") + '"><td class="rl">v[' + i + "] w" + w + "</td><td class=\"" + cl + '">' + f(v) + "</td></tr>";
+    });
+    h += "</table></div>";
+    // MEM2 as y
+    var wrA = !bit("m2_gwen", c) ? num("m2_a", c) : -1, wrV = wrA >= 0 ? rows4(S.m2_d[c]) : null;
+    h += '<div class="mem"><div class="mt">MEM2 <span>results y, 4 per word</span></div><table class="mx">';
+    for (var w2 = 0; w2 < mem2At[c].length; w2++) {
+      var have = mem2At[c][w2] ? rows4(mem2At[c][w2]) : null;
+      for (r = 0; r < 4; r++) {
+        var Y = 4 * w2 + r, cls = (r === 0 ? "top" : r === 3 ? "bot" : "") + (Y >= REAL_ROWS ? " padrow" : "");
+        var cell = w2 === wrA ? '<td class="wr">' + (have ? f(have[r]) : "·") + nx(have ? f(have[r]) : "·", f(wrV[r])) + "</td>"
+                              : '<td class="' + (have ? "" : "empty") + '">' + (have ? f(have[r]) : "·") + "</td>";
+        h += '<tr class="' + cls + '"><td class="rl">y[' + Y + "] w" + w2 + "</td>" + cell + "</tr>";
+      }
+    }
+    h += "</table></div></div>";
+    var mq = num("memb_q", c), mo = num("mode_q", c), n = Math.min(c + 1, LAST);
+    h += '<div class="regs"><span>stored MemB offset: ' + c_(mq + (c < LAST ? nx(mq, num("memb_q", n)) : "")) + "</span>" +
+      "<span>stored mode: " + c_(MODES[mo] + (c < LAST ? nx(MODES[mo], MODES[num("mode_q", n)]) : "")) + "</span>" +
+      "<span>MEM2 write: " + (wrA >= 0 ? '<span class="tag w">word ' + wrA + " at the edge</span>" : "off") + "</span></div>";
+    h += '<div class="lg"><span class="tag m">outlined: address going in</span><span class="tag m" style="border-style:solid">filled: data coming out</span>' +
+      '<span class="tag c">lane the vector decoder picks</span><span class="tag w">written at the end of this cycle</span></div>';
+    return h;
+  }
+  function peBox(p, c) {
+    var po = D.pe_owner[c], op = po ? decPe(S.pe_inst[c]) : null, t0 = tileAt[c] * 4 + 2 * p;
+    var A = rows4(S.matrix_data[c]).slice(2 * p, 2 * p + 2), b = lanes(S.vector_data[c], 32, 16)[0];
+    var acc = peLanes(S["acc" + p][c], 64), out = peLanes(S["out" + p][c], 32);
+    var accN = peLanes(at("acc" + p, c + 1), 64), outN = peLanes(at("out" + p, c + 1), 32), last = c === LAST;
+    var used = op && op.name === "MAC" && po[0] !== PAD;
+    var h = !bit("rst_n", c) ? '<div class="rstnote">held in reset</div>' : "";
+    h += '<div class="op">' + (op ? op.name + " " + op.mode + ' <span class="tag c">' + own(po) + "</span>" : '<span style="color:var(--muted)">idle (pe_inst_valid = 0)</span>') + "</div>";
+    if (po && po[0] === PAD) h += '<p class="small" style="margin:0 0 4px">Padding MAC in INT8: these numbers are meaningless and never written.</p>';
+    h += '<table class="pet"><tr><th></th><td>row ' + t0 + "</td><td>row " + (t0 + 1) + "</td></tr>" +
+      "<tr><th>A, matrix</th>" + A.map(function (v) { return '<td class="' + (used ? "" : "unused") + '">' + f(v) + "</td>"; }).join("") + "</tr>" +
+      "<tr><th>B, vector</th>" + [b, b].map(function (v) { return '<td class="' + (used ? "" : "unused") + '">' + f(v) + "</td>"; }).join("") + "</tr>" +
+      "<tr><th>acc</th>" + acc.map(function (v, i) { return "<td>" + f(v) + (last ? "" : nx(f(v), f(accN[i]))) + "</td>"; }).join("") + "</tr>" +
+      "<tr><th>out</th>" + out.map(function (v, i) { return "<td>" + f(v) + (last ? "" : nx(f(v), f(outN[i]))) + "</td>"; }).join("") + "</tr></table>";
+    return h;
+  }
+  function chip(c) {
+    var bo = D.buf_owner[c], po = D.pe_owner[c], fr = fresh[c];
+    var A = rows4(S.matrix_data[c]), vb = lanes(S.vector_data[c], 32, 16)[0], wr = !bit("m2_gwen", c);
+    var b1 = '<div class="bus b1">' +
+      wire("buf_inst", "controller → buffer", bo ? esc(bufText(decBuf(S.buf_inst[c]))) + " · " + own(bo) : "— (buf_inst_valid = 0)", bo ? "on m" : "off") +
+      wire("pe_inst", "controller → both PEs", po ? esc(decPe(S.pe_inst[c]).name + " " + decPe(S.pe_inst[c]).mode) + " · " + own(po) + " (last cycle’s repetition)" : "— (pe_inst_valid = 0)", po ? "on c" : "off") + "</div>";
+    var b2 = '<div class="bus b2">' +
+      wire("matrix_data", "MEM0 → PEs", "PE 0 ← " + list(A.slice(0, 2)) + " · PE 1 ← " + list(A.slice(2)) + (fr ? "" : " (left over, not used)"), fr ? "on m" : "off") +
+      wire("vector_data", "MEM1 → decoder → PEs", f(vb) + " in both lanes" + (fr ? " = v[" + num("memb_q", c) + "]" : " (left over, not used)"), fr ? "on m" : "off") +
+      wire("output_data", "PE outputs → MEM2", "[" + list(rows4(S.output_data[c])) + "]" + (wr ? " → being written" : ""), wr ? "on o" : "off") + "</div>";
+    return blk("imem", "Instruction memory", "the program, loaded before reset", imemBox(c)) +
+      blk("ctl" + (bo || bit("begins", c) ? "" : " idle"), "Controller", "repeats each instruction count + 1 times", ctlBox(c)) + b1 +
+      blk("buf", "Buffer", "three SRAMs: address this cycle, data next cycle", bufBox(c)) + b2 +
+      blk("pe pe0" + (po ? "" : " idle"), "PE 0", "rows 0–1 of each tile", peBox(0, c)) +
+      blk("pe pe1" + (po ? "" : " idle"), "PE 1", "rows 2–3 of each tile", peBox(1, c));
+  }
+
+  // ---- the pipeline strip
+  var strip = document.getElementById("simStrip");
+  (function () {
+    var rows = { num: '<tr class="num"><th>cycle</th>', m: "<tr><th>memory half</th>", p: "<tr><th>compute half</th>", e: "<tr><th>events</th>" };
+    for (var c = 0; c < N; c++) {
+      var bo = D.buf_owner[c], po = D.pe_owner[c], rst = !bit("rst_n", c);
+      var tc = function (o) { return o ? (o[0] === PAD ? "tp" : "t" + tileOf(o[0])) : rst ? "rst" : ""; };
+      var ev = !bit("m2_gwen", c) ? "M2" : bit("done", c) ? "✓" : "";
+      rows.num += '<td data-c="' + c + '" class="' + (rst ? "rst" : "") + '">' + c + "</td>";
+      rows.m += '<td data-c="' + c + '" class="' + tc(bo) + '" title="' + (bo ? "memory half of " + own(bo) : rst ? "reset" : "") + '">' + (bo ? BUFOPS[decBuf(S.buf_inst[c]).op][0] : rst ? "" : "·") + "</td>";
+      rows.p += '<td data-c="' + c + '" class="' + tc(po) + '" title="' + (po ? "compute half of " + own(po) : rst ? "reset" : "") + '">' + (po ? decPe(S.pe_inst[c]).name[0] : rst ? "" : "·") + "</td>";
+      rows.e += '<td data-c="' + c + '" class="ev' + (rst ? " rst" : "") + '" title="' + (ev === "M2" ? "MEM2 write lands at the end of this cycle" : ev ? "simulation_complete" : rst ? "reset" : "") + '">' + ev + "</td>";
+    }
+    strip.innerHTML = rows.num + "</tr>" + rows.m + "</tr>" + rows.p + "</tr>" + rows.e + "</tr>";
+    var lg = document.createElement("p");
+    lg.className = "small"; lg.style.margin = "2px 0 0";
+    lg.innerHTML = "R/W/N = READ/WRITE/NOP, C/M/O/N = CLR/MAC/OUT/NOP. Blue = tile 1, purple = tile 2, gray = reset or padding. " +
+      "Each compute letter sits one column right of its memory letter. M2 = a MEM2 write lands at the end of that cycle. Click any column to jump there.";
+    strip.parentNode.appendChild(lg);
+  })();
+
+  // ---- stepping
+  var cur = 0, timer = null;
+  var range = document.getElementById("simRange"), cyc = document.getElementById("simCyc"), sayEl = document.getElementById("simSay"),
+      chipEl = document.getElementById("simChip"), playBtn = sec.querySelector('[data-act="play"]'), speed = document.getElementById("simSpeed");
+  range.max = LAST;
+  function go(c) {
+    cur = Math.max(0, Math.min(LAST, c));
+    range.value = cur;
+    cyc.innerHTML = "Cycle <b>" + cur + "</b> of " + LAST;
+    strip.querySelectorAll("td.cur").forEach(function (td) { td.classList.remove("cur"); });
+    strip.querySelectorAll('td[data-c="' + cur + '"]').forEach(function (td) { td.classList.add("cur"); });
+    sayEl.innerHTML = "<h4>" + title(cur) + "</h4><ul>" + say(cur).map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>";
+    chipEl.innerHTML = chip(cur);
+    try { localStorage.setItem(SKEY, String(cur)); } catch (e) {}
+    document.dispatchEvent(new CustomEvent("sim:cycle", { detail: cur }));
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } playBtn.textContent = "Play"; }
+  function play() {
+    if (timer) return stop();
+    if (cur >= LAST) go(0);
+    playBtn.textContent = "Pause";
+    timer = setInterval(function () { if (cur >= LAST) stop(); else go(cur + 1); }, +speed.value);
+  }
+  sec.querySelector(".sim-ctl").addEventListener("click", function (e) {
+    var act = e.target.closest("button") && e.target.closest("button").getAttribute("data-act");
+    if (!act) return;
+    if (act === "play") return play();
+    stop();
+    go({ first: 0, prev: cur - 1, next: cur + 1, last: LAST }[act]);
+  });
+  range.addEventListener("input", function () { stop(); go(+range.value); });
+  speed.addEventListener("change", function () { if (timer) { stop(); play(); } });
+  strip.addEventListener("click", function (e) { var td = e.target.closest("td[data-c]"); if (td) { stop(); go(+td.getAttribute("data-c")); } });
+  sec.setAttribute("tabindex", "-1");
+  sec.addEventListener("click", function (e) { if (!e.target.closest("button, input, select, a, summary, details")) sec.focus({ preventScroll: true }); });
+  sec.addEventListener("keydown", function (e) {
+    if (e.target.closest("input, select, textarea") || e.altKey || e.metaKey || e.ctrlKey) return;
+    var k = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+    if (k) { e.preventDefault(); stop(); go(cur + k); }
+    else if (e.key === "Home") { e.preventDefault(); stop(); go(0); }
+    else if (e.key === "End") { e.preventDefault(); stop(); go(LAST); }
+  });
+
+  // what the Ask Claude panel sends when this section is attached: the state of the chip in the cycle on screen
+  function plain(html) { var d = document.createElement("div"); d.innerHTML = html; return d.textContent; }
+  window.askContext = window.askContext || {};
+  window.askContext.sim = function () {
+    var c = cur, n = Math.min(c + 1, LAST), bo = D.buf_owner[c], po = D.pe_owner[c];
+    var lines = [
+      "Watch it run: a recorded run of a working design through the staff testbench: 6x3 INT16 matrix times a 3-element vector, 2 PEs, " + N + " cycles (0-" + LAST + "). Values are per cycle (what the signal holds during the cycle); registers change at the edge that ends it.",
+      "Program: " + D.asm.map(function (a, k) { return "#" + k + " " + (k === PAD ? "(all-zero padding = READ INT8 0 0 | MAC INT8 | 1 0 0)" : a); }).join("; "),
+      "Matrix rows (tile rows; 6,7 padding): " + M.map(function (r, i) { return "r" + i + "=[" + r.join(",") + "]"; }).join(" ") + "; vector v=[" + V.join(",") + "] (v[3] padding); expected y=[" + GOLD.slice(0, REAL_ROWS).join(",") + "]",
+      "He is looking at cycle " + c + ". " + plain(title(c)) + ".",
+      "What the page says happens in this cycle: " + say(c).map(plain).join(" "),
+      "Signals in cycle " + c + ": rst_n=" + S.rst_n[c] + " state=" + (num("state", c) ? "EXECUTING" : "IDLE") + " program_counter=" + num("pc", c) + " remaining=" + num("remaining", c) +
+        " inst_valid=" + S.inst_valid[c] + " inst_exec_begins=" + S.begins[c] + " buf_inst=" + (bo ? bufText(decBuf(S.buf_inst[c])) + " (" + own(bo) + ")" : "invalid") +
+        " pe_inst=" + (po ? decPe(S.pe_inst[c]).name + " " + decPe(S.pe_inst[c]).mode + " (" + own(po) + ")" : "invalid") +
+        " MEM0 cen=" + S.m0_cen[c] + " a=" + num("m0_a", c) + " matrix_data rows=[" + rows4(S.matrix_data[c]).join(",") + "] vector_data lanes=[" + lanes(S.vector_data[c], 32, 16).join(",") + "]" +
+        " stored MemB offset=" + num("memb_q", c) + " stored mode=" + MODES[num("mode_q", c)] +
+        " PE0 acc=[" + peLanes(S.acc0[c], 64) + "] out=[" + peLanes(S.out0[c], 32) + "] PE1 acc=[" + peLanes(S.acc1[c], 64) + "] out=[" + peLanes(S.out1[c], 32) + "]" +
+        " output_data rows=[" + rows4(S.output_data[c]) + "] MEM2 gwen=" + S.m2_gwen[c] + " a=" + num("m2_a", c) + " simulation_complete=" + S.done[c],
+      c < LAST ? "After the edge (cycle " + n + "): state=" + (num("state", n) ? "EXECUTING" : "IDLE") + " program_counter=" + num("pc", n) + " remaining=" + num("remaining", n) +
+        " PE0 acc=[" + peLanes(S.acc0[n], 64) + "] out=[" + peLanes(S.out0[n], 32) + "] PE1 acc=[" + peLanes(S.acc1[n], 64) + "] out=[" + peLanes(S.out1[n], 32) + "]" : "This is the last recorded cycle."
+    ];
+    return { key: "sim@" + c, title: "Watch it run · cycle " + c, text: lines.join("\n") };
+  };
+
+  var saved = 0;
+  try { saved = +localStorage.getItem(SKEY) || 0; } catch (e) {}
+  go(saved);
+})();
+</script>
+<script>
 /* Ask Claude. The page posts to /api/chat on the local server (scripts/tutor/server.py), which runs
    Claude Code headless with read-only repo access and streams the answer back as JSON lines. */
 (function () {
@@ -953,31 +1431,46 @@ make submit PART=part2      # checks compile.log + test results, then builds the
   }
   function visibleSitting() {
     var best = null, bestH = 0, vh = window.innerHeight;
-    document.querySelectorAll("section.sit[data-step]").forEach(function (s) {
+    document.querySelectorAll("section.sit[data-step], section.sit[data-ask]").forEach(function (s) {
       var r = s.getBoundingClientRect(), h = Math.min(r.bottom, vh) - Math.max(r.top, 0);
       if (h > bestH) { bestH = h; best = s; }
     });
     return best;
   }
+  // A section can describe itself for the chat (the simulator sends the cycle on screen): window.askContext[id]()
+  // returns {key, title, text}. Otherwise the section's own text goes, keyed by its id.
+  function describe(sec) {
+    var fn = window.askContext && window.askContext[sec.id];
+    if (fn) { var d = fn(); return { id: sec.id, key: d.key, title: d.title, text: d.text }; }
+    return { id: sec.id, key: sec.id, title: "Sitting " + sittingTitle(sec), text: null };
+  }
   function setCtx(sec) {
-    ctx = sec ? { id: sec.id, title: sittingTitle(sec) } : null;
-    if (ctx) { ctxText.innerHTML = "About: <b></b>"; ctxText.querySelector("b").textContent = "Sitting " + ctx.title; }
+    ctx = sec ? describe(sec) : null;
+    if (ctx) { ctxText.innerHTML = "About: <b></b>"; ctxText.querySelector("b").textContent = ctx.title; }
     else ctxText.textContent = "No sitting attached.";
     ctxClear.hidden = !ctx;
     paintQuick();
   }
+  document.addEventListener("sim:cycle", function () {
+    if (ctx && ctx.id === "sim" && !panel.hidden) setCtx(document.getElementById("sim"));
+  });
 
   var QUICK = [
+    { label: "Explain this cycle", send: "Explain what happens in this cycle and why, in plain words.", only: "sim" },
+    { label: "What changes at the next edge?", send: "Which registers change at the clock edge that ends this cycle, and why each one?", only: "sim" },
+    { label: "Quiz me on this cycle", send: "Quiz me on this cycle: 2 short questions, one at a time. Wait for my answer before the next one.", only: "sim" },
     { label: "Explain an error", fill: "Explain this error. Don't fix it for me; tell me what it means and where to look:\n\n" },
-    { label: "Smallest hint", send: "I'm stuck on this sitting. Give me the smallest hint that gets me moving.", needsCtx: true },
-    { label: "Look at my code", send: "Read my file for this sitting and tell me in words what's off or missing so far. Don't write the code.", needsCtx: true },
+    { label: "Smallest hint", send: "I'm stuck on this sitting. Give me the smallest hint that gets me moving.", needsCtx: true, skip: "sim" },
+    { label: "Look at my code", send: "Read my file for this sitting and tell me in words what's off or missing so far. Don't write the code.", needsCtx: true, skip: "sim" },
     { label: "Check my Explain-it answer", fill: "My answer to this sitting's \"Explain it\" question: ", needsCtx: true, needsExplain: true },
-    { label: "Quiz me", send: "Quiz me on this sitting: 2 short questions, one at a time. Wait for my answer before the next one.", needsCtx: true }
+    { label: "Quiz me", send: "Quiz me on this sitting: 2 short questions, one at a time. Wait for my answer before the next one.", needsCtx: true, skip: "sim" }
   ];
   function paintQuick() {
     quick.innerHTML = "";
     var sec = ctx && document.getElementById(ctx.id);
     QUICK.forEach(function (q) {
+      if (q.only && !(ctx && ctx.id === q.only)) return;
+      if (q.skip && ctx && ctx.id === q.skip) return;
       if (q.needsCtx && !sec) return;
       if (q.needsExplain && !sec.querySelector(".explain")) return;
       var b = document.createElement("button");
@@ -1012,7 +1505,7 @@ make submit PART=part2      # checks compile.log + test results, then builds the
     var d = document.createElement("div"), who = document.createElement("div");
     d.className = "msg " + (m.role === "user" ? "user" : "bot");
     who.className = "who";
-    who.textContent = m.role === "user" ? "You" + (m.about ? " · about Sitting " + m.about : "") : "Claude";
+    who.textContent = m.role === "user" ? "You" + (m.about ? " · about " + m.about.replace(/^(?=\d)/, "Sitting ") : "") : "Claude";
     d.appendChild(who);
     if (m.role === "user") {
       var b = document.createElement("div"); b.className = "bubble"; b.textContent = m.text; d.appendChild(b);
@@ -1022,7 +1515,35 @@ make submit PART=part2      # checks compile.log + test results, then builds the
     if (m.text) { var body = document.createElement("div"); body.innerHTML = md(m.text); d.appendChild(body); }
     if (m.pending && !m.text) { var s = document.createElement("div"); s.className = "status"; s.textContent = (m.status || "working") + "…"; d.appendChild(s); }
     if (m.error) { var e = document.createElement("div"); e.className = "err"; e.textContent = m.error; d.appendChild(e); }
+    if (m.edited && m.edited.length && !m.pending) d.appendChild(editedNote(m.edited));
     return d;
+  }
+  function editedNote(pages) {
+    var here = location.pathname.split("/").pop() || "part2-sittings.html";
+    var box = document.createElement("div"), others = pages.filter(function (p) { return p !== here; });
+    box.className = "edited";
+    if (pages.indexOf(here) >= 0) {
+      var b = document.createElement("button");
+      b.type = "button"; b.textContent = "Reload";
+      b.addEventListener("click", function () {
+        try { sessionStorage.setItem("ee271-reopen-chat", JSON.stringify({ ctx: ctx && ctx.id })); } catch (e) {}
+        location.reload();
+      });
+      box.appendChild(document.createTextNode("Claude changed this page. "));
+      box.appendChild(b);
+      box.appendChild(document.createTextNode(" to see it (this chat stays)."));
+    }
+    if (others.length) {
+      var p = document.createElement("div");
+      p.appendChild(document.createTextNode("Also changed: "));
+      others.forEach(function (name, i) {
+        var a = document.createElement("a"); a.href = name; a.target = "_blank"; a.textContent = name;
+        if (i) p.appendChild(document.createTextNode(", "));
+        p.appendChild(a);
+      });
+      box.appendChild(p);
+    }
+    return box;
   }
   function atBottom() { return log.scrollHeight - log.scrollTop - log.clientHeight < 80; }
   function render() {
@@ -1057,7 +1578,9 @@ make submit PART=part2      # checks compile.log + test results, then builds the
     if (!text || busy) return;
     if (available === false) { render(); return; }
     var sent = null;
-    if (ctx && ctx.id !== chat.lastCtx) sent = { id: ctx.id, title: ctx.title, text: sittingText(document.getElementById(ctx.id)) };
+    if (ctx) ctx = describe(document.getElementById(ctx.id));   // fresh: the simulator may have moved on
+    if (ctx && ctx.key !== chat.lastCtx)
+      sent = { id: ctx.id, key: ctx.key, title: ctx.title, text: ctx.text || sittingText(document.getElementById(ctx.id)) };
     chat.messages.push({ role: "user", text: text, about: sent ? ctx.title : null });
     var a = { role: "bot", text: "", tools: [], pending: true, status: "starting Claude" };
     chat.messages.push(a);
@@ -1067,7 +1590,8 @@ make submit PART=part2      # checks compile.log + test results, then builds the
     aborter = new AbortController();
 
     function handle(ev) {
-      if (ev.type === "session") { chat.session_id = ev.session_id; if (sent) chat.lastCtx = sent.id; }
+      if (ev.type === "session") { chat.session_id = ev.session_id; if (sent) chat.lastCtx = sent.key; }
+      else if (ev.type === "edited") a.edited = ev.pages;
       else if (ev.type === "text") a.text += ev.text;
       else if (ev.type === "tool") { a.tools.push(ev.text); a.status = "reading"; }
       else if (ev.type === "status") a.status = ev.text;
@@ -1120,14 +1644,20 @@ make submit PART=part2      # checks compile.log + test results, then builds the
   }
   function closeChat() { panel.hidden = true; document.body.classList.remove("chat-open"); }
 
-  document.querySelectorAll("section.sit[data-step]").forEach(function (sec) {
+  document.querySelectorAll("section.sit[data-step], section.sit[data-ask]").forEach(function (sec) {
     var meta = sec.querySelector(".meta");
     if (!meta) return;
     var b = document.createElement("button");
-    b.type = "button"; b.className = "ask"; b.textContent = "Ask Claude";
+    b.type = "button"; b.className = "ask"; b.textContent = sec.id === "sim" ? "Ask about this cycle" : "Ask Claude";
     b.addEventListener("click", function () { openChat(sec); });
     meta.appendChild(b);
   });
+  // after "Reload" (Claude edited this page), come back with the chat open
+  try {
+    var back = JSON.parse(sessionStorage.getItem("ee271-reopen-chat") || "null");
+    sessionStorage.removeItem("ee271-reopen-chat");
+    if (back) setTimeout(function () { openChat(back.ctx ? document.getElementById(back.ctx) : null); }, 0);
+  } catch (e) {}
   $("askfab").addEventListener("click", function () { openChat(null); });
   $("chatClose").addEventListener("click", closeChat);
   ctxClear.addEventListener("click", function () { setCtx(null); input.focus(); });

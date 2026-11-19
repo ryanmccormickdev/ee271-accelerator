@@ -18,7 +18,7 @@ and why the split is built around the oral exam.
 | Page | What |
 |---|---|
 | [`docs/walkthrough.html`](docs/walkthrough.html) | Part 1: the machine, animated, with every starter file block by block |
-| [`docs/part2-sittings.html`](docs/part2-sittings.html) | Part 2, step by step: Ryan's buffer, controller and `top.sv` in 16 short sittings, each with the check output to expect. Open it with **`make tutor`** to get an Ask-Claude chat on every sitting (local app, uses your Claude Code login; it hints and explains, it doesn't write the RTL) |
+| [`docs/part2-sittings.html`](docs/part2-sittings.html) | Part 2, step by step: Ryan's buffer, controller and `top.sv` in 16 short sittings, each with the check output to expect. Has a **Watch it run** simulator: step through a recorded run of the whole chip, cycle by cycle, reset to done. Open it with **`make tutor`** to get an Ask-Claude chat on every sitting and on the simulator's current cycle (local app, uses your Claude Code login, full permissions in the repo: it runs the checks and can edit the explainers, but its rules forbid writing the RTL) |
 | [`docs/part2-rtl.html`](docs/part2-rtl.html) | Part 2: from the Python model to cycle-accurate SystemVerilog: timing, each module, traps, debugging |
 | [`docs/synthesis.html`](docs/synthesis.html) | From RTL to gates: what Design Compiler does with our design, and how to read its reports |
 | [`docs/part3-ppa.html`](docs/part3-ppa.html) | Part 3: the figure of merit, the cycle model, every optimization, an FoM calculator |
