@@ -16,7 +16,19 @@ module buffer (
 );
 
     // START IMPLEMENTATION
-    // Your Code Here
+    assign vector_data = '0;
+    logic [`BUF_MEMB_OFFSET_BITWIDTH-1:0] memb_q;
+    logic [`BUF_MODE_BITWIDTH-1:0] mode_q;
+
+    always_ff @(posedge clk, negedge rst_n) begin
+        if (!rst_n) begin
+            memb_q <= '0;
+            mode_q <= '0;
+        end else begin
+            memb_q <= buf_inst.memb_offset;
+            mode_q <= buf_inst.mode;
+        end
+    end
     
     array #(
         .DW(`MEM0_BITWIDTH),
@@ -27,10 +39,31 @@ module buffer (
         .cen('0),
         .wen('1),
         .gwen('1),
-        .a(),
+        .a(buf_inst.mema_offset),
         .d(),
-        .q()
+        .q(matrix_data)
     );
+
+    logic [`MEM1_ADDR_WIDTH-1:0] addr;
+    logic [`MEM1_BITWIDTH-1:0] data;
+
+    vector_decoder u_addr_dec #(
+        .data_from_mem(u_m),
+        .addr_from_controller(u_addr_dec),
+        .addr_from_controller_reg('0),s
+        .mode('0),
+        .data_to_pe('0),
+        .addr_to_mem('0) 
+    )
+
+    vector_decoder u_data_dec #(
+        .data_from_mem(u_data_dec),
+        .addr_from_controller(u_addr_dec),
+        .addr_from_controller_reg('0),
+        .mode('0),
+        .data_to_pe('0),
+        .addr_to_mem('0) 
+    )
 
     array #(
         .DW(`MEM1_BITWIDTH),
