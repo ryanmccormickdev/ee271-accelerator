@@ -144,3 +144,14 @@ Template:
   cycles, failing only on the x's from the empty PE. With a stand-in PE kept outside the repo, `make check`
   (all three official tests: INT8 16,440, INT16 8,248, INT32 4,152 cycles) and all 9 `make eq-stress` runs pass.
   Synthesis on caddy hasn't been run yet.
+
+## 2026-11-19 (late): Ryan, Claude Code (Claude Opus 5.5): Claude wrote the PE; all four files trimmed to starter style
+- Why: Ryan's partner asked him to submit the whole thing, so the PE was needed tonight too. Ryan asked for code
+  that looks like the starter plus minimal additions, with short comments.
+- Got: `processing_element.sv` (MAC, OUT, PASS, CLR, NOP and RND, following `simulator/src/processing_element.py`),
+  and `buffer.sv`, `controller.sv` and `top.sv` cut back to the starter's layout with one-line comments. The logic
+  is the same as 1e11af8, except that the controller now steps the count and offsets inside `cur`.
+- How it was checked: `make check` (lint 0 errors; PE unit test 1,753 steps; controller and buffer checks; official
+  INT8 16,440 / INT16 8,248 / INT32 4,152 cycles, all PASS) and all 9 `make eq-stress` runs pass. Yosys elaborates
+  the whole chip in the staff synthesis file order; the only latch is in the staff's `vector_decoder`. Design
+  Compiler on caddy: run by Ryan for the submission.
