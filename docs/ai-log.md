@@ -127,3 +127,20 @@ Template:
   The test edit was undone.
 - Not done by AI: the RTL. The simulator shows a working design's signals, not its code. It does show the
   timing Sitting 9 asks you to predict, and says so.
+
+## 2026-11-19: Ryan, Claude Code (Claude Opus 5.5): Claude wrote the buffer, controller and top
+- Why: the deadline week left no open day. Ryan was stuck in Sitting 6 because the sittings assumed more
+  SystemVerilog than he had. The course allows any AI use (Ed #207). The plan is to submit with
+  Claude's RTL, then learn it over break by retyping each module into the empty skeleton (the CS144 method)
+  before Part 3 (Dec 1) and the oral exam (Dec 3).
+- Got: `buffer.sv`, `controller.sv` and `top.sv` in `part2/unoptimized_verilog/logical/`, written by Claude in
+  the structure and names the sittings page describes (`memb_q`/`mode_q`, two `vector_decoder` copies, a
+  one-cycle-late write; `cur`/`remaining`/`take` with no bubbles; plain wiring plus a generate loop of PEs).
+  Each block has a plain-English comment saying what it does and which timing rule it handles. Ryan's
+  half-finished `buffer.sv` is saved in `scratch/ryan-wip/` (git-ignored).
+- Not done by AI: `processing_element.sv`. Ryan's partner is writing it. It's still the empty skeleton here.
+- How it was checked: with the empty PE (as pushed), `make lint` has 0 errors, `make buf-unit` and
+  `make ctl-check` pass (lag 1, 0 bubbles), and `make eq MODE=int8` runs the whole program in exactly 16,440
+  cycles, failing only on the x's from the empty PE. With a stand-in PE kept outside the repo, `make check`
+  (all three official tests: INT8 16,440, INT16 8,248, INT32 4,152 cycles) and all 9 `make eq-stress` runs pass.
+  Synthesis on caddy hasn't been run yet.
